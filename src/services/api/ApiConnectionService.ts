@@ -3,6 +3,18 @@ import { apiService } from './ApiService';
 import { API_CONFIG } from '@/config/api';
 import { create } from 'zustand';
 
+// Define interface for API health response
+interface HealthCheckResponse {
+  status: string;
+  message: string;
+  version: string;
+  system?: {
+    os: string;
+    python: string;
+  };
+  error?: string;
+}
+
 interface ConnectionState {
   isConnected: boolean;
   lastChecked: string | null;
@@ -35,7 +47,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     
     try {
       // Try to ping the API server
-      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.HEALTH}`);
+      const response = await apiService.get<HealthCheckResponse>(`${API_CONFIG.ENDPOINTS.HEALTH}`);
       
       // Update server status information
       set({ 
@@ -88,11 +100,11 @@ class ApiConnectionService {
       });
       
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as HealthCheckResponse;
         useConnectionStore.getState().setConnectionStatus(true);
         
         // Update server status if available
-        if (data && typeof data === 'object') {
+        if (data) {
           useConnectionStore.setState({
             serverVersion: data.version || null,
             serverStatus: {
