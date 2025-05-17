@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { ActivityChart } from "@/components/dashboard/ActivityChart";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useState } from "react";
+import { VerificationStats } from "@/components/analytics/VerificationStats";
 
 const engagementData = [
   { name: "Week 1", organic: 4000, bot: 2400 },
@@ -36,13 +38,37 @@ const audienceData = [
 ];
 
 const AnalyticsPage = () => {
+  const [selectedCampaign, setSelectedCampaign] = useState("all");
+  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>(undefined);
+  const [selectedContentId, setSelectedContentId] = useState<string | undefined>(undefined);
+
+  // Mock content IDs based on platform selection for the demo
+  const getContentIds = (platform: string) => {
+    if (platform === "youtube") {
+      return [
+        { id: "video123", name: "Product Review Video" },
+        { id: "video456", name: "Tutorial Video" },
+      ];
+    } else if (platform === "spotify") {
+      return [
+        { id: "track123", name: "Summer EDM Track" },
+        { id: "track456", name: "New Pop Release" },
+      ];
+    }
+    return [];
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold">Analytics</h1>
         
         <div className="flex gap-2">
-          <Select defaultValue="all">
+          <Select 
+            defaultValue="all" 
+            value={selectedCampaign}
+            onValueChange={setSelectedCampaign}
+          >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="All Campaigns" />
             </SelectTrigger>
@@ -64,11 +90,12 @@ const AnalyticsPage = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full md:w-[500px]">
+        <TabsList className="grid grid-cols-5 w-full md:w-[600px]">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="engagement">Engagement</TabsTrigger>
           <TabsTrigger value="audience">Audience</TabsTrigger>
           <TabsTrigger value="conversion">Conversion</TabsTrigger>
+          <TabsTrigger value="verification">Verification</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 mt-6">
@@ -190,6 +217,98 @@ const AnalyticsPage = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="verification" className="mt-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Выберите платформу и контент</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Платформа</label>
+                    <Select 
+                      value={selectedPlatform} 
+                      onValueChange={(value) => {
+                        setSelectedPlatform(value);
+                        setSelectedContentId(undefined);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите платформу" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="youtube">YouTube</SelectItem>
+                        <SelectItem value="spotify">Spotify</SelectItem>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="tiktok">TikTok</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {selectedPlatform && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Контент</label>
+                      <Select 
+                        value={selectedContentId} 
+                        onValueChange={setSelectedContentId}
+                        disabled={!selectedPlatform}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите контент" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getContentIds(selectedPlatform).map(item => (
+                            <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Статистика верификации</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-3 text-center">
+                      <div className="text-2xl font-bold text-green-500">75%</div>
+                      <div className="text-xs text-muted-foreground">Успешно верифицировано</div>
+                    </div>
+                    <div className="rounded-lg border p-3 text-center">
+                      <div className="text-2xl font-bold">152</div>
+                      <div className="text-xs text-muted-foreground">Всего взаимодействий</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>YouTube: 82% успешно</span>
+                    <span className="font-medium">82/100</span>
+                  </div>
+                  <Progress value={82} className="h-1" />
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Spotify: 63% успешно</span>
+                    <span className="font-medium">33/52</span>
+                  </div>
+                  <Progress value={63} className="h-1" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <VerificationStats 
+            platform={selectedPlatform}
+            contentId={selectedContentId}
+            metricType={selectedPlatform === 'youtube' ? 'view' : 'play'}
+          />
         </TabsContent>
       </Tabs>
     </div>
