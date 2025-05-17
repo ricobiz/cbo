@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +8,7 @@ import { Plus, Filter, SortAsc } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CampaignService } from "@/services/CampaignService";
+import { Campaign, CampaignStatus, CampaignType } from "@/services/types/campaign";
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from "@/store/LanguageStore";
 import { toast } from 'sonner';
@@ -43,7 +43,7 @@ export default function CampaignsPage() {
     })));
   }, []);
   
-  const calculateProgress = (campaign: any): number => {
+  const calculateProgress = (campaign: Campaign): number => {
     if (campaign.status === 'completed') return 100;
     if (campaign.status === 'draft') return 0;
     
@@ -62,7 +62,7 @@ export default function CampaignsPage() {
     return Math.round((elapsed / totalDuration) * 100);
   };
   
-  const calculateSpent = (campaign: any): number => {
+  const calculateSpent = (campaign: Campaign): number => {
     if (!campaign.budget) return 0;
     const progress = calculateProgress(campaign) / 100;
     return Math.round(campaign.budget * progress);
@@ -83,12 +83,12 @@ export default function CampaignsPage() {
   });
   
   const handleCreateCampaign = (campaignData: any) => {
-    const newCampaign = {
+    const newCampaign: Campaign = {
       id: uuidv4(),
       name: campaignData.name,
       description: campaignData.description || t('noCampaignDescription'),
-      type: campaignData.type || 'promotion',
-      status: 'draft',
+      type: (campaignData.type || 'promotion') as CampaignType,
+      status: 'draft' as CampaignStatus,
       platforms: [campaignData.platform],
       startDate: campaignData.startDate || new Date().toISOString(),
       endDate: campaignData.endDate,

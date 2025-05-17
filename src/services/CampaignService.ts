@@ -1,3 +1,4 @@
+
 import { Campaign, CampaignFilter, CampaignStatus, CampaignType, CampaignPlatform, CampaignAction } from "./types/campaign";
 
 /**
@@ -170,8 +171,8 @@ export class CampaignService {
         id: '1',
         name: 'Продвижение летней коллекции',
         description: 'Кампания по продвижению новой летней коллекции с использованием ИИ-ботов.',
-        type: 'promotion',
-        status: 'active',
+        type: 'promotion' as CampaignType,
+        status: 'active' as CampaignStatus,
         platforms: ['instagram', 'tiktok'],
         startDate: lastWeek.toISOString(),
         endDate: nextWeek.toISOString(),
@@ -209,8 +210,8 @@ export class CampaignService {
         id: '2',
         name: 'Запуск нового трека',
         description: 'Вирусное продвижение нового музыкального трека с использованием ИИ-ботов.',
-        type: 'trend',
-        status: 'draft',
+        type: 'trend' as CampaignType,
+        status: 'draft' as CampaignStatus,
         platforms: ['youtube', 'spotify', 'tiktok'],
         startDate: tomorrow.toISOString(),
         budget: 1200,

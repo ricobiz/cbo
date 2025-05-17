@@ -1,4 +1,5 @@
 
+
 // Base type for API responses
 export interface ApiResponse {
   success: boolean;
@@ -83,7 +84,7 @@ export interface ActionVerification {
     after: number;
   };
   error?: string;
-  metricValue?: number; // Add this missing property
+  metricValue?: number; // Adding the metricValue property that was missing
 }
 
 // Command Analysis Types
@@ -99,3 +100,4 @@ export interface CommandAnalysisResult {
 export interface PlatformUrlMap {
   [key: string]: string;
 }
+
