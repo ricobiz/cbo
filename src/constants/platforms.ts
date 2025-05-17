@@ -1,5 +1,5 @@
 
-import { Music, Radio, Video, MessageSquare } from "lucide-react";
+import { Music, Radio, Video, MessageSquare, Headphones, Send } from "lucide-react";
 
 export interface Platform {
   id: string;
@@ -11,12 +11,12 @@ export interface Platform {
 // Единый список всех поддерживаемых платформ
 export const SUPPORTED_PLATFORMS: Platform[] = [
   { id: "youtube", name: "YouTube", icon: Video, available: true },
-  { id: "spotify", name: "Spotify", icon: Music, available: true },
+  { id: "spotify", name: "Spotify", icon: Headphones, available: true }, // Changed from Spotify to Headphones
   { id: "instagram", name: "Instagram", icon: MessageSquare, available: true },
   { id: "tiktok", name: "TikTok", icon: Video, available: true },
   { id: "facebook", name: "Facebook", icon: MessageSquare, available: false }, // Не активна
   { id: "twitter", name: "Twitter", icon: MessageSquare, available: false }, // Не активна
-  { id: "telegram", name: "Telegram", icon: Radio, available: false }, // Не активна
+  { id: "telegram", name: "Telegram", icon: Send, available: false }, // Changed from Telegram to Send
 ];
 
 // Получение только активных платформ
