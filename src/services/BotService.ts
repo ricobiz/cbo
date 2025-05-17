@@ -1,3 +1,4 @@
+
 import { proxyService } from './ProxyService';
 import { logger } from './LoggingService';
 
@@ -95,7 +96,7 @@ class BotService {
         id: "1",
         name: "Content Generator Bot",
         description: "Creates trending content for various platforms using GPT-4",
-        status: "active" as BotStatus,
+        status: "idle" as BotStatus, // Changed from active to idle
         type: "content" as BotType,
         lastRun: "10 mins ago",
         config: this.getDefaultConfig(),
@@ -107,7 +108,7 @@ class BotService {
         id: "2",
         name: "Social Interaction Simulator",
         description: "Simulates likes, shares, comments, and other social interactions",
-        status: "active" as BotStatus,
+        status: "idle" as BotStatus, // Changed from active to idle
         type: "interaction" as BotType,
         lastRun: "25 mins ago",
         config: this.getDefaultConfig(),
@@ -143,7 +144,7 @@ class BotService {
         id: "5",
         name: "Analytics Parser Bot",
         description: "Monitors campaign performance and collects real-time metrics",
-        status: "active" as BotStatus,
+        status: "idle" as BotStatus, // Changed from active to idle
         type: "parser" as BotType,
         lastRun: "15 mins ago",
         config: this.getDefaultConfig(),
