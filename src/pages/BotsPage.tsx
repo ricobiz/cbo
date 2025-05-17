@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { BotCard } from "@/components/bots/BotCard";
+import { BotCreationWizard } from "@/components/bots/BotCreationWizard";
+import { BotMonitoring } from "@/components/bots/BotMonitoring";
 import { Button } from "@/components/ui/button";
 import { Plus, Filter } from "lucide-react";
 import {
@@ -67,6 +69,7 @@ const BotsPage = () => {
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const filteredBots = mockBots.filter(bot => {
     const matchesType = filterType === "all" || bot.type === filterType;
@@ -80,10 +83,12 @@ const BotsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold">Bots</h1>
-        <Button>
+        <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Create Bot
         </Button>
       </div>
+
+      <BotMonitoring />
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
@@ -144,6 +149,11 @@ const BotsPage = () => {
           </div>
         )}
       </div>
+      
+      <BotCreationWizard 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen} 
+      />
     </div>
   );
 };
