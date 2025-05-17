@@ -18,7 +18,8 @@ class BotActivityService {
   // Get activity for a specific bot
   getBotActivity(botId: string): BotActivity | undefined {
     const bot = botService.getBotById(botId);
-    return bot?.currentActivity || botActivities[botId];
+    // Since Bot might not have currentActivity property, check botActivities map first
+    return botActivities[botId] || (bot && bot.currentActivity);
   }
 
   // Update a bot's activity

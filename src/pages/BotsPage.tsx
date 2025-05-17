@@ -31,11 +31,30 @@ import { BotCreationWizard } from "@/components/bots/BotCreationWizard";
 import { BotHealthIndicator } from "@/components/bots/BotHealthIndicator";
 import { QuickBotCreator } from "@/components/bots/QuickBotCreator";
 import { BotMonitoring } from "@/components/bots/BotMonitoring";
+import { SetupGuideHints } from "@/components/bots/SetupGuideHints";
+
+// Interface to match BotCard props
+interface ExtendedBotProps {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  status: BotStatus;
+  lastRun: string;
+  config: BotConfig;
+  schedule: BotSchedule;
+  proxy: BotProxy;
+  logs: any[];
+  onClick: () => void;
+  onStart: () => void;
+  onStop: () => void;
+}
 
 const BotsPage = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedView, setSelectedView] = useState<"grid" | "list">("grid");
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+  const [showSetupGuide, setShowSetupGuide] = useState(true);
 
   const { 
     bots, 
@@ -95,7 +114,7 @@ const BotsPage = () => {
   });
 
   const getDefaultConfig = (): BotConfig => ({
-    actionDelay: [1000, 3000],
+    actionDelay: [1000, 3000] as [number, number],
     mouseMovement: "natural",
     scrollPattern: "variable",
     randomnessFactor: 0.5,
@@ -143,6 +162,10 @@ const BotsPage = () => {
           </Button>
         </div>
       </div>
+
+      {showSetupGuide && (
+        <SetupGuideHints />
+      )}
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1 max-w-md">
@@ -209,6 +232,10 @@ const BotsPage = () => {
               <DropdownMenuItem onClick={() => setFilterStatus("all")}>
                 Show All Bots
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowSetupGuide(!showSetupGuide)}>
+                {showSetupGuide ? "Hide" : "Show"} Setup Guide
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -257,7 +284,6 @@ const BotsPage = () => {
                     type={bot.type}
                     status={bot.status}
                     lastRun={bot.lastRun}
-                    healthPercentage={bot.healthPercentage}
                     config={bot.config || getDefaultConfig()}
                     schedule={bot.schedule || getDefaultSchedule()}
                     proxy={bot.proxy || getDefaultProxy()}
@@ -284,7 +310,6 @@ const BotsPage = () => {
                   type={bot.type}
                   status={bot.status}
                   lastRun={bot.lastRun}
-                  healthPercentage={bot.healthPercentage}
                   config={bot.config || getDefaultConfig()}
                   schedule={bot.schedule || getDefaultSchedule()}
                   proxy={bot.proxy || getDefaultProxy()}
@@ -310,7 +335,6 @@ const BotsPage = () => {
                   type={bot.type}
                   status={bot.status}
                   lastRun={bot.lastRun}
-                  healthPercentage={bot.healthPercentage}
                   config={bot.config || getDefaultConfig()}
                   schedule={bot.schedule || getDefaultSchedule()}
                   proxy={bot.proxy || getDefaultProxy()}
@@ -336,7 +360,6 @@ const BotsPage = () => {
                   type={bot.type}
                   status={bot.status}
                   lastRun={bot.lastRun}
-                  healthPercentage={bot.healthPercentage}
                   config={bot.config || getDefaultConfig()}
                   schedule={bot.schedule || getDefaultSchedule()}
                   proxy={bot.proxy || getDefaultProxy()}
@@ -362,7 +385,6 @@ const BotsPage = () => {
                   type={bot.type}
                   status={bot.status}
                   lastRun={bot.lastRun}
-                  healthPercentage={bot.healthPercentage}
                   config={bot.config || getDefaultConfig()}
                   schedule={bot.schedule || getDefaultSchedule()}
                   proxy={bot.proxy || getDefaultProxy()}

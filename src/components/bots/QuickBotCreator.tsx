@@ -19,17 +19,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Bot, X, Settings, AlertTriangle } from "lucide-react";
+import { Bot, X, Settings, AlertTriangle, HelpCircle } from "lucide-react";
 import { botService } from "@/services/BotService";
 import { useBotStore } from "@/store/BotStore";
 import { externalAPIService } from "@/services/external-api";
 import { proxyService } from "@/services/ProxyService";
+import { InteractiveHint } from "@/components/ui/interactive-hint";
 
 interface QuickBotCreatorProps {
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
+export function QuickBotCreator({ open, onOpenChange }: QuickBotCreatorProps) {
   const [botName, setBotName] = useState("");
   const [botType, setBotType] = useState("");
   const [platform, setPlatform] = useState("");
@@ -159,7 +161,7 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
       
       // Обновляем список ботов и закрываем окно
       fetchBots();
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       console.error("Error creating bots:", error);
       toast({
@@ -195,6 +197,8 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
     );
   };
 
+  if (!open) return null;
+
   return (
     <Card className="w-full border shadow-lg animate-fade-in">
       <CardHeader className="relative">
@@ -202,7 +206,7 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
           variant="ghost" 
           size="icon" 
           className="absolute right-2 top-2" 
-          onClick={onClose}
+          onClick={() => onOpenChange(false)}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -216,64 +220,86 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="quick-bot-name">Имя бота</Label>
-          <Input 
-            id="quick-bot-name" 
-            placeholder="Введите имя бота" 
-            value={botName}
-            onChange={(e) => setBotName(e.target.value)}
-          />
-        </div>
+        <InteractiveHint
+          title="Введите имя бота"
+          description="Укажите понятное имя, которое поможет идентифицировать бота в списке"
+          className="mb-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="quick-bot-name">Имя бота</Label>
+            <Input 
+              id="quick-bot-name" 
+              placeholder="Введите имя бота" 
+              value={botName}
+              onChange={(e) => setBotName(e.target.value)}
+            />
+          </div>
+        </InteractiveHint>
         
-        <div className="space-y-2">
-          <Label htmlFor="quick-bot-type">Тип бота</Label>
-          <Select value={botType} onValueChange={setBotType}>
-            <SelectTrigger id="quick-bot-type">
-              <SelectValue placeholder="Выберите тип бота" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="content">Генератор контента</SelectItem>
-              <SelectItem value="interaction">Симулятор взаимодействия</SelectItem>
-              <SelectItem value="click">Кликающий бот</SelectItem>
-              <SelectItem value="parser">Парсер</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <InteractiveHint
+          title="Выберите тип бота"
+          description="Тип бота определяет его основную функциональность и возможности"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="quick-bot-type" className="flex items-center gap-1">
+              Тип бота
+              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+            </Label>
+            <Select value={botType} onValueChange={setBotType}>
+              <SelectTrigger id="quick-bot-type">
+                <SelectValue placeholder="Выберите тип бота" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="content">Генератор контента</SelectItem>
+                <SelectItem value="interaction">Симулятор взаимодействия</SelectItem>
+                <SelectItem value="click">Кликающий бот</SelectItem>
+                <SelectItem value="parser">Парсер</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </InteractiveHint>
         
-        <div className="space-y-2">
-          <Label htmlFor="quick-platform">Целевая платформа</Label>
-          <Select value={platform} onValueChange={setPlatform}>
-            <SelectTrigger id="quick-platform">
-              <SelectValue placeholder="Выберите целевую платформу" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="youtube">YouTube</SelectItem>
-              <SelectItem value="twitter">Twitter</SelectItem>
-              <SelectItem value="instagram">Instagram</SelectItem>
-              <SelectItem value="tiktok">TikTok</SelectItem>
-              <SelectItem value="telegram">Telegram</SelectItem>
-              <SelectItem value="vk">ВКонтакте</SelectItem>
-              <SelectItem value="facebook">Facebook</SelectItem>
-              <SelectItem value="linkedin">LinkedIn</SelectItem>
-              <SelectItem value="reddit">Reddit</SelectItem>
-              <SelectItem value="pinterest">Pinterest</SelectItem>
-              <SelectItem value="snapchat">Snapchat</SelectItem>
-              <SelectItem value="twitch">Twitch</SelectItem>
-              <SelectItem value="spotify">Spotify</SelectItem>
-              <SelectItem value="soundcloud">SoundCloud</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="discord">Discord</SelectItem>
-              <SelectItem value="clubhouse">Clubhouse</SelectItem>
-              <SelectItem value="other">Другая платформа</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {getPlatformRequirements()}
-        </div>
+        <InteractiveHint
+          title="Выберите целевую платформу"
+          description="Укажите платформу, на которой будет работать бот. Это влияет на настройки и функциональность"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="quick-platform">Целевая платформа</Label>
+            <Select value={platform} onValueChange={setPlatform}>
+              <SelectTrigger id="quick-platform">
+                <SelectValue placeholder="Выберите целевую платформу" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="youtube">YouTube</SelectItem>
+                <SelectItem value="twitter">Twitter</SelectItem>
+                <SelectItem value="instagram">Instagram</SelectItem>
+                <SelectItem value="tiktok">TikTok</SelectItem>
+                <SelectItem value="telegram">Telegram</SelectItem>
+                <SelectItem value="vk">ВКонтакте</SelectItem>
+                <SelectItem value="facebook">Facebook</SelectItem>
+                <SelectItem value="linkedin">LinkedIn</SelectItem>
+                <SelectItem value="reddit">Reddit</SelectItem>
+                <SelectItem value="pinterest">Pinterest</SelectItem>
+                <SelectItem value="snapchat">Snapchat</SelectItem>
+                <SelectItem value="twitch">Twitch</SelectItem>
+                <SelectItem value="spotify">Spotify</SelectItem>
+                <SelectItem value="soundcloud">SoundCloud</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="discord">Discord</SelectItem>
+                <SelectItem value="clubhouse">Clubhouse</SelectItem>
+                <SelectItem value="other">Другая платформа</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {getPlatformRequirements()}
+          </div>
+        </InteractiveHint>
 
         {showAdvancedSettings && (
-          <>
+          <InteractiveHint
+            title="Укажите количество ботов"
+            description="Создайте сразу несколько одинаковых ботов для масштабирования"
+          >
             <div className="space-y-2">
               <Label htmlFor="bot-count">Количество ботов</Label>
               <Input
@@ -288,7 +314,7 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
                 Будет создано указанное количество ботов с последовательной нумерацией
               </p>
             </div>
-          </>
+          </InteractiveHint>
         )}
 
         {!showAdvancedSettings && (
@@ -303,7 +329,7 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onClose}>Отмена</Button>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>Отмена</Button>
         {readyToCreate ? (
           <Button 
             onClick={handleCreateBot} 
