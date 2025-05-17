@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,69 +39,8 @@ const CampaignsPage = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
   
-  // Real campaign data with reset counters
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    {
-      id: "1",
-      title: "Продвижение музыкального альбома",
-      platform: "spotify",
-      status: "active",
-      progress: 100,
-      startDate: "2024-05-10",
-      endDate: "2024-06-10",
-      type: "promotion",
-      metrics: {
-        views: 50000,
-        engagement: 8240,
-        conversions: 1250
-      }
-    },
-    {
-      id: "2",
-      title: "Привлечение подписчиков YouTube",
-      platform: "youtube",
-      status: "active",
-      progress: 85,
-      startDate: "2024-05-20",
-      endDate: "2024-06-20",
-      type: "growth",
-      metrics: {
-        views: 42500,
-        engagement: 5320,
-        conversions: 980
-      }
-    },
-    {
-      id: "3",
-      title: "Промо нового продукта в Instagram",
-      platform: "instagram",
-      status: "completed",
-      progress: 100,
-      startDate: "2024-04-01",
-      endDate: "2024-05-01",
-      type: "promotion",
-      metrics: {
-        views: 125000,
-        engagement: 18600,
-        conversions: 3450
-      }
-    },
-    {
-      id: "4",
-      title: "TikTok маркетинговая кампания",
-      platform: "tiktok",
-      status: "active",
-      progress: 75,
-      startDate: "2024-05-05",
-      endDate: "2024-06-15",
-      type: "growth",
-      metrics: {
-        views: 235000,
-        engagement: 45600,
-        conversions: 5200
-      }
-    }
-  ]);
+  // Initialize with an empty array - no demo campaigns
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
   // Handle campaign status changes
   const handleCampaignStatusChange = (campaignId: string, newStatus: string) => {
