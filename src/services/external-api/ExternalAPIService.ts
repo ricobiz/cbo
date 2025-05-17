@@ -270,4 +270,48 @@ export class ExternalAPIService {
   getVerificationSuccessRate(platform: string, contentId: string, metricType: 'view' | 'play' | 'click' | 'like' | 'follow' | 'comment'): number {
     return this.verificationService.getVerificationSuccessRate(platform, contentId, metricType);
   }
+
+  /**
+   * Generate audio based on the provided parameters
+   */
+  async generateAudio(params: AudioGenerationParams): Promise<{ url: string }> {
+    try {
+      // In a real implementation, we would call an actual text-to-speech API
+      console.log("Generating audio with params:", params);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Demo audio URLs
+      const demoAudios = [
+        "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg",
+        "https://actions.google.com/sounds/v1/ambiences/forest_ambience.ogg",
+        "https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg",
+        "https://actions.google.com/sounds/v1/water/bubbling_stream.ogg"
+      ];
+      
+      // Select a random audio
+      const selectedAudio = demoAudios[Math.floor(Math.random() * demoAudios.length)];
+      
+      return { url: selectedAudio };
+    } catch (error) {
+      console.error("Error in audio generation:", error);
+      throw new Error("Failed to generate audio");
+    }
+  }
+
 }
+
+// Create a singleton instance
+export const externalAPIService = new ExternalAPIService();
+// Initialize from storage
+externalAPIService.initializeFromStorage();
+
+// Re-export types for convenience
+export type { 
+  OpenRouterResponse, 
+  BrowserUseAction, 
+  BrowserUseResponse, 
+  ActionVerification, 
+  CommandAnalysisResult 
+};

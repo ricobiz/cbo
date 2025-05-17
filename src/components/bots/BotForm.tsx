@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +33,7 @@ export function BotForm({ bot, onBack, onSave }: BotFormProps) {
   
   // Configuration state
   const [maxActions, setMaxActions] = useState(bot?.config.maxActions || 100);
-  const [proxyType, setProxyType] = useState(bot?.config.proxy?.type || "none");
+  const [proxyType, setProxyType] = useState<"http" | "socks" | "none">(bot?.config.proxy?.type || "none");
   const [proxyUrl, setProxyUrl] = useState(bot?.config.proxy?.url || "");
   
   // Target URLs state
@@ -310,7 +309,10 @@ export function BotForm({ bot, onBack, onSave }: BotFormProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="type">Тип бота *</Label>
-                    <Select value={type} onValueChange={(value) => setType(value as BotType)}>
+                    <Select 
+                      value={type} 
+                      onValueChange={(value) => setType(value as BotType)}
+                    >
                       <SelectTrigger id="type">
                         <SelectValue placeholder="Выберите тип бота" />
                       </SelectTrigger>
@@ -381,14 +383,17 @@ export function BotForm({ bot, onBack, onSave }: BotFormProps) {
                   
                   <div className="space-y-2">
                     <Label htmlFor="proxyType">Тип прокси</Label>
-                    <Select value={proxyType} onValueChange={setProxyType}>
+                    <Select 
+                      value={proxyType} 
+                      onValueChange={(value: "http" | "socks" | "none") => setProxyType(value)}
+                    >
                       <SelectTrigger id="proxyType">
                         <SelectValue placeholder="Выберите тип прокси" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Без прокси</SelectItem>
                         <SelectItem value="http">HTTP</SelectItem>
                         <SelectItem value="socks">SOCKS</SelectItem>
+                        <SelectItem value="none">Не использовать</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

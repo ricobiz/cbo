@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Robot, AlertCircle, PlayCircle, PauseCircle, Heart, MessageSquare, Activity } from "lucide-react";
+import { Bot, AlertCircle, PlayCircle, PauseCircle, Heart, MessageSquare, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Bot, BotHealthStatus, BotStatus, BotType } from "@/services/types/bot";
 import { BotManagementService } from "@/services/BotManagementService";
@@ -21,8 +20,8 @@ const getBotTypeIcon = (type: BotType) => {
     case 'content': return <MessageSquare className="h-4 w-4" />;
     case 'interaction': return <Heart className="h-4 w-4" />;
     case 'view': return <Activity className="h-4 w-4" />;
-    case 'parser': return <Robot className="h-4 w-4" />;
-    default: return <Robot className="h-4 w-4" />;
+    case 'parser': return <Bot className="h-4 w-4" />;
+    default: return <Bot className="h-4 w-4" />;
   }
 };
 
@@ -105,7 +104,7 @@ function BotCard({ bot, onSelect, onAction }: BotCardProps) {
             <img src={bot.avatar} alt={bot.name} className="w-12 h-12 rounded-full" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-              <Robot className="h-6 w-6 text-muted-foreground" />
+              <Bot className="h-6 w-6 text-muted-foreground" />
             </div>
           )}
         </div>
@@ -347,7 +346,7 @@ export function BotList({ onSelectBot, onNewBot }: BotListProps) {
       ) : filteredBots.length === 0 ? (
         <div className="text-center py-12">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-            <Robot className="h-8 w-8 text-muted-foreground" />
+            <Bot className="h-8 w-8 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-medium">Нет ботов</h3>
           {filter !== 'all' ? (

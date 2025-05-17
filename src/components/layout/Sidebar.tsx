@@ -1,141 +1,162 @@
-
-import { Link, useLocation } from "react-router-dom";
-import {
-  BarChart3,
-  Bot,
-  Command,
-  CreditCard,
-  FileCode,
-  HardDrive,
-  Home,
-  Mail,
-  MessageSquare,
-  Route,
-  Settings,
-  User,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { SidebarTrigger } from "@/components/layout/SidebarTrigger";
+import { useSidebar } from "@/store/SidebarStore";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import {
+  LayoutDashboard,
+  BarChart,
+  Bot,
+  FileText,
+  GitBranch,
+  LineChart,
+  Settings,
+  PanelLeftClose,
+  Terminal,
+} from "lucide-react";
+import { useTranslation } from "@/store/LanguageStore";
 
-interface SidebarProps {
-  className?: string;
-}
-
-export function Sidebar({ className }: SidebarProps) {
-  const { pathname } = useLocation();
+export function Sidebar() {
+  const { isOpen, toggleSidebar } = useSidebar();
+  const { t } = useTranslation();
   
-  const links = [
-    {
-      name: "Дашборд",
-      path: "/",
-      icon: <Home className="h-4 w-4" />,
-    },
-    {
-      name: "Кампании",
-      path: "/campaigns",
-      icon: <Route className="h-4 w-4" />
-    },
-    {
-      name: "Боты",
-      path: "/bots",
-      icon: <Bot className="h-4 w-4" />
-    },
-    {
-      name: "Аккаунты",
-      path: "/accounts",
-      icon: <User className="h-4 w-4" />
-    },
-    {
-      name: "Генератор контента",
-      path: "/content",
-      icon: <MessageSquare className="h-4 w-4" />
-    },
-    {
-      name: "Командный центр",
-      path: "/command",
-      icon: <Command className="h-4 w-4" />
-    },
-    {
-      name: "Аналитика",
-      path: "/analytics",
-      icon: <BarChart3 className="h-4 w-4" />
-    },
-    {
-      name: "Email аккаунты",
-      path: "/email-accounts",
-      icon: <Mail className="h-4 w-4" />
-    },
-    {
-      name: "Прокси",
-      path: "/proxy",
-      icon: <HardDrive className="h-4 w-4" />
-    },
-    {
-      name: "Сценарии",
-      path: "/scenarios",
-      icon: <FileCode className="h-4 w-4" />
-    },
-    {
-      name: "Тарифы",
-      path: "/billing",
-      icon: <CreditCard className="h-4 w-4" />
-    },
-    {
-      name: "Настройки",
-      path: "/settings",
-      icon: <Settings className="h-4 w-4" />
-    },
-  ];
-
   return (
-    <div className={cn("min-h-screen border-r bg-sidebar", className)}>
-      <ScrollArea className="h-full overflow-y-auto pt-5 pb-12">
-        <div className="px-4">
-          <Link to="/" className="flex h-10 items-center justify-start px-2">
-            <span className="font-semibold text-xl flex items-center text-sidebar-foreground">
-              <Bot className="h-6 w-6 mr-2" />
-              AutoPromo
-            </span>
-          </Link>
-        </div>
-        <div className="space-y-4 py-4">
-          <div className="px-4 py-2">
-            <h2 className="mb-2 text-sm font-medium text-sidebar-foreground">Навигация</h2>
-            <div className="space-y-1">
-              {links.map((link) => (
-                <Button
-                  key={link.path}
-                  variant={pathname === link.path ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start",
-                    pathname === link.path
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground font-normal hover:bg-sidebar-accent/50"
-                  )}
-                  asChild
-                >
-                  <Link to={link.path}>
-                    {link.icon}
-                    <span className="ml-2">{link.name}</span>
-                  </Link>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="py-4">
-          <Separator className="bg-sidebar-border" />
-          <div className="px-4 flex justify-between items-center py-3">
-            <div className="text-sm text-sidebar-foreground opacity-70">
-              © 2025 AutoPromo
-            </div>
-            <ThemeToggle />
-          </div>
-        </div>
-      </ScrollArea>
-    </div>
+    <aside
+      className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-background transition-transform duration-300 ease-in-out ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      } md:translate-x-0`}
+    >
+      <div className="flex h-14 items-center border-b px-4">
+        <Link to="/" className="flex items-center gap-2">
+          <Bot className="h-6 w-6 text-primary" />
+          <span className="font-bold">AI-IaaS</span>
+        </Link>
+      </div>
+      <nav className="flex-1 overflow-auto p-2">
+        <ul className="grid gap-1">
+          <li>
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>{t('dashboard')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/campaigns"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <BarChart className="h-4 w-4" />
+              <span>{t('campaigns')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/bots"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <Bot className="h-4 w-4" />
+              <span>{t('bots')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/content"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <FileText className="h-4 w-4" />
+              <span>{t('content')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/scenarios"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <GitBranch className="h-4 w-4" />
+              <span>{t('scenarios')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/analytics"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <LineChart className="h-4 w-4" />
+              <span>{t('analytics')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/command"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <Terminal className="h-4 w-4" />
+              <span>{t('command')}</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent",
+                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )
+              }
+            >
+              <Settings className="h-4 w-4" />
+              <span>{t('settings')}</span>
+            </NavLink>
+          </li>
+        </ul>
+      </nav>
+      <div className="border-t p-2">
+        <button
+          onClick={toggleSidebar}
+          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent md:hidden"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+          <span>Свернуть</span>
+        </button>
+      </div>
+    </aside>
   );
 }

@@ -1,50 +1,31 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useMediaQuery } from "usehooks-ts";
 
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { Menu, PanelLeft, ChevronRight } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { SidebarTrigger } from "@/components/layout/SidebarTrigger";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserMenu } from "@/components/UserMenu";
+import { Bot } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher/LanguageSwitcher";
+import { useTranslation } from "@/store/LanguageStore";
 
-interface HeaderProps {
-  toggleSidebar: () => void;
-  isSidebarCollapsed: boolean;
-}
-
-const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
-  const isMobile = useIsMobile();
+export function Header() {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const { t } = useTranslation();
 
   return (
-    <header className="border-b bg-background p-4 flex items-center justify-between sticky top-0 z-20">
-      <div className="flex items-center gap-4">
-        {/* Sidebar toggle button - always visible and prominent */}
-        <Button 
-          variant="secondary" 
-          size="icon" 
-          onClick={toggleSidebar} 
-          className="flex items-center justify-center"
-          aria-label={isSidebarCollapsed ? "Открыть меню" : "Закрыть меню"}
-          title={isSidebarCollapsed ? "Открыть меню" : "Закрыть меню"}
-        >
-          {isMobile || isSidebarCollapsed ? 
-            <Menu className="h-5 w-5" /> : 
-            <PanelLeft className="h-5 w-5" />
-          }
-        </Button>
-        
-        <div className="relative md:flex hidden">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search..."
-            className="w-full rounded-md border bg-background px-8 py-2 text-sm"
-          />
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex items-center justify-between h-14">
+        <div className="flex items-center gap-2">
+          {isMobile && <SidebarTrigger />}
+          <h1 className="text-lg font-semibold">{t('dashboard')}</h1>
         </div>
-      </div>
-      <div className="flex items-center gap-4">
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </div>
     </header>
   );
-};
-
-export default Header;
+}
