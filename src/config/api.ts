@@ -1,7 +1,8 @@
 
 // Конфигурация API эндпоинтов
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8000', // URL вашего FastAPI бэкенда
+  // Use environment variable if available, otherwise fallback to localhost
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   ENDPOINTS: {
     BOTS: '/bots',
     CAMPAIGNS: '/campaigns',

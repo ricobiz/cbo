@@ -8,13 +8,17 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { apiService } from "@/services/api/ApiService";
 import { API_CONFIG, DEFAULT_OFFLINE_MODE } from "@/config/api";
-import { Globe, Server, CloudOff } from "lucide-react";
+import { Globe, Server, CloudOff, RotateCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 export function ApiConnectionSettings() {
   const [apiUrl, setApiUrl] = useState(API_CONFIG.BASE_URL);
   const [offlineMode, setOfflineMode] = useState(DEFAULT_OFFLINE_MODE);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [apiVersion, setApiVersion] = useState<string | null>(null);
+  const [systemInfo, setSystemInfo] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     // При загрузке компонента проверяем текущие настройки
@@ -25,23 +29,39 @@ export function ApiConnectionSettings() {
   const checkConnection = async () => {
     if (offlineMode) {
       setConnectionStatus('disconnected');
+      setApiVersion(null);
+      setSystemInfo(null);
       return;
     }
 
     setConnectionStatus('checking');
+    setIsConnecting(true);
     
     try {
-      // Проверяем соединение с API
-      await fetch(`${apiUrl}/health`, { 
+      // Проверяем соединение с API и получаем информацию
+      const response = await fetch(`${apiUrl}/health`, { 
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal: AbortSignal.timeout(5000) 
       });
       
-      setConnectionStatus('connected');
+      if (response.ok) {
+        const data = await response.json();
+        setConnectionStatus('connected');
+        setApiVersion(data.version || null);
+        setSystemInfo(data.system || null);
+      } else {
+        setConnectionStatus('disconnected');
+        setApiVersion(null);
+        setSystemInfo(null);
+      }
     } catch (error) {
       console.error("API connection error:", error);
       setConnectionStatus('disconnected');
+      setApiVersion(null);
+      setSystemInfo(null);
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -134,26 +154,54 @@ export function ApiConnectionSettings() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-          {connectionStatus === 'connected' ? (
-            <>
-              <Globe className="h-5 w-5 text-green-500" />
-              <span className="text-green-500 font-medium">Подключено к API</span>
-            </>
-          ) : connectionStatus === 'checking' ? (
-            <>
-              <Globe className="h-5 w-5 text-amber-500 animate-pulse" />
-              <span className="text-amber-500 font-medium">Проверка подключения...</span>
-            </>
-          ) : (
-            <>
-              <CloudOff className="h-5 w-5 text-gray-500" />
-              <span className="text-gray-500 font-medium">
-                {offlineMode ? "Оффлайн режим" : "Нет подключения к API"}
-              </span>
-            </>
-          )}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+          <div className="flex items-center gap-2">
+            {connectionStatus === 'connected' ? (
+              <>
+                <Globe className="h-5 w-5 text-green-500" />
+                <span className="text-green-500 font-medium">Подключено к API</span>
+                {apiVersion && (
+                  <Badge variant="outline" className="ml-2">v{apiVersion}</Badge>
+                )}
+              </>
+            ) : connectionStatus === 'checking' ? (
+              <>
+                <Globe className="h-5 w-5 text-amber-500 animate-pulse" />
+                <span className="text-amber-500 font-medium">Проверка подключения...</span>
+              </>
+            ) : (
+              <>
+                <CloudOff className="h-5 w-5 text-gray-500" />
+                <span className="text-gray-500 font-medium">
+                  {offlineMode ? "Оффлайн режим" : "Нет подключения к API"}
+                </span>
+              </>
+            )}
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={checkConnection}
+            disabled={isConnecting || offlineMode}
+          >
+            <RotateCw className={`h-4 w-4 ${isConnecting ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
+        
+        {connectionStatus === 'connected' && systemInfo && (
+          <div className="mt-4 pt-4 border-t">
+            <h3 className="text-sm font-semibold">Информация о сервере:</h3>
+            <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+              {Object.entries(systemInfo).map(([key, value]) => (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="text-muted-foreground capitalize">{key}:</span>
+                  <span className="font-mono">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
