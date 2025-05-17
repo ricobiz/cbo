@@ -19,7 +19,7 @@ interface CampaignDetailsProps {
   description: string;
   platform: string;
   progress: number;
-  status: "active" | "paused" | "completed" | "scheduled";
+  status: "active" | "paused" | "completed" | "scheduled" | string;
   startDate: string;
   endDate: string;
   target: {
@@ -60,6 +60,8 @@ export function CampaignDetails({
         return <Badge variant="secondary">Completed</Badge>;
       case "scheduled":
         return <Badge variant="outline">Scheduled</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 

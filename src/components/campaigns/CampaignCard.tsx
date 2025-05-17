@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, Rocket, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,7 +155,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
         description={campaign.type === "promotion" ? "Кампания продвижения" : "Кампания роста"}
         platform={campaign.platform}
         progress={campaign.progress}
-        status={campaign.status as "active" | "paused" | "completed" | "scheduled"}
+        status={campaign.status}
         startDate={campaign.startDate}
         endDate={campaign.endDate}
         target={{
