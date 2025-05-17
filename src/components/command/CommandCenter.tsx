@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { processAICommand } from "@/services/AICommandService";
 import { BotType } from "@/services/BotService";
 import { CommandListener } from "./CommandListener";
-import { externalAPIService } from "@/services/ExternalAPIService";
+import { externalAPIService } from "@/services/external-api";
 import { useNavigate } from "react-router-dom";
 import { useBotStore } from "@/store/BotStore";
 

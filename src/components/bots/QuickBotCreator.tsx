@@ -22,7 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Bot, X, Settings, AlertTriangle } from "lucide-react";
 import { botService } from "@/services/BotService";
 import { useBotStore } from "@/store/BotStore";
-import { externalAPIService } from "@/services/ExternalAPIService";
+import { externalAPIService } from "@/services/external-api";
 import { proxyService } from "@/services/ProxyService";
 
 interface QuickBotCreatorProps {

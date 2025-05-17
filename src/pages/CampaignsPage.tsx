@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { PlusCircle, ClipboardList, Calendar, Search, ExternalLink } from "lucid
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CampaignCard } from "@/components/campaigns/CampaignCard";
-import { externalAPIService } from "@/services/ExternalAPIService";
+import { externalAPIService } from "@/services/external-api";
 
 const CampaignsPage = () => {
   useEffect(() => {

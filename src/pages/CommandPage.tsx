@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Bot, Globe, Command, MessageSquare } from "lucide-react";
 import { ApiSettings } from "@/components/settings/ApiSettings";
 import { useToast } from "@/components/ui/use-toast";
-import { externalAPIService } from "@/services/ExternalAPIService";
+import { externalAPIService } from "@/services/external-api";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const CommandPage = () => {

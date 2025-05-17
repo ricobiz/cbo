@@ -1,5 +1,5 @@
 import { botService, BotConfig, BotProxy, BotSchedule, BotType } from './BotService';
-import { externalAPIService } from './ExternalAPIService';
+import { externalAPIService } from './external-api';
 import { useBotStore } from '@/store/BotStore';
 
 interface AICommandResult {
@@ -319,7 +319,7 @@ async function setupBrowserUseSession(botId: string, task: BotTask): Promise<voi
         botService.addLog(botId, "Запуск сценария прослушивания...");
         break;
       case 'view':
-        botService.addLog(botId, "Запуск сценария пр��смотра...");
+        botService.addLog(botId, "Запуск сценария просмотра...");
         break;
       case 'like':
         botService.addLog(botId, "Запуск сценария лайков...");
@@ -449,13 +449,73 @@ function generateTaskDescription(platform: string, action: string, count: number
 }
 
 function generateSuccessMessage(task: BotTask, botsCreated: number): string {
-  // ... keep existing code (generateSuccessMessage function)
-  return "";
+  const platformMap: Record<string, string> = {
+    "spotify": "Spotify",
+    "youtube": "YouTube",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "facebook": "Facebook",
+    "twitter": "Twitter/X",
+    "telegram": "Telegram",
+    "vk": "ВКонтакте",
+    "linkedin": "LinkedIn",
+    "reddit": "Reddit",
+    "pinterest": "Pinterest",
+    "twitch": "Twitch",
+    "discord": "Discord",
+    "medium": "Medium",
+    "clubhouse": "Clubhouse",
+    "soundcloud": "SoundCloud",
+    "snapchat": "Snapchat"
+  };
+  
+  const actionMap: Record<string, { verb: string, noun: string }> = {
+    "listen": { verb: "прослушиваний", noun: "прослушиваний" },
+    "view": { verb: "просмотров", noun: "просмотров" },
+    "like": { verb: "лайков", noun: "лайков" },
+    "comment": { verb: "комментариев", noun: "комментариев" },
+    "follow": { verb: "подписок", noun: "подписчиков" },
+    "generate": { verb: "контента", noun: "публикаций" },
+    "subscribe": { verb: "подписок", noun: "подписчиков" },
+    "react": { verb: "реакций", noun: "реакций" },
+    "parse": { verb: "сбора данных", noun: "записей" }
+  };
+  
+  const platformName = platformMap[task.targetPlatform] || task.targetPlatform;
+  const { verb, noun } = actionMap[task.targetAction] || { verb: "действий", noun: "действий" };
+  
+  if (botsCreated === 1) {
+    return `Успешно создан 1 бот для набора ${task.targetCount} ${noun} на ${platformName}.`;
+  } else {
+    return `Успешно создано ${botsCreated} ботов для набора ${task.targetCount} ${noun} на ${platformName}.`;
+  }
 }
 
 function estimateDuration(count: number, action: string): number {
-  // ... keep existing code (estimateDuration function)
-  return 0;
+  const baseDuration = 60; // minutes
+  let duration = baseDuration;
+  
+  switch (action) {
+    case "listen":
+      duration = count / 2; // 2 listens per minute
+      break;
+    case "view":
+      duration = count / 5; // 5 views per minute
+      break;
+    case "like":
+      duration = count / 10; // 10 likes per minute
+      break;
+    case "comment":
+      duration = count * 2; // 2 minutes per comment
+      break;
+    case "follow":
+      duration = count / 5; // 5 follows per minute
+      break;
+    default:
+      duration = baseDuration;
+  }
+  
+  return duration / 60; // Convert to hours
 }
 
 function getActionName(action: string): string {
@@ -475,16 +535,34 @@ function getActionName(action: string): string {
 }
 
 function generateBotConfig(task: BotTask): BotConfig {
-  // ... keep existing code (generateBotConfig function)
-  return {} as BotConfig;
+  return {
+    headless: true,
+    retries: 3,
+    proxyEnabled: true,
+    notificationsEnabled: true,
+    maxRuntime: task.targetDuration || 24,
+    actionsPerSession: task.targetCount,
+    randomizeActions: true,
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  };
 }
 
 function generateBotSchedule(task: BotTask): BotSchedule {
-  // ... keep existing code (generateBotSchedule function)
-  return {} as BotSchedule;
+  return {
+    enabled: true,
+    startTime: new Date().toISOString(),
+    endTime: new Date(Date.now() + (task.targetDuration || 24) * 60 * 60 * 1000).toISOString(),
+    repeatInterval: "daily",
+    jitter: 30
+  };
 }
 
 function generateBotProxy(task: BotTask): BotProxy {
-  // ... keep existing code (generateBotProxy function)
-  return {} as BotProxy;
+  return {
+    enabled: true,
+    type: "rotating",
+    country: "any",
+    failoverEnabled: true,
+    failoverType: "restart"
+  };
 }
