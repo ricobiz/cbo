@@ -1,62 +1,38 @@
 
 import logging
 import sys
-from loguru import logger
+from typing import Optional
 
-# Configure loguru logger
-logger.remove()  # Remove default handler
-logger.add(
-    sys.stdout,
-    colorize=True,
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-    level="INFO"
-)
-logger.add(
-    "logs/app.log",
-    rotation="10 MB",
-    retention="1 week",
-    compression="zip",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
-    level="DEBUG"
-)
-
-# Create a class to intercept standard library logging
-class InterceptHandler(logging.Handler):
-    def emit(self, record):
-        # Get corresponding Loguru level if it exists
-        try:
-            level = logger.level(record.levelname).name
-        except ValueError:
-            level = record.levelno
-
-        # Find caller from where originated the logged message
-        frame, depth = logging.currentframe(), 2
-        while frame.f_code.co_filename == logging.__file__:
-            frame = frame.f_back
-            depth += 1
-
-        logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage()
-        )
-
-def setup_logging():
-    # Intercept all standard library logging
-    logging.basicConfig(handlers=[InterceptHandler()], level=0)
+def setup_logger(name: str = "orchestrator", log_level: Optional[str] = None) -> logging.Logger:
+    """
+    Set up logger with specified configuration
+    """
+    # Determine log level
+    level_map = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL
+    }
     
-    # Explicitly set levels for specific loggers
-    for logger_name in [
-        "uvicorn",
-        "uvicorn.error",
-        "uvicorn.access",
-        "fastapi",
-        "sqlalchemy.engine",
-        "sqlalchemy.pool",
-    ]:
-        logging.getLogger(logger_name).handlers = [InterceptHandler()]
-        logging.getLogger(logger_name).propagate = False
-
-def get_logger(name):
-    """
-    Get a logger with the specified name
-    """
-    return logger.bind(name=name)
+    level = level_map.get(log_level, logging.INFO)
+    
+    # Create logger
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    
+    # Create console handler with formatting
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(level)
+    
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    handler.setFormatter(formatter)
+    
+    # Add handler to logger
+    logger.addHandler(handler)
+    
+    return logger

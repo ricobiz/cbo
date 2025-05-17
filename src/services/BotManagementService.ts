@@ -1,5 +1,5 @@
-
 import { Bot, BotType, BotPlatform, BotStatus, BotHealthStatus, BotFilter, BotActivity } from "./types/bot";
+import { ExternalAPIService } from "./external-api/ExternalAPIService";
 
 /**
  * Service for Bot Management
@@ -10,10 +10,18 @@ export class BotManagementService {
   /**
    * Get all bots from storage
    */
-  static getAllBots(): Bot[] {
+  static async getAllBots(): Promise<Bot[]> {
     try {
-      const bots = localStorage.getItem(this.STORAGE_KEY);
-      return bots ? JSON.parse(bots) : this.generateDemoBots();
+      // Try to fetch from API first
+      try {
+        const bots = await ExternalAPIService.makeRequest<Bot[]>('/bots');
+        return bots;
+      } catch (apiError) {
+        console.warn("Could not fetch bots from API, falling back to localStorage", apiError);
+        // Fall back to localStorage if API is not available
+        const bots = localStorage.getItem(this.STORAGE_KEY);
+        return bots ? JSON.parse(bots) : this.generateDemoBots();
+      }
     } catch (error) {
       console.error("Error retrieving bots:", error);
       return this.generateDemoBots();
@@ -23,9 +31,14 @@ export class BotManagementService {
   /**
    * Get a bot by ID
    */
-  static getBotById(id: string): Bot | undefined {
-    const bots = this.getAllBots();
-    return bots.find(bot => bot.id === id);
+  static async getBotById(id: string): Promise<Bot | undefined> {
+    try {
+      return await ExternalAPIService.makeRequest<Bot>(`/bots/${id}`);
+    } catch (apiError) {
+      console.warn(`Could not fetch bot ${id} from API, falling back to localStorage`, apiError);
+      const bots = await this.getAllBots();
+      return bots.find(bot => bot.id === id);
+    }
   }
 
   /**
@@ -65,42 +78,62 @@ export class BotManagementService {
   /**
    * Save a bot
    */
-  static saveBot(bot: Bot): Bot {
-    const bots = this.getAllBots();
-    const existingIndex = bots.findIndex(b => b.id === bot.id);
-    
-    if (existingIndex >= 0) {
-      // Update existing bot
-      bots[existingIndex] = {
-        ...bot,
-        updatedAt: new Date().toISOString()
-      };
-    } else {
-      // Add new bot
-      bots.push({
-        ...bot,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+  static async saveBot(bot: Bot): Promise<Bot> {
+    try {
+      if (bot.id) {
+        // Update existing bot
+        return await ExternalAPIService.makeRequest<Bot>(`/bots/${bot.id}`, 'PUT', bot);
+      } else {
+        // Create new bot
+        return await ExternalAPIService.makeRequest<Bot>('/bots', 'POST', bot);
+      }
+    } catch (apiError) {
+      console.warn("Could not save bot to API, falling back to localStorage", apiError);
+      
+      const bots = await this.getAllBots();
+      const existingIndex = bots.findIndex(b => b.id === bot.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing bot
+        bots[existingIndex] = {
+          ...bot,
+          updatedAt: new Date().toISOString()
+        };
+      } else {
+        // Add new bot
+        bots.push({
+          ...bot,
+          id: bot.id || crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(bots));
+      return bot;
     }
-    
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(bots));
-    return bot;
   }
 
   /**
    * Delete a bot
    */
-  static deleteBot(id: string): boolean {
-    const bots = this.getAllBots();
-    const filteredBots = bots.filter(bot => bot.id !== id);
-    
-    if (filteredBots.length < bots.length) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filteredBots));
+  static async deleteBot(id: string): Promise<boolean> {
+    try {
+      await ExternalAPIService.makeRequest(`/bots/${id}`, 'DELETE');
       return true;
+    } catch (apiError) {
+      console.warn(`Could not delete bot ${id} from API, falling back to localStorage`, apiError);
+      
+      const bots = await this.getAllBots();
+      const filteredBots = bots.filter(bot => bot.id !== id);
+      
+      if (filteredBots.length < bots.length) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filteredBots));
+        return true;
+      }
+      
+      return false;
     }
-    
-    return false;
   }
 
   /**

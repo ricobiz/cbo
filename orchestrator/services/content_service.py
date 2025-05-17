@@ -1,366 +1,265 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from fastapi import BackgroundTasks
-from db.models import Content as ContentModel
-from schemas.content import (
-    ContentCreate, ContentGenerationRequest,
-    TextGenerationRequest, ImageGenerationRequest, AudioGenerationRequest,
-    ContentGenerationResponse
-)
+from sqlalchemy.future import select
+from typing import List, Dict, Any, Optional
+from db.models import Content
+from schemas.content import ContentCreate, TextGenerationRequest, ImageGenerationRequest, AudioGenerationRequest, ContentGenerationRequest
 import logging
-from httpx import AsyncClient
-import os
 from datetime import datetime
+from fastapi import BackgroundTasks
+from celery_app import app as celery_app
+import os
+import httpx
 
 logger = logging.getLogger(__name__)
 
-# This would be replaced with actual AI service integrations
-MOCK_AI_TEXT_URL = "https://api.example.com/ai/text"
-MOCK_AI_IMAGE_URL = "https://api.example.com/ai/image" 
-MOCK_AI_AUDIO_URL = "https://api.example.com/ai/audio"
+# Import OpenRouter service for text generation
+class OpenRouterService:
+    """Simple OpenRouter service for text generation"""
+    
+    @staticmethod
+    async def generate_text(prompt: str) -> str:
+        """Generate text using OpenRouter API"""
+        # In a real implementation, this would call the OpenRouter API
+        # For now, we'll just return a dummy response
+        return f"Generated text based on: {prompt}"
 
-async def create_content(session: AsyncSession, content: ContentCreate):
-    """
-    Create new content
-    """
-    db_content = ContentModel(
-        type=content.type,
-        title=content.title,
-        description=content.description,
-        content=content.content,
-        media_url=content.media_url,
-        platform=content.platform,
-        campaign_id=content.campaign_id,
-        metadata=content.metadata
-    )
-    
-    session.add(db_content)
-    await session.commit()
-    await session.refresh(db_content)
-    
-    return db_content
+open_router_service = OpenRouterService()
 
-async def get_content(session: AsyncSession, content_id: int):
-    """
-    Get content by ID
-    """
-    result = await session.execute(
-        select(ContentModel).where(ContentModel.id == content_id)
-    )
-    return result.scalars().first()
-
-async def get_all_content(session: AsyncSession, skip: int = 0, limit: int = 100):
-    """
-    Get all content
-    """
-    result = await session.execute(
-        select(ContentModel).offset(skip).limit(limit)
-    )
-    return result.scalars().all()
-
-async def generate_text(session: AsyncSession, request: TextGenerationRequest, background_tasks: BackgroundTasks):
-    """
-    Generate text content
-    """
-    # Create a placeholder content entry
-    content = ContentModel(
-        type="text",
-        title=f"Generated Text: {request.prompt[:30]}...",
-        description=request.prompt,
-        platform=request.platform,
-        campaign_id=request.campaign_id,
-        metadata={
-            "status": "processing",
-            "parameters": request.parameters or {},
-            "tone": request.tone,
-            "length": request.length
-        }
-    )
-    
-    session.add(content)
-    await session.commit()
-    await session.refresh(content)
-    
-    # Add the generation task to background tasks
-    background_tasks.add_task(
-        process_text_generation,
-        content.id,
-        request.prompt,
-        request.length,
-        request.tone,
-        request.parameters
-    )
-    
-    return ContentGenerationResponse(
-        id=content.id,
-        type="text",
-        created_at=content.created_at
-    )
-
-async def generate_image(session: AsyncSession, request: ImageGenerationRequest, background_tasks: BackgroundTasks):
-    """
-    Generate image content
-    """
-    # Create a placeholder content entry
-    content = ContentModel(
-        type="image",
-        title=f"Generated Image: {request.prompt[:30]}...",
-        description=request.prompt,
-        platform=request.platform,
-        campaign_id=request.campaign_id,
-        metadata={
-            "status": "processing",
-            "parameters": request.parameters or {},
-            "width": request.width,
-            "height": request.height,
-            "style": request.style
-        }
-    )
-    
-    session.add(content)
-    await session.commit()
-    await session.refresh(content)
-    
-    # Add the generation task to background tasks
-    background_tasks.add_task(
-        process_image_generation,
-        content.id,
-        request.prompt,
-        request.width,
-        request.height,
-        request.style,
-        request.parameters
-    )
-    
-    return ContentGenerationResponse(
-        id=content.id,
-        type="image",
-        created_at=content.created_at
-    )
-
-async def generate_audio(session: AsyncSession, request: AudioGenerationRequest, background_tasks: BackgroundTasks):
-    """
-    Generate audio content
-    """
-    # Create a placeholder content entry
-    content = ContentModel(
-        type="audio",
-        title=f"Generated Audio: {request.prompt[:30]}...",
-        description=request.prompt,
-        platform=request.platform,
-        campaign_id=request.campaign_id,
-        metadata={
-            "status": "processing",
-            "parameters": request.parameters or {},
-            "duration": request.duration,
-            "voice": request.voice
-        }
-    )
-    
-    session.add(content)
-    await session.commit()
-    await session.refresh(content)
-    
-    # Add the generation task to background tasks
-    background_tasks.add_task(
-        process_audio_generation,
-        content.id,
-        request.prompt,
-        request.duration,
-        request.voice,
-        request.parameters
-    )
-    
-    return ContentGenerationResponse(
-        id=content.id,
-        type="audio",
-        created_at=content.created_at
-    )
-
-# Background tasks for content generation
-# In a production environment, these would be Celery tasks
-
-async def process_text_generation(content_id: int, prompt: str, length: int, tone: str, parameters: dict = None):
-    """
-    Process text generation in the background
-    """
+async def create_content(session: AsyncSession, content_data: ContentCreate) -> Dict[str, Any]:
+    """Create new content"""
     try:
-        # Connect to the database
-        from db.database import async_session
-        from sqlalchemy import update
+        new_content = Content(
+            type=content_data.type,
+            title=content_data.title,
+            description=content_data.description,
+            content=content_data.content,
+            media_url=content_data.media_url,
+            campaign_id=content_data.campaign_id,
+            platform=content_data.platform,
+            metadata=content_data.metadata
+        )
         
-        # This would call an external AI service API
-        # For now, we'll mock it
-        logger.info(f"Generating text with prompt: {prompt}")
+        session.add(new_content)
+        await session.commit()
+        await session.refresh(new_content)
         
-        # Simulate API call
-        # async with AsyncClient() as client:
-        #     response = await client.post(
-        #         MOCK_AI_TEXT_URL,
-        #         json={
-        #             "prompt": prompt,
-        #             "length": length,
-        #             "tone": tone,
-        #             "parameters": parameters or {}
-        #         }
-        #     )
-        #     result = response.json()
+        # Convert to dict for serialization
+        content_dict = {
+            "id": new_content.id,
+            "type": new_content.type,
+            "title": new_content.title,
+            "description": new_content.description,
+            "content": new_content.content,
+            "media_url": new_content.media_url,
+            "campaign_id": new_content.campaign_id,
+            "platform": new_content.platform,
+            "metadata": new_content.metadata,
+            "created_at": new_content.created_at.isoformat() if new_content.created_at else None
+        }
         
-        # Mock response
-        generated_text = f"This is a generated text based on the prompt: '{prompt}'. "
-        generated_text += "It simulates AI-generated content for the Influence Flux Automator. "
-        generated_text += "In a real implementation, this would be created by an actual AI service."
+        return content_dict
+    except Exception as e:
+        logger.error(f"Error creating content: {str(e)}")
+        await session.rollback()
+        raise
+
+async def get_content(session: AsyncSession, content_id: int) -> Optional[Dict[str, Any]]:
+    """Get content by ID"""
+    try:
+        result = await session.execute(select(Content).filter(Content.id == content_id))
+        content = result.scalars().first()
+        
+        if not content:
+            return None
+            
+        # Convert to dict for serialization
+        return {
+            "id": content.id,
+            "type": content.type,
+            "title": content.title,
+            "description": content.description,
+            "content": content.content,
+            "media_url": content.media_url,
+            "campaign_id": content.campaign_id,
+            "platform": content.platform,
+            "metadata": content.metadata,
+            "created_at": content.created_at.isoformat() if content.created_at else None
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving content: {str(e)}")
+        raise
+
+async def get_all_content(session: AsyncSession, skip: int, limit: int) -> List[Dict[str, Any]]:
+    """Get all content"""
+    try:
+        result = await session.execute(select(Content).offset(skip).limit(limit))
+        contents = result.scalars().all()
+        
+        # Convert to list of dicts for serialization
+        content_list = []
+        for content in contents:
+            content_list.append({
+                "id": content.id,
+                "type": content.type,
+                "title": content.title,
+                "description": content.description,
+                "content": content.content,
+                "media_url": content.media_url,
+                "campaign_id": content.campaign_id,
+                "platform": content.platform,
+                "metadata": content.metadata,
+                "created_at": content.created_at.isoformat() if content.created_at else None
+            })
+            
+        return content_list
+    except Exception as e:
+        logger.error(f"Error retrieving content: {str(e)}")
+        raise
+
+async def generate_text(session: AsyncSession, request: TextGenerationRequest, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+    """Generate text content"""
+    try:
+        # Create a new content record
+        content_data = ContentCreate(
+            type="text",
+            title=f"Generated Text - {datetime.now().isoformat()}",
+            description=request.prompt[:100] + "..." if len(request.prompt) > 100 else request.prompt,
+            content="Generating...",  # Placeholder until generation is complete
+            platform=request.platform,
+            campaign_id=request.campaign_id,
+            metadata={
+                "prompt": request.prompt,
+                "parameters": request.parameters,
+                "length": request.length,
+                "tone": request.tone
+            }
+        )
+        
+        new_content = await create_content(session, content_data)
+        
+        # Generate content asynchronously using OpenRouter
+        # In a real implementation, this would be a Celery task
+        task = celery_app.send_task(
+            'tasks.content_tasks.generate_text',
+            args=[new_content["id"], request.prompt, request.dict()]
+        )
+        
+        # For demo purposes, also generate text synchronously
+        generated_text = await open_router_service.generate_text(request.prompt)
         
         # Update the content with the generated text
-        async with async_session() as session:
-            await session.execute(
-                update(ContentModel)
-                .where(ContentModel.id == content_id)
-                .values(
-                    content=generated_text,
-                    metadata={
-                        "status": "completed",
-                        "parameters": parameters or {},
-                        "tone": tone,
-                        "length": length,
-                        "completed_at": datetime.now().isoformat()
-                    }
-                )
-            )
+        result = await session.execute(select(Content).filter(Content.id == new_content["id"]))
+        content = result.scalars().first()
+        if content:
+            content.content = generated_text
             await session.commit()
+            await session.refresh(content)
         
-        logger.info(f"Text generation completed for content ID: {content_id}")
+        return {
+            "id": new_content["id"],
+            "type": "text",
+            "content": generated_text,
+            "created_at": new_content["created_at"],
+            "task_id": task.id
+        }
     except Exception as e:
-        logger.error(f"Error in text generation: {str(e)}")
-        
-        # Update content with error status
-        try:
-            async with async_session() as session:
-                await session.execute(
-                    update(ContentModel)
-                    .where(ContentModel.id == content_id)
-                    .values(
-                        metadata={
-                            "status": "error",
-                            "error": str(e),
-                            "completed_at": datetime.now().isoformat()
-                        }
-                    )
-                )
-                await session.commit()
-        except Exception as update_error:
-            logger.error(f"Error updating content status: {str(update_error)}")
+        logger.error(f"Error generating text content: {str(e)}")
+        raise
 
-async def process_image_generation(content_id: int, prompt: str, width: int, height: int, style: str, parameters: dict = None):
-    """
-    Process image generation in the background
-    """
+async def generate_image(session: AsyncSession, request: ImageGenerationRequest, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+    """Generate image content"""
     try:
-        # Connect to the database
-        from db.database import async_session
-        from sqlalchemy import update
+        # Create a new content record
+        content_data = ContentCreate(
+            type="image",
+            title=f"Generated Image - {datetime.now().isoformat()}",
+            description=request.prompt[:100] + "..." if len(request.prompt) > 100 else request.prompt,
+            platform=request.platform,
+            campaign_id=request.campaign_id,
+            metadata={
+                "prompt": request.prompt,
+                "parameters": request.parameters,
+                "width": request.width,
+                "height": request.height,
+                "style": request.style
+            }
+        )
         
-        # This would call an external AI service API
-        # For now, we'll mock it
-        logger.info(f"Generating image with prompt: {prompt}")
+        new_content = await create_content(session, content_data)
         
-        # Mock response - in production this would be a real image URL
-        media_url = "https://placehold.co/600x400?text=AI+Generated+Image"
+        # Generate image asynchronously
+        task = celery_app.send_task(
+            'tasks.content_tasks.generate_image',
+            args=[new_content["id"], request.prompt, request.dict()]
+        )
         
-        # Update the content with the generated image URL
-        async with async_session() as session:
-            await session.execute(
-                update(ContentModel)
-                .where(ContentModel.id == content_id)
-                .values(
-                    media_url=media_url,
-                    metadata={
-                        "status": "completed",
-                        "parameters": parameters or {},
-                        "width": width,
-                        "height": height,
-                        "style": style,
-                        "completed_at": datetime.now().isoformat()
-                    }
-                )
-            )
+        # For demo purposes, return a placeholder image URL
+        placeholder_url = "https://placehold.co/600x400?text=Generating+Image"
+        
+        # Update the content with the placeholder URL
+        result = await session.execute(select(Content).filter(Content.id == new_content["id"]))
+        content = result.scalars().first()
+        if content:
+            content.media_url = placeholder_url
             await session.commit()
+            await session.refresh(content)
         
-        logger.info(f"Image generation completed for content ID: {content_id}")
+        return {
+            "id": new_content["id"],
+            "type": "image",
+            "media_url": placeholder_url,
+            "created_at": new_content["created_at"],
+            "task_id": task.id
+        }
     except Exception as e:
-        logger.error(f"Error in image generation: {str(e)}")
-        
-        # Update content with error status
-        try:
-            async with async_session() as session:
-                await session.execute(
-                    update(ContentModel)
-                    .where(ContentModel.id == content_id)
-                    .values(
-                        metadata={
-                            "status": "error",
-                            "error": str(e),
-                            "completed_at": datetime.now().isoformat()
-                        }
-                    )
-                )
-                await session.commit()
-        except Exception as update_error:
-            logger.error(f"Error updating content status: {str(update_error)}")
+        logger.error(f"Error generating image content: {str(e)}")
+        raise
 
-async def process_audio_generation(content_id: int, prompt: str, duration: int, voice: str, parameters: dict = None):
-    """
-    Process audio generation in the background
-    """
+async def generate_audio(session: AsyncSession, request: AudioGenerationRequest, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+    """Generate audio content"""
     try:
-        # Connect to the database
-        from db.database import async_session
-        from sqlalchemy import update
+        # Create a new content record
+        content_data = ContentCreate(
+            type="audio",
+            title=f"Generated Audio - {datetime.now().isoformat()}",
+            description=request.prompt[:100] + "..." if len(request.prompt) > 100 else request.prompt,
+            platform=request.platform,
+            campaign_id=request.campaign_id,
+            metadata={
+                "prompt": request.prompt,
+                "parameters": request.parameters,
+                "duration": request.duration,
+                "voice": request.voice
+            }
+        )
         
-        # This would call an external AI service API
-        # For now, we'll mock it
-        logger.info(f"Generating audio with prompt: {prompt}")
+        new_content = await create_content(session, content_data)
         
-        # Mock response - in production this would be a real audio URL
-        media_url = "https://example.com/audio/generated-audio.mp3"
+        # Generate audio asynchronously
+        task = celery_app.send_task(
+            'tasks.content_tasks.generate_audio',
+            args=[new_content["id"], request.prompt, request.dict()]
+        )
         
-        # Update the content with the generated audio URL
-        async with async_session() as session:
-            await session.execute(
-                update(ContentModel)
-                .where(ContentModel.id == content_id)
-                .values(
-                    media_url=media_url,
-                    metadata={
-                        "status": "completed",
-                        "parameters": parameters or {},
-                        "duration": duration,
-                        "voice": voice,
-                        "completed_at": datetime.now().isoformat()
-                    }
-                )
-            )
+        # For demo purposes, return a placeholder audio URL
+        placeholder_url = "https://example.com/placeholder-audio.mp3"
+        
+        # Update the content with the placeholder URL
+        result = await session.execute(select(Content).filter(Content.id == new_content["id"]))
+        content = result.scalars().first()
+        if content:
+            content.media_url = placeholder_url
             await session.commit()
+            await session.refresh(content)
         
-        logger.info(f"Audio generation completed for content ID: {content_id}")
+        return {
+            "id": new_content["id"],
+            "type": "audio",
+            "media_url": placeholder_url,
+            "created_at": new_content["created_at"],
+            "task_id": task.id
+        }
     except Exception as e:
-        logger.error(f"Error in audio generation: {str(e)}")
-        
-        # Update content with error status
-        try:
-            async with async_session() as session:
-                await session.execute(
-                    update(ContentModel)
-                    .where(ContentModel.id == content_id)
-                    .values(
-                        metadata={
-                            "status": "error",
-                            "error": str(e),
-                            "completed_at": datetime.now().isoformat()
-                        }
-                    )
-                )
-                await session.commit()
-        except Exception as update_error:
-            logger.error(f"Error updating content status: {str(update_error)}")
+        logger.error(f"Error generating audio content: {str(e)}")
+        raise

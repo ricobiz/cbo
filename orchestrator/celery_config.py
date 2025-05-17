@@ -1,31 +1,26 @@
 
-# Celery Configuration
-broker_url = 'redis://redis:6379/0'
-result_backend = 'redis://redis:6379/0'
+from celery import Celery
+import os
 
-# Task settings
+# Define Celery configurations
+broker_url = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
+result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+
 task_serializer = 'json'
-accept_content = ['json']
 result_serializer = 'json'
+accept_content = ['json']
 timezone = 'UTC'
 enable_utc = True
 
-# Task execution settings
-worker_concurrency = 8
-worker_prefetch_multiplier = 1
-task_acks_late = True
-task_reject_on_worker_lost = True
-task_time_limit = 600  # 10 minutes
-task_soft_time_limit = 500  # Gracefully handle timeouts
-
-# Task routing
+# Task routes
 task_routes = {
-    'tasks.bot_tasks.*': {'queue': 'bots'},
-    'tasks.content_tasks.*': {'queue': 'content'},
-    'tasks.campaign_tasks.*': {'queue': 'campaigns'},
+    'tasks.bot_tasks.*': {'queue': 'bot_tasks'},
+    'tasks.campaign_tasks.*': {'queue': 'campaign_tasks'},
+    'tasks.content_tasks.*': {'queue': 'content_tasks'},
 }
 
-# Logging
-worker_hijack_root_logger = False
-worker_log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-worker_task_log_format = '%(asctime)s - %(name)s - %(levelname)s - %(task_name)s[%(task_id)s] - %(message)s'
+# Task soft time limit (30 minutes)
+task_soft_time_limit = 1800
+
+# Task hard time limit (35 minutes)
+task_time_limit = 2100
