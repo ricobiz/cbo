@@ -91,7 +91,7 @@ const BotsPage = () => {
       </div>
 
       {!ipRotationEnabled && (
-        <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200">
+        <Alert variant="destructive" className="bg-amber-50 text-amber-800 border-amber-200">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>IP Rotation Not Enabled</AlertTitle>
           <AlertDescription>
