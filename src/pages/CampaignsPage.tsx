@@ -129,13 +129,39 @@ const CampaignsPage = () => {
       )}
 
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <Tabs defaultValue="all" className="w-full" onValueChange={setCurrentTab}>
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
           <TabsList>
             <TabsTrigger value="all">Все кампании</TabsTrigger>
             <TabsTrigger value="active">Активные</TabsTrigger>
             <TabsTrigger value="draft">Черновики</TabsTrigger>
             <TabsTrigger value="completed">Завершенные</TabsTrigger>
           </TabsList>
+          
+          <div className="mt-4">
+            {filteredCampaigns.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredCampaigns.map(campaign => (
+                  <CampaignCard key={campaign.id} campaign={campaign} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center py-12">
+                <div className="text-center">
+                  <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-medium">Кампании не найдены</h3>
+                  <p className="text-muted-foreground mt-1">
+                    {searchQuery || filterPlatform !== "all" 
+                      ? "Попробуйте изменить параметры поиска или фильтрации"
+                      : "Создайте новую кампанию чтобы начать работу"}
+                  </p>
+                  <Button className="mt-4">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Создать кампанию
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </Tabs>
 
         <div className="flex gap-2 w-full md:w-auto">
@@ -162,32 +188,6 @@ const CampaignsPage = () => {
           </Select>
         </div>
       </div>
-
-      <TabsContent value={currentTab} className="mt-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredCampaigns.length > 0 ? (
-            filteredCampaigns.map(campaign => (
-              <CampaignCard key={campaign.id} campaign={campaign} />
-            ))
-          ) : (
-            <div className="col-span-full flex justify-center py-12">
-              <div className="text-center">
-                <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-medium">Кампании не найдены</h3>
-                <p className="text-muted-foreground mt-1">
-                  {searchQuery || filterPlatform !== "all" 
-                    ? "Попробуйте изменить параметры поиска или фильтрации"
-                    : "Создайте новую кампанию чтобы начать работу"}
-                </p>
-                <Button className="mt-4">
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Создать кампанию
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </TabsContent>
     </div>
   );
 };

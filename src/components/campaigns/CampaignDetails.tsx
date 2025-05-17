@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Rocket, Users, Zap, BarChart, LineChart, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useState } from "react";
 
 interface CampaignDetailsProps {
   id: string;
@@ -49,6 +50,7 @@ export function CampaignDetails({
   open,
   onOpenChange
 }: CampaignDetailsProps) {
+  const [activeTab, setActiveTab] = useState("overview");
   
   const getStatusBadge = () => {
     switch (status) {
@@ -87,7 +89,7 @@ export function CampaignDetails({
           </div>
         </DialogHeader>
         
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
