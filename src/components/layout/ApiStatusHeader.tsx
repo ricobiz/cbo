@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useConnectionStore } from "@/services/api/ApiConnectionService";
-import { CloudOff } from "lucide-react";
+import { CloudOff, Bell, BellOff } from "lucide-react";
+import { enableApiErrorNotifications, disableApiErrorNotifications } from "@/services/api";
 
 export function ApiStatusHeader() {
   const [offlineMode, setOfflineMode] = useState(apiService.isOfflineMode());
+  const [showNotifications, setShowNotifications] = useState(true);
   const { isConnected, isChecking } = useConnectionStore();
   
   useEffect(() => {
@@ -21,6 +23,10 @@ export function ApiStatusHeader() {
     if (!offlineMode) {
       apiConnectionService.testConnection();
     }
+    
+    // Load notification settings
+    const notificationSetting = localStorage.getItem('apiErrorNotificationsEnabled');
+    setShowNotifications(notificationSetting !== 'false');
   }, [offlineMode]);
   
   const handleToggleOffline = (checked: boolean) => {
@@ -39,8 +45,18 @@ export function ApiStatusHeader() {
       description: checked 
         ? "Application is now using mock data" 
         : "Application is now connecting to backend API",
-      icon: checked ? <CloudOff className="h-4 w-4" /> : undefined
+      icon: checked ? <CloudOff className="h-4 w-4" /> : undefined,
+      id: "offline-mode-toggle"
     });
+  };
+  
+  const handleToggleNotifications = (checked: boolean) => {
+    setShowNotifications(checked);
+    if (checked) {
+      enableApiErrorNotifications();
+    } else {
+      disableApiErrorNotifications();
+    }
   };
   
   return (
@@ -53,6 +69,20 @@ export function ApiStatusHeader() {
         />
         <Label htmlFor="offline-mode" className="text-xs">
           Offline Mode
+        </Label>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <Switch 
+          id="api-notifications"
+          checked={showNotifications}
+          onCheckedChange={handleToggleNotifications}
+        />
+        <Label htmlFor="api-notifications" className="text-xs flex items-center gap-1">
+          {showNotifications ? 
+            <><Bell className="h-3 w-3" /> Уведомления</> : 
+            <><BellOff className="h-3 w-3" /> Уведомления</>
+          }
         </Label>
       </div>
       

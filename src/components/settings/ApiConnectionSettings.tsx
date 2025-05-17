@@ -8,23 +8,26 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { apiService } from "@/services/api/ApiService";
 import { API_CONFIG, DEFAULT_OFFLINE_MODE } from "@/config/api";
-import { Globe, Server, CloudOff, RotateCw } from "lucide-react";
+import { Globe, Server, CloudOff, RotateCw, Bell, BellOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { apiConnectionService, useConnectionStore } from "@/services/api/ApiConnectionService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { enableApiErrorNotifications, disableApiErrorNotifications } from "@/services/api";
 
 export function ApiConnectionSettings() {
   const [apiUrl, setApiUrl] = useState(API_CONFIG.BASE_URL);
   const [offlineMode, setOfflineMode] = useState(DEFAULT_OFFLINE_MODE);
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(true);
   const { isConnected, lastChecked, serverVersion, serverStatus } = useConnectionStore();
 
   useEffect(() => {
     // При загрузке компонента проверяем текущие настройки
     const storedOfflineMode = localStorage.getItem('offlineMode') === 'true';
     const storedApiUrl = localStorage.getItem('apiBaseUrl');
+    const notificationsEnabled = localStorage.getItem('apiErrorNotificationsEnabled');
     
     // Применяем сохраненные настройки
     if (storedApiUrl) {
@@ -32,6 +35,9 @@ export function ApiConnectionSettings() {
     }
     
     setOfflineMode(storedOfflineMode || apiService.isOfflineMode());
+    
+    // Загружаем настройки уведомлений
+    setShowNotifications(notificationsEnabled !== 'false');
     
     // Проверяем наличие ошибок при загрузке страницы
     const connectionErrors = localStorage.getItem('connectionErrors');
@@ -62,8 +68,10 @@ export function ApiConnectionSettings() {
       
       // Если много ошибок подряд, предлагаем включить оффлайн-режим
       if (errors >= 3) {
-        toast.warning("Проблемы с подключением к API", {
-          description: "Рекомендуется включить оффлайн режим до восстановления работы сервера"
+        toast("Проблемы с подключением к API", {
+          description: "Рекомендуется включить оффлайн режим до восстановления работы сервера",
+          id: "connection-error-suggestion",
+          dismissible: true
         });
       }
     } finally {
@@ -81,6 +89,15 @@ export function ApiConnectionSettings() {
     }
   };
 
+  const handleToggleNotifications = (checked: boolean) => {
+    setShowNotifications(checked);
+    if (checked) {
+      enableApiErrorNotifications();
+    } else {
+      disableApiErrorNotifications();
+    }
+  };
+
   const handleSaveApiUrl = async () => {
     setIsConnecting(true);
     
@@ -93,17 +110,20 @@ export function ApiConnectionSettings() {
       
       if (success) {
         toast.success("URL API успешно сохранен", {
-          description: "Настройки применены."
+          description: "Настройки применены.",
+          dismissible: true
         });
       } else {
-        toast.warning("URL сохранен, но соединение не установлено", {
-          description: "Убедитесь, что API сервер доступен."
+        toast("URL сохранен, но соединение не установлено", {
+          description: "Убедитесь, что API сервер доступен.",
+          dismissible: true
         });
       }
     } catch (error) {
       console.error("Failed to save API URL:", error);
       toast.error("Ошибка сохранения URL", {
-        description: "Не удалось сохранить настройки API"
+        description: "Не удалось сохранить настройки API",
+        dismissible: true
       });
     } finally {
       setIsConnecting(false);
@@ -123,7 +143,7 @@ export function ApiConnectionSettings() {
       </CardHeader>
       <CardContent className="space-y-6">
         {hasErrors && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive" className="mb-4" dismissible>
             <AlertTitle>Проблема с подключением к API</AlertTitle>
             <AlertDescription>
               Сервер возвращает ошибки или недоступен. Рекомендуется включить оффлайн режим до восстановления работы сервера.
@@ -142,6 +162,25 @@ export function ApiConnectionSettings() {
             checked={offlineMode}
             onCheckedChange={handleToggleOfflineMode}
           />
+        </div>
+
+        <div className="flex items-center space-x-4 rounded-md border p-4">
+          <div className="flex-1">
+            <h3 className="text-base font-medium">Уведомления об ошибках API</h3>
+            <p className="text-sm text-muted-foreground">
+              Включить или отключить уведомления о проблемах с подключением к API
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {showNotifications ? 
+              <Bell className="h-4 w-4 text-primary" /> : 
+              <BellOff className="h-4 w-4 text-muted-foreground" />
+            }
+            <Switch 
+              checked={showNotifications}
+              onCheckedChange={handleToggleNotifications}
+            />
+          </div>
         </div>
 
         <div className={offlineMode ? "opacity-50 pointer-events-none" : ""}>

@@ -25,15 +25,35 @@ const alertVariants = cva(
 
 const Alert = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-))
+  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants> & { dismissible?: boolean }
+>(({ className, variant, dismissible, children, ...props }, ref) => {
+  const [dismissed, setDismissed] = React.useState(false);
+
+  if (dismissed) return null;
+
+  return (
+    <div
+      ref={ref}
+      role="alert"
+      className={cn(alertVariants({ variant }), className)}
+      {...props}
+    >
+      {children}
+      {dismissible && (
+        <button 
+          onClick={() => setDismissed(true)}
+          className="absolute top-2 right-2 p-1 rounded-full hover:bg-muted/50"
+          aria-label="Закрыть"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+})
 Alert.displayName = "Alert"
 
 const AlertTitle = React.forwardRef<

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MainLayout from './layouts/MainLayout';
@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import BillingPage from "./pages/BillingPage";
 import AdminPage from "./pages/AdminPage";
 import { Toaster } from "sonner";
+import { initApiErrorNotifications } from "./services/api";
 
 // Создаем экземпляр QueryClient с настройками
 const queryClient = new QueryClient({
@@ -36,9 +37,23 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Инициализация настроек API уведомлений при загрузке приложения
+  useEffect(() => {
+    initApiErrorNotifications();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster position="top-right" richColors />
+      <Toaster 
+        position="top-right" 
+        richColors 
+        closeButton={true} // Добавляем кнопку закрытия для всех уведомлений
+        toastOptions={{
+          duration: 5000, // Уменьшаем длительность показа
+          dismissible: true, // Позволяем закрывать все уведомления
+          className: "custom-toast" // Для возможного дополнительного стилизования
+        }}
+      />
       <Router>
         <Routes>
           <Route element={<MainLayout />}>
