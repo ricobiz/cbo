@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
 import { Card } from "@/components/ui/card";
 import { Bot, Settings, Users, Mail, Globe, Shield, ClipboardList } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export function SetupGuideHints() {
+  const location = useLocation();
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({
     createBot: false,
     configureProxy: false,
@@ -13,6 +15,23 @@ export function SetupGuideHints() {
     secureConnection: false,
     createCampaign: false
   });
+
+  // Load completed steps from localStorage on component mount
+  useEffect(() => {
+    const savedSteps = localStorage.getItem('setupGuideCompletedSteps');
+    if (savedSteps) {
+      try {
+        setCompletedSteps(JSON.parse(savedSteps));
+      } catch (e) {
+        console.error("Error parsing saved setup steps:", e);
+      }
+    }
+  }, []);
+
+  // Save completed steps to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('setupGuideCompletedSteps', JSON.stringify(completedSteps));
+  }, [completedSteps]);
 
   const markStepComplete = (step: string) => {
     setCompletedSteps(prev => ({
@@ -23,9 +42,14 @@ export function SetupGuideHints() {
 
   const allStepsCompleted = Object.values(completedSteps).every(Boolean);
 
+  // Hide the setup guide if all steps are completed
   if (allStepsCompleted) {
     return null;
   }
+
+  // Show relevant hints based on current page
+  const isCampaignsPage = location.pathname.includes('/campaigns');
+  const isBotsPage = location.pathname.includes('/bots');
 
   return (
     <Card className="p-4 bg-muted/30">
@@ -38,7 +62,7 @@ export function SetupGuideHints() {
           totalSteps={6}
           completed={completedSteps.createBot}
           onComplete={() => markStepComplete('createBot')}
-          highlightLevel="high"
+          highlightLevel={!isBotsPage ? "medium" : "high"}
         >
           <div className="flex items-start gap-3">
             <Bot className="h-8 w-8 text-primary mt-1" />
@@ -138,7 +162,7 @@ export function SetupGuideHints() {
           totalSteps={6}
           completed={completedSteps.createCampaign}
           onComplete={() => markStepComplete('createCampaign')}
-          highlightLevel={completedSteps.secureConnection ? "high" : "low"}
+          highlightLevel={isCampaignsPage && completedSteps.secureConnection ? "high" : "low"}
         >
           <div className="flex items-start gap-3">
             <ClipboardList className="h-8 w-8 text-indigo-500 mt-1" />
