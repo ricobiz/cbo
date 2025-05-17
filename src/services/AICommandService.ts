@@ -283,7 +283,7 @@ async function setupBrowserUseSession(botId: string, task: BotTask): Promise<voi
       throw new Error("Не удалось создать сессию браузера");
     }
     
-    botService.addLog(botId, `Создана новая сессия браузера ${sessionId.substring(0, 8)}...`);
+    botService.addLog(botId, `Создана новая сессия б��аузера ${sessionId.substring(0, 8)}...`);
     
     // Если есть URL, переходим на него
     if (task.targetURL) {
@@ -536,33 +536,30 @@ function getActionName(action: string): string {
 
 function generateBotConfig(task: BotTask): BotConfig {
   return {
-    headless: true,
-    retries: 3,
-    proxyEnabled: true,
-    notificationsEnabled: true,
-    maxRuntime: task.targetDuration || 24,
-    actionsPerSession: task.targetCount,
-    randomizeActions: true,
-    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    actionDelay: [1500, 3000], // min, max delay in ms
+    mouseMovement: 'natural',
+    scrollPattern: 'variable',
+    randomnessFactor: 0.8,
+    sessionVariability: 0.25,
+    behaviorProfile: 'Gen-Z Content Consumer'
   };
 }
 
 function generateBotSchedule(task: BotTask): BotSchedule {
   return {
-    enabled: true,
+    active: true,
     startTime: new Date().toISOString(),
     endTime: new Date(Date.now() + (task.targetDuration || 24) * 60 * 60 * 1000).toISOString(),
-    repeatInterval: "daily",
-    jitter: 30
+    breakDuration: [15, 30], // min, max in minutes
+    daysActive: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   };
 }
 
 function generateBotProxy(task: BotTask): BotProxy {
   return {
-    enabled: true,
-    type: "rotating",
-    country: "any",
-    failoverEnabled: true,
-    failoverType: "restart"
+    useRotation: true,
+    rotationFrequency: 60,
+    provider: "luminati",
+    regions: ["us", "ca", "uk", "au"]
   };
 }
