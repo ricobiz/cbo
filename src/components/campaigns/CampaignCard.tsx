@@ -156,7 +156,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
         description={campaign.type === "promotion" ? "Кампания продвижения" : "Кампания роста"}
         platform={campaign.platform}
         progress={campaign.progress}
-        status={campaign.status}
+        status={campaign.status as "active" | "paused" | "completed" | "scheduled"}
         startDate={campaign.startDate}
         endDate={campaign.endDate}
         target={{
