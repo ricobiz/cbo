@@ -7,6 +7,7 @@ import { ApiSettings } from "@/components/settings/ApiSettings";
 import { BotSettings } from "@/components/settings/BotSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
+import { ProxySettings } from "@/components/settings/ProxySettings";
 
 const SettingsPage = () => {
   const { toast } = useToast();
@@ -25,10 +26,11 @@ const SettingsPage = () => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full md:w-[600px]">
+        <TabsList className="grid grid-cols-6 w-full md:w-[720px]">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="api">API Keys</TabsTrigger>
           <TabsTrigger value="bots">Bot Config</TabsTrigger>
+          <TabsTrigger value="proxy">Proxies</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
@@ -43,6 +45,10 @@ const SettingsPage = () => {
 
         <TabsContent value="bots" className="space-y-6 mt-6">
           <BotSettings onSave={handleSave} />
+        </TabsContent>
+        
+        <TabsContent value="proxy" className="space-y-6 mt-6">
+          <ProxySettings onSave={handleSave} />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6 mt-6">

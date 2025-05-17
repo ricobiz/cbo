@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BotCard } from "@/components/bots/BotCard";
 import { BotCreationWizard } from "@/components/bots/BotCreationWizard";
 import { BotMonitoring } from "@/components/bots/BotMonitoring";
@@ -14,72 +14,41 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-const mockBots = [
-  {
-    id: "1",
-    name: "Content Generator Bot",
-    description: "Creates trending content for various platforms using GPT-4",
-    status: "active" as const,
-    type: "content" as const,
-    lastRun: "10 mins ago"
-  },
-  {
-    id: "2",
-    name: "Social Interaction Simulator",
-    description: "Simulates likes, shares, comments, and other social interactions",
-    status: "active" as const,
-    type: "interaction" as const,
-    lastRun: "25 mins ago"
-  },
-  {
-    id: "3",
-    name: "YouTube Click Bot",
-    description: "Drives organic traffic and engagement on YouTube videos",
-    status: "idle" as const,
-    type: "click" as const,
-    lastRun: "2 hours ago"
-  },
-  {
-    id: "4",
-    name: "Spotify Stream Bot",
-    description: "Increases plays and engagement on Spotify tracks",
-    status: "idle" as const,
-    type: "click" as const,
-    lastRun: "5 hours ago"
-  },
-  {
-    id: "5",
-    name: "Analytics Parser Bot",
-    description: "Monitors campaign performance and collects real-time metrics",
-    status: "active" as const,
-    type: "parser" as const,
-    lastRun: "15 mins ago"
-  },
-  {
-    id: "6",
-    name: "Instagram Engagement Bot",
-    description: "Drives likes, follows, and comments on Instagram posts",
-    status: "error" as const,
-    type: "interaction" as const,
-    lastRun: "2 days ago"
-  },
-];
+import { useBotStore } from "@/store/BotStore";
+import { BotDetails } from "@/components/bots/BotDetails";
 
 const BotsPage = () => {
-  const [filterType, setFilterType] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [ipRotationEnabled, setIpRotationEnabled] = useState(true);
+  const { 
+    bots, 
+    filterType, 
+    filterStatus, 
+    searchTerm, 
+    ipRotationEnabled, 
+    selectedBotId,
+    fetchBots,
+    setFilterType, 
+    setFilterStatus, 
+    setSearchTerm,
+    setIpRotationEnabled,
+    selectBot
+  } = useBotStore();
 
-  const filteredBots = mockBots.filter(bot => {
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Fetch bots on component mount
+  useEffect(() => {
+    fetchBots();
+  }, [fetchBots]);
+
+  const filteredBots = bots.filter(bot => {
     const matchesType = filterType === "all" || bot.type === filterType;
     const matchesStatus = filterStatus === "all" || bot.status === filterStatus;
     const matchesSearch = bot.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          bot.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesType && matchesStatus && matchesSearch;
   });
+
+  const selectedBot = selectedBotId ? bots.find(bot => bot.id === selectedBotId) : null;
 
   return (
     <div className="space-y-6">
@@ -144,7 +113,11 @@ const BotsPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBots.length > 0 ? (
           filteredBots.map((bot) => (
-            <BotCard key={bot.id} {...bot} />
+            <BotCard 
+              key={bot.id} 
+              {...bot} 
+              onClick={() => selectBot(bot.id)}
+            />
           ))
         ) : (
           <div className="col-span-full flex items-center justify-center p-12 border rounded-lg border-dashed">
@@ -166,6 +139,14 @@ const BotsPage = () => {
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen} 
       />
+
+      {selectedBot && (
+        <BotDetails
+          {...selectedBot}
+          open={!!selectedBotId}
+          onOpenChange={(open) => !open && selectBot(null)}
+        />
+      )}
     </div>
   );
 };

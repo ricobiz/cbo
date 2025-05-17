@@ -13,28 +13,67 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ScenariosPage from "./pages/ScenariosPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 30000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/campaigns" element={<CampaignsPage />} />
-            <Route path="/bots" element={<BotsPage />} />
-            <Route path="/content" element={<ContentPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/scenarios" element={<ScenariosPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={
+                <ErrorBoundary componentName="Dashboard">
+                  <Dashboard />
+                </ErrorBoundary>
+              } />
+              <Route path="/campaigns" element={
+                <ErrorBoundary componentName="Campaigns">
+                  <CampaignsPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/bots" element={
+                <ErrorBoundary componentName="Bots">
+                  <BotsPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/content" element={
+                <ErrorBoundary componentName="Content">
+                  <ContentPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/analytics" element={
+                <ErrorBoundary componentName="Analytics">
+                  <AnalyticsPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/scenarios" element={
+                <ErrorBoundary componentName="Scenarios">
+                  <ScenariosPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/settings" element={
+                <ErrorBoundary componentName="Settings">
+                  <SettingsPage />
+                </ErrorBoundary>
+              } />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );
