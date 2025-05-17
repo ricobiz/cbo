@@ -1,6 +1,6 @@
 
 import { Outlet } from "react-router-dom";
-import Sidebar from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";

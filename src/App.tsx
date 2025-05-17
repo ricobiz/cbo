@@ -15,11 +15,11 @@ import ProxyPage from "./pages/ProxyPage";
 import ScenariosPage from "./pages/ScenariosPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/toaster";
-import { ThemeProvider } from "./components/theme/ThemeToggle";
+import { ThemeToggle } from "./components/theme/ThemeToggle";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <div className="theme-provider" data-theme="light">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainLayout />}>
@@ -40,7 +40,7 @@ function App() {
         </Routes>
       </BrowserRouter>
       <Toaster />
-    </ThemeProvider>
+    </div>
   );
 }
 
