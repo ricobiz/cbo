@@ -1,138 +1,165 @@
 
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import {
-  BarChart3,
-  Bot,
-  Layers,
-  Settings,
-  MessageSquare,
-  Rocket,
-  Menu,
-  X,
-  Home
+import { 
+  Home, 
+  Bot, 
+  BarChart3, 
+  FileText, 
+  Settings, 
+  ClipboardList,
+  Command,
+  Sparkles
 } from "lucide-react";
+import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-type NavItem = {
-  title: string;
-  href: string;
-  icon: React.ReactNode;
-};
+interface SidebarProps {
+  isCollapsed?: boolean;
+}
 
-const navItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/",
-    icon: <Home className="w-5 h-5" />
-  },
-  {
-    title: "Campaigns",
-    href: "/campaigns",
-    icon: <Rocket className="w-5 h-5" />
-  },
-  {
-    title: "Bots",
-    href: "/bots",
-    icon: <Bot className="w-5 h-5" />
-  },
-  {
-    title: "Content",
-    href: "/content",
-    icon: <MessageSquare className="w-5 h-5" />
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: <BarChart3 className="w-5 h-5" />
-  },
-  {
-    title: "Scenarios",
-    href: "/scenarios",
-    icon: <Layers className="w-5 h-5" />
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: <Settings className="w-5 h-5" />
-  }
-];
+export function Sidebar({ isCollapsed = false }: SidebarProps) {
+  const { isMobile } = useMobile();
+  const { pathname } = useLocation();
+  
+  // Define menu items
+  const menuItems = [
+    {
+      href: "/",
+      icon: Home,
+      title: "Dashboard",
+    },
+    {
+      href: "/bots",
+      icon: Bot,
+      title: "Bots",
+    },
+    {
+      href: "/campaigns",
+      icon: ClipboardList,
+      title: "Campaigns",
+    },
+    {
+      href: "/content",
+      icon: FileText,
+      title: "Content",
+    },
+    {
+      href: "/analytics",
+      icon: BarChart3,
+      title: "Analytics",
+    },
+    {
+      href: "/command",
+      icon: Sparkles,
+      title: "AI Command",
+      isPrimary: true,
+    },
+    {
+      href: "/settings",
+      icon: Settings,
+      title: "Settings",
+      isBottom: true,
+    },
+  ];
 
-const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+  // Determine which items are for the main nav vs bottom nav
+  const mainNavItems = menuItems.filter(item => !item.isBottom);
+  const bottomNavItems = menuItems.filter(item => item.isBottom);
 
   return (
-    <>
-      <div className="lg:hidden flex items-center p-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </Button>
-      </div>
-
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform lg:translate-x-0 lg:static",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <div className="flex flex-col h-full">
-          <div className="p-6">
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-accent glow"></div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                AI Influence
-              </h2>
-            </div>
-          </div>
-
-          <nav className="flex-1 px-4 py-2 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-4 py-3 text-sm rounded-md transition-colors",
-                  location.pathname === item.href
-                    ? "bg-sidebar-accent text-primary font-medium"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                )}
-                onClick={() => setIsOpen(false)}
-              >
-                {item.icon}
-                <span className="ml-3">{item.title}</span>
-              </Link>
+    <aside 
+      className={cn(
+        "h-full flex flex-col border-r bg-background pb-12 transition-all",
+        isCollapsed ? "w-[80px]" : "w-[240px]",
+        isMobile && "fixed inset-y-0 z-20 bg-background/95 backdrop-blur-sm w-screen"
+      )}
+    >
+      <ScrollArea className="flex-1">
+        <div className="px-4 py-6">
+          <div className="flex flex-col gap-2">
+            {mainNavItems.map((item, index) => (
+              <NavItem
+                key={index}
+                href={item.href}
+                icon={item.icon}
+                title={item.title}
+                isActive={pathname === item.href}
+                isCollapsed={isCollapsed}
+                isPrimary={item.isPrimary}
+              />
             ))}
-          </nav>
-
-          <div className="p-4 mt-auto">
-            <div className="p-4 rounded-lg bg-sidebar-accent/50 space-y-2">
-              <h4 className="text-sm font-medium">Upgrade to Pro</h4>
-              <p className="text-xs text-sidebar-foreground/70">
-                Get unlimited campaigns and advanced analytics
-              </p>
-              <Button size="sm" className="w-full">
-                Upgrade
-              </Button>
-            </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
 
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </>
+      <div className="mt-auto px-4 py-4 border-t">
+        <div className="flex flex-col gap-2">
+          {bottomNavItems.map((item, index) => (
+            <NavItem
+              key={index}
+              href={item.href}
+              icon={item.icon}
+              title={item.title}
+              isActive={pathname === item.href}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </div>
+      </div>
+    </aside>
   );
-};
+}
+
+interface NavItemProps {
+  href: string;
+  icon: React.FC<{ className?: string }>;
+  title: string;
+  isActive?: boolean;
+  isCollapsed?: boolean;
+  isPrimary?: boolean;
+  onClick?: () => void;
+}
+
+function NavItem({ 
+  href, 
+  icon: Icon, 
+  title, 
+  isActive, 
+  isCollapsed,
+  isPrimary,
+  onClick 
+}: NavItemProps) {
+  const linkContent = (
+    <Button
+      variant={isActive ? "secondary" : isPrimary ? "default" : "ghost"}
+      size={isCollapsed ? "icon" : "default"}
+      className={cn(
+        "w-full justify-start", 
+        isCollapsed && "h-10 w-10",
+        isPrimary && !isActive && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+      )}
+      onClick={onClick}
+    >
+      <Icon className={cn("h-5 w-5", isCollapsed ? "mx-auto" : "mr-2")} />
+      {!isCollapsed && <span>{title}</span>}
+    </Button>
+  );
+  
+  if (isCollapsed) {
+    return (
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Link to={href}>{linkContent}</Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">{title}</TooltipContent>
+      </Tooltip>
+    );
+  }
+  
+  return <Link to={href}>{linkContent}</Link>;
+}
 
 export default Sidebar;
