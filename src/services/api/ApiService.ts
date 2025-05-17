@@ -1,6 +1,7 @@
 
 import { API_CONFIG, API_TIMEOUT, DEFAULT_OFFLINE_MODE } from '@/config/api';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { apiOfflineService } from './ApiOfflineService';
 
 /**
  * Сервис для работы с внешним API
@@ -12,8 +13,11 @@ export class ApiService {
   private maxRetryCount: number = 3;
 
   constructor(baseUrl: string = API_CONFIG.BASE_URL) {
-    this.baseUrl = baseUrl;
-    // Check local storage first, then fall back to default
+    // Проверяем локальное хранилище на наличие сохраненного URL
+    const storedUrl = localStorage.getItem('apiBaseUrl');
+    this.baseUrl = storedUrl || baseUrl;
+    
+    // Проверяем режим работы (онлайн/оффлайн)
     const storedMode = localStorage.getItem('offlineMode');
     this.offlineMode = storedMode !== null ? storedMode === 'true' : DEFAULT_OFFLINE_MODE;
   }
@@ -30,8 +34,7 @@ export class ApiService {
     
     // Notify user of mode change
     const modeText = mode ? 'Оффлайн' : 'Онлайн';
-    toast({
-      title: `Режим ${modeText} активирован`,
+    toast.success(`Режим ${modeText} активирован`, {
       description: mode 
         ? 'Приложение работает с локальными данными' 
         : 'Приложение подключено к API'
@@ -57,6 +60,9 @@ export class ApiService {
    */
   setBaseUrl(url: string): void {
     this.baseUrl = url;
+    // Сохраняем URL в локальное хранилище
+    localStorage.setItem('apiBaseUrl', url);
+    
     // Reset error count when changing API URL
     this.connectionErrorCount = 0;
   }
@@ -89,10 +95,8 @@ export class ApiService {
     
     if (this.connectionErrorCount >= this.maxRetryCount && !this.offlineMode) {
       this.setOfflineMode(true);
-      toast({
-        title: "Автоматическое переключение в оффлайн режим",
-        description: "Обнаружены повторяющиеся проблемы с подключением к API. Приложение переведено в оффлайн режим.",
-        variant: "destructive"
+      toast.error("Автоматическое переключение в оффлайн режим", {
+        description: "Обнаружены повторяющиеся проблемы с подключением к API. Приложение переведено в оффлайн режим."
       });
     }
   }
@@ -106,8 +110,9 @@ export class ApiService {
     body?: any,
     customConfig: RequestInit = {}
   ): Promise<T> {
+    // Если включен оффлайн режим, используем мок-данные
     if (this.offlineMode) {
-      throw new Error('API_OFFLINE_MODE');
+      return apiOfflineService.request<T>(endpoint, method, body);
     }
 
     const url = `${this.baseUrl}${endpoint}`;
@@ -146,22 +151,16 @@ export class ApiService {
         
         // Handle specific error codes
         if (response.status === 401 || response.status === 403) {
-          toast({
-            title: "Ошибка авторизации",
-            description: "У вас нет прав для выполнения данного действия. Пожалуйста, войдите в систему заново.",
-            variant: "destructive"
+          toast.error("Ошибка авторизации", {
+            description: "У вас нет прав для выполнения данного действия. Пожалуйста, войдите в систему заново."
           });
         } else if (response.status === 429) {
-          toast({
-            title: "Слишком много запросов",
-            description: "Превышен лимит запросов к API. Пожалуйста, попробуйте позже.",
-            variant: "destructive"
+          toast.error("Слишком много запросов", {
+            description: "Превышен лимит запросов к API. Пожалуйста, попробуйте позже."
           });
         } else if (response.status >= 500) {
-          toast({
-            title: "Ошибка сервера",
-            description: "Сервер временно недоступен. Пожалуйста, попробуйте позже.",
-            variant: "destructive"
+          toast.error("Ошибка сервера", {
+            description: "Сервер временно недоступен. Пожалуйста, попробуйте позже."
           });
           // Count server errors for potential fallback
           this.handleConnectionError();
@@ -177,10 +176,8 @@ export class ApiService {
     } catch (error) {
       if ((error as Error).name === 'AbortError') {
         console.error(`Request timeout (${method} ${endpoint})`);
-        toast({
-          title: "Превышено время ожидания",
-          description: "Сервер не отвечает. Проверьте соединение с интернетом.",
-          variant: "destructive"
+        toast.error("Превышено время ожидания", {
+          description: "Сервер не отвечает. Проверьте соединение с интернетом."
         });
         
         // Count timeout errors for potential fallback
@@ -192,10 +189,8 @@ export class ApiService {
       // Handle network errors (offline, DNS failure, etc.)
       if ((error as Error).message === 'Failed to fetch') {
         console.error(`Network error (${method} ${endpoint})`);
-        toast({
-          title: "Ошибка сети",
-          description: "Не удалось подключиться к серверу. Проверьте соединение с интернетом.",
-          variant: "destructive"
+        toast.error("Ошибка сети", {
+          description: "Не удалось подключиться к серверу. Проверьте соединение с интернетом."
         });
         
         // Count network errors for potential fallback

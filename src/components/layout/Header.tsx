@@ -4,6 +4,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { ApiStatusHeader } from "@/components/layout/ApiStatusHeader";
 import { SidebarTrigger } from "@/components/layout/SidebarTrigger";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ApiConnectionIndicator } from "@/components/layout/ApiConnectionIndicator";
 
 export function Header() {
   const isMobile = useIsMobile();
@@ -15,6 +16,7 @@ export function Header() {
           {isMobile && <SidebarTrigger />}
         </div>
         <div className="flex items-center gap-4">
+          <ApiConnectionIndicator />
           <ApiStatusHeader />
           <ThemeToggle />
           <UserMenu />

@@ -1,13 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminSubscriptionPlans } from "@/components/admin/AdminSubscriptionPlans";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminUsersWrapper } from "@/components/admin/AdminUsersWrapper";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
-import { Shield, Users, BarChart, Settings } from "lucide-react";
+import { Shield, Users, BarChart, Settings, ServerCrash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ApiConnectionMonitor } from "@/components/api/ApiConnectionMonitor";
+import { ApiStatusSummary } from "@/components/api/ApiStatusSummary";
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("plans");
@@ -21,8 +21,9 @@ const AdminPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Панель администратора</h1>
-        <ApiConnectionMonitor />
       </div>
+      
+      <ApiStatusSummary />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 w-full max-w-3xl mb-6">

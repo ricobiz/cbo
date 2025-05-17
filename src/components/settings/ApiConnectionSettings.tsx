@@ -11,70 +11,35 @@ import { API_CONFIG, DEFAULT_OFFLINE_MODE } from "@/config/api";
 import { Globe, Server, CloudOff, RotateCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { apiConnectionService, useConnectionStore } from "@/services/api/ApiConnectionService";
 
 export function ApiConnectionSettings() {
   const [apiUrl, setApiUrl] = useState(API_CONFIG.BASE_URL);
   const [offlineMode, setOfflineMode] = useState(DEFAULT_OFFLINE_MODE);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
-  const [apiVersion, setApiVersion] = useState<string | null>(null);
-  const [systemInfo, setSystemInfo] = useState<Record<string, string> | null>(null);
+  const { isConnected, lastChecked, serverVersion, serverStatus } = useConnectionStore();
 
   useEffect(() => {
     // При загрузке компонента проверяем текущие настройки
     setOfflineMode(apiService.isOfflineMode());
-    checkConnection();
+    if (!apiService.isOfflineMode()) {
+      apiConnectionService.testConnection();
+    }
   }, []);
 
   const checkConnection = async () => {
-    if (offlineMode) {
-      setConnectionStatus('disconnected');
-      setApiVersion(null);
-      setSystemInfo(null);
-      return;
-    }
-
-    setConnectionStatus('checking');
-    setIsConnecting(true);
+    if (offlineMode) return;
     
-    try {
-      // Проверяем соединение с API и получаем информацию
-      const response = await fetch(`${apiUrl}/health`, { 
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(5000) 
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setConnectionStatus('connected');
-        setApiVersion(data.version || null);
-        setSystemInfo(data.system || null);
-      } else {
-        setConnectionStatus('disconnected');
-        setApiVersion(null);
-        setSystemInfo(null);
-      }
-    } catch (error) {
-      console.error("API connection error:", error);
-      setConnectionStatus('disconnected');
-      setApiVersion(null);
-      setSystemInfo(null);
-    } finally {
-      setIsConnecting(false);
-    }
+    setIsConnecting(true);
+    await apiConnectionService.testConnection();
+    setIsConnecting(false);
   };
 
   const handleToggleOfflineMode = (checked: boolean) => {
     setOfflineMode(checked);
     apiService.setOfflineMode(checked);
     
-    if (checked) {
-      setConnectionStatus('disconnected');
-      toast.info("Оффлайн режим активирован", {
-        description: "Приложение будет использовать локальные данные"
-      });
-    } else {
+    if (!checked) {
       checkConnection();
     }
   };
@@ -85,16 +50,19 @@ export function ApiConnectionSettings() {
     try {
       // Сохраняем новый URL и проверяем соединение
       localStorage.setItem('apiBaseUrl', apiUrl);
+      apiService.setBaseUrl(apiUrl);
       
-      // Перезагружаем страницу чтобы применить изменения URL
-      // В реальном приложении можно создать фабрику для ApiService
-      toast.info("Настройки API сохранены", {
-        description: "Перезагрузка страницы для применения изменений..."
-      });
+      const success = await apiConnectionService.testConnection(apiUrl);
       
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      if (success) {
+        toast.success("URL API успешно сохранен", {
+          description: "Настройки применены."
+        });
+      } else {
+        toast.warning("URL сохранен, но соединение не установлено", {
+          description: "Убедитесь, что API сервер доступен."
+        });
+      }
     } catch (error) {
       console.error("Failed to save API URL:", error);
       toast.error("Ошибка сохранения URL", {
@@ -156,15 +124,15 @@ export function ApiConnectionSettings() {
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t">
           <div className="flex items-center gap-2">
-            {connectionStatus === 'connected' ? (
+            {isConnected ? (
               <>
                 <Globe className="h-5 w-5 text-green-500" />
                 <span className="text-green-500 font-medium">Подключено к API</span>
-                {apiVersion && (
-                  <Badge variant="outline" className="ml-2">v{apiVersion}</Badge>
+                {serverVersion && (
+                  <Badge variant="outline" className="ml-2">v{serverVersion}</Badge>
                 )}
               </>
-            ) : connectionStatus === 'checking' ? (
+            ) : isConnecting ? (
               <>
                 <Globe className="h-5 w-5 text-amber-500 animate-pulse" />
                 <span className="text-amber-500 font-medium">Проверка подключения...</span>
@@ -189,16 +157,28 @@ export function ApiConnectionSettings() {
           </Button>
         </div>
         
-        {connectionStatus === 'connected' && systemInfo && (
+        {isConnected && serverStatus && (
           <div className="mt-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold">Информация о сервере:</h3>
-            <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-              {Object.entries(systemInfo).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <span className="text-muted-foreground capitalize">{key}:</span>
-                  <span className="font-mono">{value}</span>
-                </div>
-              ))}
+            <h3 className="text-sm font-semibold mb-2">Информация о сервере:</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <span className="text-muted-foreground">API сервер:</span>
+              <span className="text-green-600 dark:text-green-400">Доступен</span>
+              
+              <span className="text-muted-foreground">База данных:</span>
+              <span className={serverStatus.database ? 
+                "text-green-600 dark:text-green-400" : 
+                "text-amber-600 dark:text-amber-400"}>
+                {serverStatus.database ? "Подключена" : "Недоступна"}
+              </span>
+              
+              {lastChecked && (
+                <>
+                  <span className="text-muted-foreground">Последняя проверка:</span>
+                  <span className="font-mono text-xs">
+                    {new Date(lastChecked).toLocaleTimeString()}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         )}

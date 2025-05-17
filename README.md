@@ -90,3 +90,53 @@ npm test
 ## Environment Variables
 
 See `.env.example` for all available configuration options.
+
+## API Testing
+
+You can test the API using curl or any HTTP client:
+
+### Health Check
+
+```bash
+# Test API health
+curl http://localhost:8000/health
+
+# Expected response:
+# {"status":"ok","message":"API server is running, database connection successful","version":"1.0.0","system":{"os":"Linux","python":"3.11.0"}}
+```
+
+### Bots API
+
+```bash
+# Get all bots
+curl http://localhost:8000/bots
+
+# Create a new bot
+curl -X POST http://localhost:8000/bots \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Bot","platform":"instagram"}'
+  
+# Get a specific bot
+curl http://localhost:8000/bots/1
+```
+
+### Campaigns API
+
+```bash
+# Get all campaigns
+curl http://localhost:8000/campaigns
+
+# Create a new campaign
+curl -X POST http://localhost:8000/campaigns \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Summer Campaign","description":"Summer promotion","platforms":["instagram"]}'
+```
+
+## Offline Mode
+
+The application supports an offline mode when API server is not available. To use it:
+
+1. Go to Settings > API
+2. Enable "Offline Mode" toggle
+3. The application will use mock data instead of real API calls
+
