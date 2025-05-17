@@ -83,6 +83,7 @@ export interface ActionVerification {
     after: number;
   };
   error?: string;
+  metricValue?: number; // Add this missing property
 }
 
 // Command Analysis Types
