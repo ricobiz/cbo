@@ -46,6 +46,10 @@ export default function CreateBot() {
     mutation.mutate(bot);
   };
 
+  const handleBack = () => {
+    navigate("/bots");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -55,7 +59,7 @@ export default function CreateBot() {
         <h1 className="text-3xl font-bold">Создание нового бота</h1>
       </div>
 
-      <BotForm onSave={handleSaveBot} />
+      <BotForm onSave={handleSaveBot} onBack={handleBack} />
     </div>
   );
 }

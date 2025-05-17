@@ -14,9 +14,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
-interface CreateCampaignDialogProps {
+export interface CreateCampaignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSubmit: (campaignData: any) => void;
 }
 
 type FormData = {
@@ -26,7 +27,7 @@ type FormData = {
   bot_ids: string[];
 };
 
-export function CreateCampaignDialog({ open, onOpenChange }: CreateCampaignDialogProps) {
+export function CreateCampaignDialog({ open, onOpenChange, onSubmit }: CreateCampaignDialogProps) {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ export function CreateCampaignDialog({ open, onOpenChange }: CreateCampaignDialo
       });
       reset();
       onOpenChange(false);
+      onSubmit(data);
       navigate(`/campaigns/${data.id}`);
     },
     onError: () => {
@@ -76,7 +78,7 @@ export function CreateCampaignDialog({ open, onOpenChange }: CreateCampaignDialo
     }
   });
 
-  const onSubmit = (data: FormData) => {
+  const onFormSubmit = (data: FormData) => {
     mutation.mutate({
       ...data,
       bot_ids: selectedBotIds,
@@ -101,7 +103,7 @@ export function CreateCampaignDialog({ open, onOpenChange }: CreateCampaignDialo
         <DialogHeader>
           <DialogTitle>Создать новую кампанию</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Название</Label>

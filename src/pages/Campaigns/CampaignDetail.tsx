@@ -29,6 +29,10 @@ export default function CampaignDetail() {
     refetchInterval: 5000 // Polling every 5 seconds
   });
 
+  const handleBack = () => {
+    navigate("/campaigns");
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Загрузка...</div>;
   }
@@ -40,13 +44,13 @@ export default function CampaignDetail() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/campaigns")}>
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-3xl font-bold">{campaign.name}</h1>
       </div>
 
-      <CampaignDetails campaign={campaign} />
+      <CampaignDetails campaign={campaign} onBack={handleBack} />
     </div>
   );
 }

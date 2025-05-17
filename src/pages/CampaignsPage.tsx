@@ -312,7 +312,7 @@ export default function CampaignsPage() {
       
       <CreateCampaignDialog 
         open={isCreateDialogOpen} 
-        onClose={() => setIsCreateDialogOpen(false)}
+        onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreateCampaign}
       />
     </div>
