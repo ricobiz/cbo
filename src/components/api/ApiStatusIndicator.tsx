@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
-import { RefreshCw, WifiOff, Wifi } from "lucide-react";
+import { RefreshCw, WifiOff, Wifi, Database, Server } from "lucide-react";
 
 export function ApiStatusIndicator() {
-  const { isConnected, error, isChecking, lastChecked, checkConnection } = useConnectionStore();
+  const { isConnected, error, isChecking, lastChecked, checkConnection, serverStatus } = useConnectionStore();
   const { toast } = useToast();
   const [showDetails, setShowDetails] = useState(false);
   
@@ -87,7 +87,23 @@ export function ApiStatusIndicator() {
               {isConnected ? "Connected" : "Disconnected"}
             </span></p>
             <p>Last checked: {formattedLastChecked}</p>
+            
+            <div className="flex items-center gap-2">
+              <Server className={`h-4 w-4 ${serverStatus.api ? "text-green-500" : "text-red-500"}`} />
+              <span>API Server: {serverStatus.api ? "Available" : "Unavailable"}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Database className={`h-4 w-4 ${serverStatus.database ? "text-green-500" : "text-red-500"}`} />
+              <span>Database: {serverStatus.database ? "Connected" : "Disconnected"}</span>
+            </div>
+            
+            {serverStatus.message && (
+              <p className="text-sm text-muted-foreground mt-1">{serverStatus.message}</p>
+            )}
+            
             {error && <p className="text-red-500 break-words">Error: {error}</p>}
+            
             <Button 
               size="sm" 
               className="w-full mt-2" 

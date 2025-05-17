@@ -10,6 +10,12 @@ interface ConnectionState {
   isChecking: boolean;
   checkConnection: () => Promise<boolean>;
   setConnectionStatus: (status: boolean, error?: string | null) => void;
+  serverVersion: string | null;
+  serverStatus: {
+    database: boolean;
+    api: boolean;
+    message?: string;
+  };
 }
 
 export const useConnectionStore = create<ConnectionState>((set, get) => ({
@@ -17,19 +23,32 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   lastChecked: null,
   error: null,
   isChecking: false,
+  serverVersion: null,
+  serverStatus: {
+    database: false,
+    api: false,
+    message: undefined
+  },
   
   checkConnection: async () => {
     set({ isChecking: true });
     
     try {
       // Try to ping the API server
-      await apiService.get(`${API_CONFIG.ENDPOINTS.HEALTH}`);
+      const response = await apiService.get(`${API_CONFIG.ENDPOINTS.HEALTH}`);
       
+      // Update server status information
       set({ 
         isConnected: true, 
         error: null,
         lastChecked: new Date().toISOString(),
-        isChecking: false 
+        isChecking: false,
+        serverVersion: response.version || null,
+        serverStatus: {
+          database: response.status === 'ok',
+          api: true,
+          message: response.message
+        }
       });
       return true;
     } catch (error) {
@@ -37,7 +56,12 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         isConnected: false, 
         error: error instanceof Error ? error.message : 'Failed to connect to API',
         lastChecked: new Date().toISOString(),
-        isChecking: false 
+        isChecking: false,
+        serverStatus: {
+          database: false,
+          api: false,
+          message: error instanceof Error ? error.message : 'Connection failed'
+        }
       });
       return false;
     }
@@ -64,7 +88,20 @@ class ApiConnectionService {
       });
       
       if (response.ok) {
+        const data = await response.json();
         useConnectionStore.getState().setConnectionStatus(true);
+        
+        // Update server status if available
+        if (data && typeof data === 'object') {
+          useConnectionStore.setState({
+            serverVersion: data.version || null,
+            serverStatus: {
+              database: data.status === 'ok',
+              api: true,
+              message: data.message
+            }
+          });
+        }
         return true;
       }
       
@@ -85,6 +122,13 @@ class ApiConnectionService {
   
   getLastError(): string | null {
     return useConnectionStore.getState().error;
+  }
+  
+  getServerInfo() {
+    return {
+      version: useConnectionStore.getState().serverVersion,
+      status: useConnectionStore.getState().serverStatus
+    };
   }
 }
 
