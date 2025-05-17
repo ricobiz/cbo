@@ -13,8 +13,10 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <Sidebar isCollapsed={isSidebarCollapsed} />
-      <div className={`flex-1 flex flex-col min-h-screen ${isSidebarCollapsed ? 'lg:ml-[80px]' : 'lg:ml-[240px]'} transition-all`}>
+      <div className="fixed inset-y-0 left-0 z-30">
+        <Sidebar isCollapsed={isSidebarCollapsed} />
+      </div>
+      <div className={`flex-1 flex flex-col min-h-screen ${isSidebarCollapsed ? 'ml-[80px]' : 'ml-[240px]'} transition-all`}>
         <Header toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
         <main className="flex-1 p-6 overflow-auto">
           <Outlet />

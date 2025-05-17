@@ -11,9 +11,9 @@ interface HeaderProps {
 
 const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
   return (
-    <header className="border-b bg-background p-4 flex items-center justify-between">
+    <header className="border-b bg-background p-4 flex items-center justify-between sticky top-0 z-20">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="flex lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
         <div className="relative">
@@ -26,6 +26,14 @@ const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
         </div>
       </div>
       <div className="flex items-center gap-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleSidebar} 
+          className="hidden lg:flex"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
         <ThemeToggle />
       </div>
     </header>
