@@ -21,9 +21,11 @@ interface BotCardProps {
   proxy: BotProxy;
   logs: Array<{time: string, message: string}>;
   onClick?: () => void;
+  onStart?: () => void;
+  onStop?: () => void;
 }
 
-export function BotCard({ id, name, description, status, type, lastRun, onClick }: BotCardProps) {
+export function BotCard({ id, name, description, status, type, lastRun, onClick, onStart, onStop }: BotCardProps) {
   const [isActive, setIsActive] = useState(status === "active");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const { toast } = useToast();
@@ -31,6 +33,14 @@ export function BotCard({ id, name, description, status, type, lastRun, onClick 
   const handleToggle = () => {
     const newStatus = !isActive;
     setIsActive(newStatus);
+    
+    // Вызываем соответствующие обработчики, если они предоставлены
+    if (newStatus && onStart) {
+      onStart();
+    } else if (!newStatus && onStop) {
+      onStop();
+    }
+    
     toast({
       title: `Bot ${newStatus ? "activated" : "deactivated"}`,
       description: `${name} is now ${newStatus ? "running" : "stopped"}.`,
@@ -126,6 +136,8 @@ export function BotCard({ id, name, description, status, type, lastRun, onClick 
         lastRun={lastRun}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
+        onStart={onStart}
+        onStop={onStop}
       />
     </>
   );
