@@ -10,6 +10,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ScenariosPage from "./pages/ScenariosPage";
 import NotFound from "./pages/NotFound";
 import CommandPage from "./pages/CommandPage";
+import EmailAccountsPage from "./pages/EmailAccountsPage";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: "command",
         element: <CommandPage />,
+      },
+      {
+        path: "email-accounts",
+        element: <EmailAccountsPage />,
       },
     ],
   },

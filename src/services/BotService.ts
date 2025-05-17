@@ -1,4 +1,3 @@
-
 import { proxyService } from './ProxyService';
 
 export type BotStatus = 'active' | 'idle' | 'error' | 'paused';
@@ -28,6 +27,15 @@ export interface BotProxy {
   regions: string[];
 }
 
+export interface EmailAccount {
+  id: string;
+  email: string;
+  password: string;
+  isInUse: boolean;
+  lastUsed?: string;
+  status: 'active' | 'blocked' | 'flagged';
+}
+
 export interface Bot {
   id: string;
   name: string;
@@ -39,16 +47,19 @@ export interface Bot {
   proxy: BotProxy;
   lastRun: string;
   logs: Array<{time: string, message: string}>;
+  emailAccounts?: string[]; // IDs of associated email accounts
 }
 
 class BotService {
   private bots: Map<string, Bot> = new Map();
   private maxConcurrentOperations: number = 10;
   private activeOperations: number = 0;
+  private emailAccounts: Map<string, EmailAccount> = new Map();
   
   constructor() {
     // Load some initial mock bots
     this.initializeMockBots();
+    this.initializeMockEmailAccounts();
   }
 
   private initializeMockBots(): void {
@@ -131,6 +142,52 @@ class BotService {
     mockBots.forEach(bot => {
       this.bots.set(bot.id, bot as Bot);
     });
+  }
+  
+  private initializeMockEmailAccounts(): void {
+    const mockEmails = [
+      {
+        id: "1",
+        email: "user1@example.com",
+        password: "password123",
+        isInUse: true,
+        lastUsed: "2025-05-16",
+        status: 'active' as const
+      },
+      {
+        id: "2",
+        email: "user2@example.com",
+        password: "password456",
+        isInUse: false,
+        lastUsed: "2025-05-10",
+        status: 'active' as const
+      },
+      {
+        id: "3",
+        email: "user3@example.com",
+        password: "password789",
+        isInUse: false,
+        status: 'flagged' as const
+      }
+    ];
+    
+    mockEmails.forEach(email => {
+      this.emailAccounts.set(email.id, email);
+    });
+    
+    // Associate some emails with bots
+    const bot1 = this.bots.get("1");
+    const bot2 = this.bots.get("2");
+    
+    if (bot1) {
+      bot1.emailAccounts = ["1"];
+      this.bots.set("1", bot1);
+    }
+    
+    if (bot2) {
+      bot2.emailAccounts = ["2"];
+      this.bots.set("2", bot2);
+    }
   }
   
   public getAllBots(): Bot[] {
@@ -306,6 +363,103 @@ class BotService {
     this.bots.set(newId, newBot);
     this.addLog(newId, "Bot created as duplicate");
     return newId;
+  }
+
+  public getAllEmailAccounts(): EmailAccount[] {
+    return Array.from(this.emailAccounts.values());
+  }
+  
+  public getEmailAccount(id: string): EmailAccount | undefined {
+    return this.emailAccounts.get(id);
+  }
+  
+  public addEmailAccount(email: string, password: string): string {
+    const newId = (Math.max(...Array.from(this.emailAccounts.keys()).map(id => parseInt(id)), 0) + 1).toString();
+    
+    const newAccount: EmailAccount = {
+      id: newId,
+      email,
+      password,
+      isInUse: false,
+      status: 'active'
+    };
+    
+    this.emailAccounts.set(newId, newAccount);
+    return newId;
+  }
+  
+  public deleteEmailAccount(id: string): boolean {
+    // Check if email is in use by any bot
+    const isUsed = Array.from(this.bots.values()).some(
+      bot => bot.emailAccounts?.includes(id)
+    );
+    
+    if (isUsed) {
+      return false;
+    }
+    
+    return this.emailAccounts.delete(id);
+  }
+  
+  public assignEmailAccountToBot(emailId: string, botId: string): boolean {
+    const bot = this.bots.get(botId);
+    const email = this.emailAccounts.get(emailId);
+    
+    if (!bot || !email) return false;
+    
+    // Create emailAccounts array if it doesn't exist
+    if (!bot.emailAccounts) {
+      bot.emailAccounts = [];
+    }
+    
+    // Add email if not already assigned
+    if (!bot.emailAccounts.includes(emailId)) {
+      bot.emailAccounts.push(emailId);
+      
+      // Mark email as in use
+      email.isInUse = true;
+      email.lastUsed = new Date().toISOString().split('T')[0];
+      this.emailAccounts.set(emailId, email);
+      
+      this.bots.set(botId, bot);
+      this.addLog(botId, `Email account ${email.email} assigned to bot`);
+      return true;
+    }
+    
+    return false;
+  }
+  
+  public removeEmailAccountFromBot(emailId: string, botId: string): boolean {
+    const bot = this.bots.get(botId);
+    const email = this.emailAccounts.get(emailId);
+    
+    if (!bot || !email || !bot.emailAccounts) return false;
+    
+    // Filter out the email ID
+    bot.emailAccounts = bot.emailAccounts.filter(id => id !== emailId);
+    
+    // Mark email as not in use if not assigned to any other bot
+    const isUsedByOtherBot = Array.from(this.bots.values()).some(
+      otherBot => otherBot.id !== botId && otherBot.emailAccounts?.includes(emailId)
+    );
+    
+    if (!isUsedByOtherBot) {
+      email.isInUse = false;
+      this.emailAccounts.set(emailId, email);
+    }
+    
+    this.bots.set(botId, bot);
+    this.addLog(botId, `Email account ${email.email} removed from bot`);
+    return true;
+  }
+  
+  public getBotEmailAccounts(botId: string): EmailAccount[] {
+    const bot = this.bots.get(botId);
+    if (!bot || !bot.emailAccounts || bot.emailAccounts.length === 0) return [];
+    
+    return bot.emailAccounts
+      .map(id => this.emailAccounts.get(id))
+      .filter((email): email is EmailAccount => email !== undefined);
   }
 
   private getDefaultConfig(): BotConfig {

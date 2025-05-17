@@ -8,7 +8,8 @@ import {
   Settings, 
   ClipboardList,
   Command,
-  Sparkles
+  Sparkles,
+  Mail
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,11 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       href: "/analytics",
       icon: BarChart3,
       title: "Analytics",
+    },
+    {
+      href: "/email-accounts",
+      icon: Mail,
+      title: "Email Accounts",
     },
     {
       href: "/command",
