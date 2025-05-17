@@ -18,6 +18,7 @@ export interface AudioGenerationResult {
   url: string;
   duration?: number;
   format?: string;
+  text?: string; // Добавлено поле для совместимости с мок данными
 }
 
 // Image Generation Types
@@ -34,6 +35,7 @@ export interface ImageGenerationResult {
   width: number;
   height: number;
   seed?: number;
+  prompt?: string; // Добавлено поле для совместимости с мок данными
 }
 
 // OpenRouter API Types
@@ -54,6 +56,7 @@ export interface OpenRouterResponse {
     completion_tokens: number;
     total_tokens: number;
   };
+  object?: string; // Добавлено поле для совместимости с мок данными
 }
 
 // Browser Use API Types
@@ -71,6 +74,7 @@ export interface BrowserUseResponse {
     message: string;
     data?: any;
   };
+  message?: string; // Добавлено поле для совместимости с мок данными
 }
 
 // Action Verification Types
@@ -94,9 +98,28 @@ export interface CommandAnalysisResult {
   action?: string;
   count?: number;
   url?: string | null;
+  additionalParams?: Record<string, any>; // Добавлено поле для совместимости с мок данными
 }
 
 // Platform URL Types
 export interface PlatformUrlMap {
   [key: string]: string;
 }
+
+// Дополнительные типы для совместимости с основным приложением
+export interface BotTypeResponse {
+  id: string;
+  name: string;
+  description: string;
+  capabilities: string[];
+  platforms: string[];
+}
+
+export interface BotConfigTemplate {
+  id: string;
+  name: string;
+  description: string;
+  config: Record<string, any>;
+  botTypes: string[];
+}
+

@@ -29,9 +29,9 @@ const BotsPage = () => {
     setViewMode("edit");
   };
 
-  const handleDeleteBot = (botId: string) => {
+  const handleDeleteBot = async (botId: string) => {
     try {
-      const success = BotManagementService.deleteBot(botId);
+      const success = await BotManagementService.deleteBot(botId);
       if (success) {
         toast({
           title: "Бот удален",
