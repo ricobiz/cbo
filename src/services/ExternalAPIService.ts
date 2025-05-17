@@ -1,4 +1,3 @@
-
 /**
  * Service for integrating with external APIs like OpenRouter and Browser Use
  */
@@ -316,7 +315,7 @@ class ExternalAPIService {
   /**
    * Verifies YouTube-specific actions
    */
-  private async verifyYouTubeAction(videoId: string, metricType: 'view' | 'play' | 'like' | 'comment', sessionId: string): Promise<ActionVerification> {
+  private async verifyYouTubeAction(videoId: string, metricType: 'view' | 'play' | 'click' | 'like' | 'follow' | 'comment', sessionId: string): Promise<ActionVerification> {
     const timestamp = new Date().toISOString();
     
     // For YouTube, we can navigate to the video and check the view count or like status
@@ -407,7 +406,7 @@ class ExternalAPIService {
   /**
    * Verifies Spotify-specific actions
    */
-  private async verifySpotifyAction(trackId: string, metricType: 'play', sessionId: string): Promise<ActionVerification> {
+  private async verifySpotifyAction(trackId: string, metricType: 'view' | 'play' | 'click' | 'like' | 'follow' | 'comment', sessionId: string): Promise<ActionVerification> {
     const timestamp = new Date().toISOString();
     
     // For Spotify, we need to check if a track is actually playing
@@ -466,7 +465,7 @@ class ExternalAPIService {
   /**
    * Verifies social media actions (generic)
    */
-  private async verifySocialMediaAction(platform: string, contentId: string, metricType: 'like' | 'follow' | 'comment', sessionId: string): Promise<ActionVerification> {
+  private async verifySocialMediaAction(platform: string, contentId: string, metricType: 'view' | 'play' | 'click' | 'like' | 'follow' | 'comment', sessionId: string): Promise<ActionVerification> {
     // This would be implemented specifically for each social platform
     // For now, we'll return a placeholder implementation
     
