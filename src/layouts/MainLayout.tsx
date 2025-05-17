@@ -43,7 +43,7 @@ const MainLayout = () => {
             : 'translate-x-0 w-[240px]'
         }`}
       >
-        <Sidebar isCollapsed={isSidebarCollapsed} />
+        <Sidebar className="h-full" />
       </div>
       
       {/* Main Content */}
