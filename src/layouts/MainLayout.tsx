@@ -13,6 +13,8 @@ const MainLayout = () => {
   useEffect(() => {
     if (isMobile) {
       setIsSidebarCollapsed(true);
+    } else {
+      setIsSidebarCollapsed(false);
     }
   }, [isMobile]);
   
@@ -31,20 +33,26 @@ const MainLayout = () => {
         />
       )}
       
+      {/* Sidebar */}
       <div 
         className={`fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed 
-            ? '-translate-x-full md:translate-x-0 md:w-[80px]' 
+          isSidebarCollapsed && isMobile
+            ? '-translate-x-full' 
+            : isSidebarCollapsed && !isMobile
+            ? 'translate-x-0 w-[80px]'
             : 'translate-x-0 w-[240px]'
         }`}
       >
         <Sidebar isCollapsed={isSidebarCollapsed} />
       </div>
       
+      {/* Main Content */}
       <div 
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
-          isSidebarCollapsed 
-            ? 'ml-0 md:ml-[80px]' 
+          isSidebarCollapsed && isMobile
+            ? 'ml-0'
+            : isSidebarCollapsed && !isMobile
+            ? 'ml-[80px]' 
             : 'ml-0 md:ml-[240px]'
         }`}
       >

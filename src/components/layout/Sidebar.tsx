@@ -7,7 +7,6 @@ import {
   FileText, 
   Settings, 
   ClipboardList,
-  Command,
   Sparkles,
   Mail
 } from "lucide-react";
@@ -30,43 +29,43 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
     {
       href: "/",
       icon: Home,
-      title: "Dashboard",
+      title: "Панель управления",
     },
     {
       href: "/bots",
       icon: Bot,
-      title: "Bots",
+      title: "Боты",
     },
     {
       href: "/campaigns",
       icon: ClipboardList,
-      title: "Campaigns",
+      title: "Кампании",
     },
     {
       href: "/content",
       icon: FileText,
-      title: "Content",
+      title: "Контент",
     },
     {
       href: "/analytics",
       icon: BarChart3,
-      title: "Analytics",
+      title: "Аналитика",
     },
     {
       href: "/email-accounts",
       icon: Mail,
-      title: "Email Accounts",
+      title: "Почтовые аккаунты",
     },
     {
       href: "/command",
       icon: Sparkles,
-      title: "AI Command",
+      title: "ИИ команды",
       isPrimary: true,
     },
     {
       href: "/settings",
       icon: Settings,
-      title: "Settings",
+      title: "Настройки",
       isBottom: true,
     },
   ];

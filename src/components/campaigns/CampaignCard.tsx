@@ -46,26 +46,26 @@ export function CampaignCard({
   const getStatusBadge = () => {
     switch (status) {
       case "active":
-        return <Badge variant="default" className="bg-green-500">Active</Badge>;
+        return <Badge variant="default" className="bg-green-500">Активна</Badge>;
       case "paused":
-        return <Badge variant="outline" className="border-amber-500 text-amber-500">Paused</Badge>;
+        return <Badge variant="outline" className="border-amber-500 text-amber-500">Приостановлена</Badge>;
       case "completed":
-        return <Badge variant="secondary">Completed</Badge>;
+        return <Badge variant="secondary">Завершена</Badge>;
       case "scheduled":
-        return <Badge variant="outline">Scheduled</Badge>;
+        return <Badge variant="outline">Запланирована</Badge>;
     }
   };
   
   const handleStatusChange = () => {
     if (status === "active") {
       toast({
-        title: "Campaign paused",
-        description: `${name} has been paused successfully.`,
+        title: "Кампания приостановлена",
+        description: `${name} была успешно приостановлена.`,
       });
     } else if (status === "paused") {
       toast({
-        title: "Campaign resumed",
-        description: `${name} has been resumed successfully.`,
+        title: "Кампания возобновлена",
+        description: `${name} была успешно возобновлена.`,
       });
     }
   };
@@ -96,7 +96,7 @@ export function CampaignCard({
             <div className="flex items-center">
               <Zap className="h-3 w-3 mr-1 text-primary" />
               <span>
-                Target: {target.value} {target.type}
+                Цель: {target.value} {target.type}
               </span>
             </div>
           </div>
@@ -109,19 +109,19 @@ export function CampaignCard({
             <div className="grid grid-cols-3 gap-2 pt-2 border-t">
               {stats.views !== undefined && (
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Views</div>
+                  <div className="text-xs text-muted-foreground">Просмотры</div>
                   <div className="text-sm font-medium">{stats.views.toLocaleString()}</div>
                 </div>
               )}
               {stats.engagements !== undefined && (
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Engagements</div>
+                  <div className="text-xs text-muted-foreground">Взаимодействия</div>
                   <div className="text-sm font-medium">{stats.engagements.toLocaleString()}</div>
                 </div>
               )}
               {stats.clicks !== undefined && (
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Clicks</div>
+                  <div className="text-xs text-muted-foreground">Клики</div>
                   <div className="text-sm font-medium">{stats.clicks.toLocaleString()}</div>
                 </div>
               )}
@@ -135,7 +135,7 @@ export function CampaignCard({
             className="text-xs"
             onClick={() => setDetailsOpen(true)}
           >
-            View Details
+            Подробнее
           </Button>
           {status === "active" ? (
             <Button
@@ -144,7 +144,7 @@ export function CampaignCard({
               className="text-xs"
               onClick={handleStatusChange}
             >
-              Pause
+              Приостановить
             </Button>
           ) : status === "paused" ? (
             <Button
@@ -153,7 +153,7 @@ export function CampaignCard({
               className="text-xs"
               onClick={handleStatusChange}
             >
-              Resume
+              Возобновить
             </Button>
           ) : null}
         </CardFooter>

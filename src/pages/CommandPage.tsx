@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 
 const CommandPage = () => {
   useEffect(() => {
-    document.title = "AI Command Center";
+    document.title = "Центр управления ИИ";
   }, []);
   
   const [activeTab, setActiveTab] = useState("command");
@@ -68,13 +68,13 @@ const CommandPage = () => {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold flex items-center gap-2">
-        <Bot className="h-7 w-7" /> AI Command Center
+        <Bot className="h-7 w-7" /> Центр управления ИИ
       </h1>
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="command" className="flex items-center gap-2">
-            <Command className="h-4 w-4" /> AI Command
+            <Command className="h-4 w-4" /> ИИ Команды
           </TabsTrigger>
           <TabsTrigger value="integration" className="flex items-center gap-2">
             <Globe className="h-4 w-4" /> API Интеграции

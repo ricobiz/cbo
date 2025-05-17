@@ -24,15 +24,15 @@ import { CampaignProgressIndicator } from "@/components/campaigns/CampaignProgre
 const mockCampaigns = [
   {
     id: "1",
-    name: "Summer Beats Promotion",
-    description: "Promoting new electronic album releases for summer",
+    name: "Летняя музыкальная акция",
+    description: "Продвижение новых электронных альбомов на лето",
     platform: "Spotify",
     progress: 65,
     status: "active" as const,
-    startDate: "May 15, 2025",
-    endDate: "Jun 30, 2025",
+    startDate: "15 мая 2025",
+    endDate: "30 июня 2025",
     target: {
-      type: "plays",
+      type: "прослушиваний",
       value: 10000
     },
     stats: {
@@ -43,15 +43,15 @@ const mockCampaigns = [
   },
   {
     id: "2",
-    name: "Tech Product Review",
-    description: "In-depth review of the latest smartphone",
+    name: "Обзор технологического продукта",
+    description: "Подробный обзор нового смартфона",
     platform: "YouTube",
     progress: 42,
     status: "active" as const,
-    startDate: "May 20, 2025",
-    endDate: "Jul 15, 2025",
+    startDate: "20 мая 2025",
+    endDate: "15 июля 2025",
     target: {
-      type: "views",
+      type: "просмотров",
       value: 50000
     },
     stats: {
@@ -62,15 +62,15 @@ const mockCampaigns = [
   },
   {
     id: "3",
-    name: "Brand Awareness Drive",
-    description: "Increasing brand visibility and follower count",
+    name: "Повышение узнаваемости бренда",
+    description: "Увеличение видимости бренда и числа подписчиков",
     platform: "Twitter",
     progress: 78,
     status: "active" as const,
-    startDate: "May 10, 2025",
-    endDate: "Jun 25, 2025",
+    startDate: "10 мая 2025",
+    endDate: "25 июня 2025",
     target: {
-      type: "followers",
+      type: "подписчиков",
       value: 5000
     },
     stats: {
@@ -81,15 +81,15 @@ const mockCampaigns = [
   },
   {
     id: "4",
-    name: "Product Launch Campaign",
-    description: "New SaaS tool promotional campaign",
+    name: "Запуск нового продукта",
+    description: "Рекламная кампания для нового SaaS инструмента",
     platform: "LinkedIn",
     progress: 100,
     status: "completed" as const,
-    startDate: "Apr 1, 2025",
-    endDate: "May 15, 2025",
+    startDate: "1 апреля 2025",
+    endDate: "15 мая 2025",
     target: {
-      type: "leads",
+      type: "лидов",
       value: 200
     },
     stats: {
@@ -100,29 +100,29 @@ const mockCampaigns = [
   },
   {
     id: "5",
-    name: "Holiday Season Special",
-    description: "E-commerce promotion for upcoming holiday season",
+    name: "Предпраздничная акция",
+    description: "Продвижение интернет-магазина перед праздничным сезоном",
     platform: "Instagram",
     progress: 0,
     status: "scheduled" as const,
-    startDate: "Nov 1, 2025",
-    endDate: "Dec 31, 2025",
+    startDate: "1 ноября 2025",
+    endDate: "31 декабря 2025",
     target: {
-      type: "sales",
+      type: "продаж",
       value: 500
     }
   },
   {
     id: "6",
-    name: "Video Series Promotion",
-    description: "Educational video series on digital marketing",
+    name: "Серия обучающих видео",
+    description: "Образовательная видеосерия о цифровом маркетинге",
     platform: "YouTube",
     progress: 35,
     status: "paused" as const,
-    startDate: "May 1, 2025",
-    endDate: "Jul 31, 2025",
+    startDate: "1 мая 2025",
+    endDate: "31 июля 2025",
     target: {
-      type: "subscribers",
+      type: "подписчиков",
       value: 2000
     },
     stats: {
@@ -156,18 +156,18 @@ const CampaignsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Campaigns</h1>
+        <h1 className="text-3xl font-bold">Кампании</h1>
         <Button>
-          <Plus className="mr-2 h-4 w-4" /> Create Campaign
+          <Plus className="mr-2 h-4 w-4" /> Создать кампанию
         </Button>
       </div>
 
       <Tabs defaultValue="all">
         <div className="flex justify-between items-center">
           <TabsList>
-            <TabsTrigger value="all">All Campaigns</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="all">Все кампании</TabsTrigger>
+            <TabsTrigger value="active">Активные</TabsTrigger>
+            <TabsTrigger value="analytics">Аналитика</TabsTrigger>
           </TabsList>
           
           <div className="flex gap-2">
@@ -194,7 +194,7 @@ const CampaignsPage = () => {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search campaigns..."
+                placeholder="Поиск кампаний..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
@@ -205,10 +205,10 @@ const CampaignsPage = () => {
               <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={filterPlatform} onValueChange={setFilterPlatform}>
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Filter by platform" />
+                  <SelectValue placeholder="Фильтр по платформе" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Platforms</SelectItem>
+                  <SelectItem value="all">Все платформы</SelectItem>
                   <SelectItem value="youtube">YouTube</SelectItem>
                   <SelectItem value="spotify">Spotify</SelectItem>
                   <SelectItem value="twitter">Twitter</SelectItem>
@@ -219,14 +219,14 @@ const CampaignsPage = () => {
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue placeholder="Фильтр по статусу" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="all">Все статусы</SelectItem>
+                  <SelectItem value="active">Активные</SelectItem>
+                  <SelectItem value="paused">Приостановленные</SelectItem>
+                  <SelectItem value="completed">Завершенные</SelectItem>
+                  <SelectItem value="scheduled">Запланированные</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -240,13 +240,13 @@ const CampaignsPage = () => {
             ) : (
               <div className="col-span-full flex items-center justify-center p-12 border rounded-lg border-dashed">
                 <div className="text-center space-y-2">
-                  <p className="text-muted-foreground">No campaigns found matching your criteria</p>
+                  <p className="text-muted-foreground">Кампании, соответствующие вашим критериям, не найдены</p>
                   <Button variant="outline" onClick={() => {
                     setFilterPlatform("all");
                     setFilterStatus("all");
                     setSearchTerm("");
                   }}>
-                    Reset Filters
+                    Сбросить фильтры
                   </Button>
                 </div>
               </div>
@@ -268,50 +268,50 @@ const CampaignsPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+                <CardTitle className="text-sm font-medium">Всего кампаний</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{mockCampaigns.length}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {activeCampaigns} active, {completedCampaigns} completed
+                  {activeCampaigns} активных, {completedCampaigns} завершенных
                 </p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                <CardTitle className="text-sm font-medium">Всего просмотров</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Across all platforms
+                  На всех платформах
                 </p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Engagements</CardTitle>
+                <CardTitle className="text-sm font-medium">Всего взаимодействий</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalEngagements.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Likes, comments, shares
+                  Лайки, комментарии, репосты
                 </p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Completion</CardTitle>
+                <CardTitle className="text-sm font-medium">Средняя завершенность</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
                   {Math.round(mockCampaigns.reduce((sum, c) => sum + c.progress, 0) / mockCampaigns.length)}%
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Campaign progress average
+                  Среднее значение прогресса
                 </p>
               </CardContent>
             </Card>
@@ -319,8 +319,8 @@ const CampaignsPage = () => {
           
           <Card>
             <CardHeader>
-              <CardTitle>Campaign Performance</CardTitle>
-              <CardDescription>Overview of all your campaign progress</CardDescription>
+              <CardTitle>Эффективность кампаний</CardTitle>
+              <CardDescription>Обзор прогресса всех ваших кампаний</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

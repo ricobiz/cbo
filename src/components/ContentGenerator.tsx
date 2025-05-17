@@ -20,8 +20,8 @@ export function ContentGenerator() {
   const handleGenerate = () => {
     if (!topic) {
       toast({
-        title: "Topic required",
-        description: "Please enter a topic to generate content.",
+        title: "Требуется тема",
+        description: "Пожалуйста, введите тему для генерации контента.",
         variant: "destructive",
       });
       return;
@@ -33,19 +33,19 @@ export function ContentGenerator() {
     setTimeout(() => {
       const platformContent = {
         twitter: {
-          informative: `📊 Did you know? AI automation can increase marketing efficiency by up to 80%! #AIMarketing #DigitalEfficiency`,
-          engaging: `🤯 My mind was BLOWN when I saw the results of using AI for marketing automation! 80% efficiency boost in just ONE week! Has anyone else tried this? #AIRevolution`,
-          promotional: `Ready to 10x your marketing results? Our AI platform delivers 80% more efficiency with half the effort. Limited time offer: Start your free trial now! #AIMarketing #GrowthHacking`
+          informative: `📊 Знаете ли вы? Автоматизация с ИИ может повысить эффективность маркетинга до 80%! #ИИМаркетинг #ЦифроваяЭффективность`,
+          engaging: `🤯 Я был ПОРАЖЕН, когда увидел результаты использования ИИ для автоматизации маркетинга! Повышение эффективности на 80% всего за ОДНУ неделю! Кто-нибудь еще пробовал? #ИИРеволюция`,
+          promotional: `Готовы увеличить результаты маркетинга в 10 раз? Наша платформа ИИ обеспечивает на 80% большую эффективность при вдвое меньших усилиях. Ограниченное предложение: начните бесплатный пробный период сейчас! #ИИМаркетинг #РостБизнеса`
         },
         instagram: {
-          informative: `AI-driven marketing isn't just a trend—it's the future. Our latest case study shows how brands are seeing 80% increases in efficiency.\n\n#AIMarketing #DigitalTransformation #MarketingTips`,
-          engaging: `✨ Question for my marketing fam! ✨\n\nHave you implemented AI in your strategy yet? We're seeing CRAZY results (80% efficiency increase!) with our new approach.\n\nDrop a 🤖 if you want me to share more insights!\n\n#MarketingTips #AIRevolution`,
-          promotional: `Transform your digital presence with AI-powered marketing\n\n✅ 80% increase in efficiency\n✅ Personalized content at scale\n✅ Data-driven strategies\n\nClick the link in bio to start your journey!\n\n#MarketingTransformation #AITechnology`
+          informative: `Маркетинг на основе ИИ — это не просто тренд, это будущее. Наше последнее исследование показывает, как бренды видят увеличение эффективности на 80%.\n\n#ИИМаркетинг #ЦифроваяТрансформация #СоветыПоМаркетингу`,
+          engaging: `✨ Вопрос для моей маркетинговой семьи! ✨\n\nВы уже внедрили ИИ в свою стратегию? Мы видим СУМАСШЕДШИЕ результаты (увеличение эффективности на 80%!) с нашим новым подходом.\n\nПоставьте 🤖, если хотите, чтобы я поделился дополнительными идеями!\n\n#СоветыПоМаркетингу #ИИРеволюция`,
+          promotional: `Преобразите свое цифровое присутствие с маркетингом на базе ИИ\n\n✅ Увеличение эффективности на 80%\n✅ Персонализированный контент в больших масштабах\n✅ Стратегии на основе данных\n\nНажмите на ссылку в профиле, чтобы начать свой путь!\n\n#ТрансформацияМаркетинга #ИИТехнологии`
         },
         youtube: {
-          informative: `The Evolution of AI in Digital Marketing: Data-Driven Strategies for 2024\n\nIn this comprehensive analysis, we explore how artificial intelligence is reshaping the marketing landscape, with case studies showing efficiency improvements of up to 80% across various industries.`,
-          engaging: `I Tried AI Marketing for 30 Days... The Results Will SHOCK You! 😱\n\nIn this video, I document my journey using cutting-edge AI tools for my marketing strategy. From content creation to audience targeting, see how I achieved an 80% boost in efficiency and the lessons I learned along the way.`,
-          promotional: `REVEALED: The AI Marketing Secret Big Agencies Don't Want You To Know\n\nDiscover how our proprietary AI system is helping businesses just like yours achieve 80% more marketing efficiency while cutting costs in half. Limited spots available for our exclusive beta program!`
+          informative: `Эволюция ИИ в цифровом маркетинге: стратегии на основе данных на 2024 год\n\nВ этом всестороннем анализе мы исследуем, как искусственный интеллект меняет ландшафт маркетинга, с примерами из практики, показывающими повышение эффективности до 80% в различных отраслях.`,
+          engaging: `Я пробовал ИИ-маркетинг 30 дней... Результаты вас ШОКИРУЮТ! 😱\n\nВ этом видео я документирую свой путь использования передовых инструментов ИИ для моей маркетинговой стратегии. От создания контента до таргетирования аудитории, узнайте, как я добился повышения эффективности на 80% и какие уроки я извлек.`,
+          promotional: `РАСКРЫТО: Секрет ИИ-маркетинга, который крупные агентства не хотят, чтобы вы знали\n\nУзнайте, как наша запатентованная система ИИ помогает бизнесу, такому как ваш, достичь на 80% большей эффективности маркетинга при одновременном сокращении расходов вдвое. Доступно ограниченное количество мест в нашей эксклюзивной бета-программе!`
         }
       };
       
@@ -53,8 +53,8 @@ export function ContentGenerator() {
       setIsGenerating(false);
       
       toast({
-        title: "Content generated",
-        description: "Your content has been generated successfully.",
+        title: "Контент сгенерирован",
+        description: "Ваш контент был успешно сгенерирован.",
       });
     }, 1500);
   };
@@ -63,8 +63,8 @@ export function ContentGenerator() {
     navigator.clipboard.writeText(generatedContent);
     setCopied(true);
     toast({
-      title: "Content copied",
-      description: "Content has been copied to clipboard.",
+      title: "Контент скопирован",
+      description: "Контент скопирован в буфер обмена.",
     });
     setTimeout(() => setCopied(false), 2000);
   };
@@ -74,14 +74,14 @@ export function ContentGenerator() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary" />
-          AI Content Generator
+          Генератор контента
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Topic</label>
+          <label className="text-sm font-medium">Тема</label>
           <Input 
-            placeholder="Enter a topic or keyword" 
+            placeholder="Введите тему или ключевое слово" 
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
           />
@@ -89,10 +89,10 @@ export function ContentGenerator() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Platform</label>
+            <label className="text-sm font-medium">Платформа</label>
             <Select value={platform} onValueChange={setPlatform}>
               <SelectTrigger>
-                <SelectValue placeholder="Select platform" />
+                <SelectValue placeholder="Выберите платформу" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="twitter">Twitter</SelectItem>
@@ -103,15 +103,15 @@ export function ContentGenerator() {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Style</label>
+            <label className="text-sm font-medium">Стиль</label>
             <Select value={style} onValueChange={setStyle}>
               <SelectTrigger>
-                <SelectValue placeholder="Select style" />
+                <SelectValue placeholder="Выберите стиль" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="informative">Informative</SelectItem>
-                <SelectItem value="engaging">Engaging</SelectItem>
-                <SelectItem value="promotional">Promotional</SelectItem>
+                <SelectItem value="informative">Информативный</SelectItem>
+                <SelectItem value="engaging">Вовлекающий</SelectItem>
+                <SelectItem value="promotional">Рекламный</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -122,13 +122,13 @@ export function ContentGenerator() {
           onClick={handleGenerate} 
           disabled={isGenerating || !topic}
         >
-          {isGenerating ? "Generating..." : "Generate Content"}
+          {isGenerating ? "Генерация..." : "Сгенерировать контент"}
         </Button>
         
         {generatedContent && (
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Generated Content</label>
+              <label className="text-sm font-medium">Сгенерированный контент</label>
               <Button 
                 variant="ghost" 
                 size="sm" 
