@@ -18,6 +18,7 @@ export interface CampaignCardProps {
     startDate: string;
     endDate: string;
     type: string;
+    isDemo?: boolean;
     metrics: {
       views: number;
       engagement: number;
@@ -72,13 +73,18 @@ export function CampaignCard({ campaign, onStatusChange }: CampaignCardProps) {
 
   return (
     <>
-      <Card className={campaign.status === "active" ? "border-primary/50 hover:shadow-md transition-shadow" : "hover:shadow-md transition-shadow"}>
+      <Card className={`${campaign.status === "active" ? "border-primary/50" : ""} ${campaign.isDemo ? "border-blue-200 bg-blue-50/30" : ""} hover:shadow-md transition-shadow`}>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base">{campaign.title}</CardTitle>
                 {getStatusBadge()}
+                {campaign.isDemo && (
+                  <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50">
+                    Демо
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">{campaign.type === "promotion" ? "Продвижение" : "Рост аудитории"}</p>
             </div>
@@ -162,12 +168,13 @@ export function CampaignCard({ campaign, onStatusChange }: CampaignCardProps) {
       <CampaignDetails
         id={campaign.id}
         name={campaign.title}
-        description={campaign.type === "promotion" ? "Кампания продвижения" : "Кампания роста"}
+        description={`${campaign.isDemo ? "Демонстрационная " : ""}${campaign.type === "promotion" ? "Кампания продвижения" : "Кампания роста"}`}
         platform={campaign.platform}
         progress={campaign.progress}
         status={campaign.status}
         startDate={campaign.startDate}
         endDate={campaign.endDate}
+        isDemo={campaign.isDemo}
         target={{
           type: campaign.type === "promotion" ? "просмотры" : "подписчики",
           value: campaign.type === "promotion" ? 50000 : 5000

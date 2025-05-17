@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, ClipboardList, Calendar, Search, ExternalLink } from "lucide-react";
+import { PlusCircle, ClipboardList, Calendar, Search, ExternalLink, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CampaignCard } from "@/components/campaigns/CampaignCard";
@@ -12,6 +12,7 @@ import { externalAPIService } from "@/services/external-api";
 import { useToast } from "@/components/ui/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { SetupGuideHints } from "@/components/bots/SetupGuideHints";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Define campaign interface
 interface Campaign {
@@ -23,6 +24,7 @@ interface Campaign {
   startDate: string;
   endDate: string;
   type: string;
+  isDemo?: boolean;
   metrics: {
     views: number;
     engagement: number;
@@ -33,14 +35,15 @@ interface Campaign {
 // Demo campaigns for first-time users
 const demoCampaigns: Campaign[] = [
   {
-    id: "1",
-    title: "Промо YouTube видео",
+    id: "demo-1",
+    title: "Демо: Промо YouTube видео",
     platform: "youtube",
     status: "active",
     progress: 45,
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
     type: "promotion",
+    isDemo: true,
     metrics: {
       views: 2450,
       engagement: 148,
@@ -48,14 +51,15 @@ const demoCampaigns: Campaign[] = [
     }
   },
   {
-    id: "2",
-    title: "Тест рекламных креативов",
+    id: "demo-2",
+    title: "Демо: Тест рекламных креативов",
     platform: "instagram",
     status: "draft",
     progress: 0,
     startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
     endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
     type: "test",
+    isDemo: true,
     metrics: {
       views: 0,
       engagement: 0,
@@ -76,10 +80,34 @@ const CampaignsPage = () => {
   const [filterPlatform, setFilterPlatform] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [showSetupGuide, setShowSetupGuide] = useState(true);
+  const [hideDemoAlert, setHideDemoAlert] = useState(false);
   const { toast } = useToast();
   
-  // Initialize with demo campaigns
-  const [campaigns, setCampaigns] = useState<Campaign[]>(demoCampaigns);
+  // Check if we have any campaigns stored in localStorage
+  const getSavedCampaigns = (): Campaign[] => {
+    try {
+      const saved = localStorage.getItem('userCampaigns');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Error loading saved campaigns:", e);
+      return [];
+    }
+  };
+  
+  // Initialize with user campaigns if available, otherwise use demo campaigns
+  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
+    const savedCampaigns = getSavedCampaigns();
+    return savedCampaigns.length > 0 ? savedCampaigns : demoCampaigns;
+  });
+  
+  // Save campaigns to localStorage whenever they change
+  useEffect(() => {
+    // Only save non-demo campaigns
+    const userCampaigns = campaigns.filter(campaign => !campaign.isDemo);
+    if (userCampaigns.length > 0) {
+      localStorage.setItem('userCampaigns', JSON.stringify(userCampaigns));
+    }
+  }, [campaigns]);
 
   // Check URL parameters for auto-opening the create dialog
   useEffect(() => {
@@ -111,7 +139,7 @@ const CampaignsPage = () => {
   // Обработчик создания новой кампании
   const handleCreateCampaign = (formData: any) => {
     // Генерируем уникальный ID для новой кампании
-    const newId = String(Math.max(...campaigns.map(c => Number(c.id)), 0) + 1);
+    const newId = `user-${Date.now()}`;
     
     // Создаем объект новой кампании
     const newCampaign: Campaign = {
@@ -123,6 +151,7 @@ const CampaignsPage = () => {
       startDate: formData.startDate,
       endDate: formData.endDate,
       type: formData.type,
+      isDemo: false, // Это НЕ демо-кампания
       metrics: {
         views: 0,
         engagement: 0,
@@ -130,11 +159,21 @@ const CampaignsPage = () => {
       }
     };
     
-    // Добавляем новую кампанию в начало списка
-    setCampaigns(prevCampaigns => [newCampaign, ...prevCampaigns]);
+    // Если это первая пользовательская кампания, удалим демо-кампании
+    if (!campaigns.some(c => !c.isDemo)) {
+      setCampaigns([newCampaign]); // Заменяем демо-кампании на новую
+    } else {
+      // Иначе добавляем к существующим пользовательским кампаниям
+      setCampaigns(prevCampaigns => [
+        newCampaign, 
+        ...prevCampaigns.filter(c => !c.isDemo)
+      ]);
+    }
     
     // Hide setup guide after creating first campaign
     setShowSetupGuide(false);
+    // Also hide demo alert after creating a real campaign
+    setHideDemoAlert(true);
 
     toast({
       title: "Кампания создана",
@@ -146,6 +185,16 @@ const CampaignsPage = () => {
   useEffect(() => {
     setIsOfflineMode(externalAPIService.isOfflineMode());
   }, []);
+  
+  // Скрыть уведомление о демо данных в localStorage 
+  useEffect(() => {
+    const hideDemoAlertSaved = localStorage.getItem('hideDemoAlert') === 'true';
+    setHideDemoAlert(hideDemoAlertSaved);
+  }, []);
+  
+  useEffect(() => {
+    localStorage.setItem('hideDemoAlert', hideDemoAlert.toString());
+  }, [hideDemoAlert]);
 
   // Фильтрация кампаний
   const filteredCampaigns = campaigns.filter(campaign => {
@@ -166,6 +215,9 @@ const CampaignsPage = () => {
     return matchesSearch && matchesPlatform && matchesTab;
   });
 
+  // Проверяем, есть ли среди отфильтрованных кампаний хотя бы одна демо-кампания
+  const hasFilteredDemoCampaigns = filteredCampaigns.some(campaign => campaign.isDemo);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -180,6 +232,27 @@ const CampaignsPage = () => {
       </div>
 
       {showSetupGuide && <SetupGuideHints />}
+      
+      {/* Информационное сообщение о демо-данных */}
+      {hasFilteredDemoCampaigns && !hideDemoAlert && (
+        <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Демонстрационные данные</AlertTitle>
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              Вы видите примеры демонстрационных кампаний. Создайте свою собственную кампанию, и эти примеры исчезнут.
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-blue-300 hover:bg-blue-100"
+              onClick={() => setHideDemoAlert(true)}
+            >
+              Скрыть
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {isOfflineMode && (
         <Card className="border-yellow-200 bg-yellow-50">

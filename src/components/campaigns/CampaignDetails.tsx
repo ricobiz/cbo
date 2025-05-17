@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Rocket, Users, Zap, BarChart, LineChart, Target } from "lucide-react";
+import { Calendar, Rocket, Users, Zap, BarChart, LineChart, Target, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CampaignDetailsProps {
   id: string;
@@ -23,6 +24,7 @@ interface CampaignDetailsProps {
   status: "active" | "paused" | "completed" | "scheduled" | string;
   startDate: string;
   endDate: string;
+  isDemo?: boolean;
   target: {
     type: string;
     value: number | string;
@@ -45,6 +47,7 @@ export function CampaignDetails({
   status,
   startDate,
   endDate,
+  isDemo,
   target,
   stats,
   open,
@@ -86,8 +89,22 @@ export function CampaignDetails({
           <div className="flex gap-2 mt-2">
             <Badge variant="outline">{platform}</Badge>
             {getStatusBadge()}
+            {isDemo && (
+              <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50">
+                Демо
+              </Badge>
+            )}
           </div>
         </DialogHeader>
+        
+        {isDemo && (
+          <Alert className="bg-blue-50 border-blue-200 text-blue-800">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Это демонстрационная кампания, предназначенная только для ознакомления с интерфейсом.
+            </AlertDescription>
+          </Alert>
+        )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4">
