@@ -2,138 +2,134 @@
 import { useState } from "react";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
 import { Card } from "@/components/ui/card";
-import { Check, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-interface SetupStep {
-  id: string;
-  title: string;
-  description: string;
-  hint: string;
-}
+import { Bot, Settings, Users, Mail, Globe, Shield } from "lucide-react";
 
 export function SetupGuideHints() {
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
+  const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({
+    createBot: false,
+    configureProxy: false,
+    addAccounts: false,
+    scheduleBot: false,
+    secureConnection: false
+  });
 
-  const setupSteps: SetupStep[] = [
-    {
-      id: "create-bot",
-      title: "Создание бота",
-      description: "Создайте нового бота для автоматизации действий",
-      hint: "Нажмите кнопку 'Новый бот' в правом верхнем углу страницы"
-    },
-    {
-      id: "configure-bot",
-      title: "Настройка бота",
-      description: "Выберите тип и платформу для вашего бота",
-      hint: "Выберите нужный тип бота и целевую платформу из выпадающих списков"
-    },
-    {
-      id: "setup-proxy",
-      title: "Настройка прокси",
-      description: "Добавьте прокси для обхода ограничений",
-      hint: "Активируйте вращение IP в настройках бота"
-    },
-    {
-      id: "add-accounts",
-      title: "Добавление аккаунтов",
-      description: "Добавьте email аккаунты для работы ботов",
-      hint: "Перейдите на страницу аккаунтов для добавления учетных записей"
-    },
-    {
-      id: "start-bot",
-      title: "Запуск бота",
-      description: "Активируйте бота для начала работы",
-      hint: "Нажмите кнопку 'Запустить' на карточке бота"
-    }
-  ];
-
-  const handleCompleteStep = (stepId: string) => {
-    setCompletedSteps({
-      ...completedSteps,
-      [stepId]: true
-    });
-    
-    // Move to next step if available
-    if (activeStepIndex < setupSteps.length - 1) {
-      setActiveStepIndex(activeStepIndex + 1);
-    }
+  const markStepComplete = (step: string) => {
+    setCompletedSteps(prev => ({
+      ...prev,
+      [step]: true
+    }));
   };
 
-  const totalCompleted = Object.values(completedSteps).filter(Boolean).length;
-  const progress = Math.round((totalCompleted / setupSteps.length) * 100);
+  const allStepsCompleted = Object.values(completedSteps).every(Boolean);
+
+  if (allStepsCompleted) {
+    return null;
+  }
 
   return (
-    <Card className="border-2 border-blue-100 p-4 mb-6">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h3 className="text-lg font-medium">Руководство по настройке</h3>
-          <p className="text-sm text-muted-foreground">
-            Выполнено шагов: {totalCompleted} из {setupSteps.length}
-          </p>
-        </div>
-        <div className="bg-blue-100 h-2 rounded-full w-36">
-          <div 
-            className="bg-blue-500 h-2 rounded-full transition-all" 
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
+    <Card className="p-4 bg-muted/30">
+      <h3 className="text-lg font-medium mb-4">Руководство по настройке</h3>
       <div className="space-y-4">
-        {setupSteps.map((step, index) => {
-          const isActive = index === activeStepIndex;
-          const isCompleted = !!completedSteps[step.id];
-          const isPending = index > activeStepIndex;
-
-          return (
-            <div key={step.id} className="flex items-start gap-3">
-              <div className={`mt-1 flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center ${
-                isCompleted 
-                  ? "bg-green-100 text-green-600" 
-                  : isActive 
-                    ? "bg-blue-100 text-blue-600 animate-pulse" 
-                    : "bg-gray-100 text-gray-400"
-              }`}>
-                {isCompleted ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <span className="text-xs font-medium">{index + 1}</span>
-                )}
-              </div>
-              <div className="flex-1">
-                <InteractiveHint
-                  title={step.title}
-                  description={step.description}
-                  highlightLevel={isActive ? "high" : "low"}
-                  completed={isCompleted}
-                  onComplete={() => handleCompleteStep(step.id)}
-                  className={isPending ? "opacity-50" : ""}
-                >
-                  <div className="pl-2 min-h-14 flex items-center">
-                    <div>
-                      <h4 className="font-medium">{step.title}</h4>
-                      <p className="text-sm text-muted-foreground">{step.hint}</p>
-                    </div>
-                  </div>
-                </InteractiveHint>
-              </div>
+        <InteractiveHint
+          title="Создайте бота"
+          description="Создайте нового бота, выбрав тип и указав, для какой платформы он будет работать."
+          step={1}
+          totalSteps={5}
+          completed={completedSteps.createBot}
+          onComplete={() => markStepComplete('createBot')}
+          highlightLevel="high"
+        >
+          <div className="flex items-start gap-3">
+            <Bot className="h-8 w-8 text-primary mt-1" />
+            <div>
+              <h4 className="font-medium">Создание бота</h4>
+              <p className="text-sm text-muted-foreground">
+                Нажмите на кнопку «New Bot» или «Quick Create», чтобы начать создание бота. Выберите тип бота в зависимости от ваших потребностей.
+              </p>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        </InteractiveHint>
 
-      {totalCompleted === setupSteps.length && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-100 rounded-md flex items-center justify-between">
-          <p className="text-green-700 font-medium">
-            Настройка завершена! Система готова к использованию.
-          </p>
-          <Button size="sm" className="bg-green-600 hover:bg-green-700">
-            Перейти к мониторингу <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        </div>
-      )}
+        <InteractiveHint
+          title="Настройте прокси-серверы"
+          description="Настройте прокси для обеспечения безопасного доступа и ротации IP-адресов."
+          step={2}
+          totalSteps={5}
+          completed={completedSteps.configureProxy}
+          onComplete={() => markStepComplete('configureProxy')}
+          highlightLevel={completedSteps.createBot ? "high" : "low"}
+        >
+          <div className="flex items-start gap-3">
+            <Globe className="h-8 w-8 text-blue-500 mt-1" />
+            <div>
+              <h4 className="font-medium">Настройка прокси</h4>
+              <p className="text-sm text-muted-foreground">
+                Перейдите в настройки прокси и добавьте IP-адреса для ротации. Рекомендуется использовать разные регионы для максимальной эффективности.
+              </p>
+            </div>
+          </div>
+        </InteractiveHint>
+
+        <InteractiveHint
+          title="Добавьте учетные записи"
+          description="Назначьте электронные почты или учетные записи социальных сетей для работы ботов."
+          step={3}
+          totalSteps={5}
+          completed={completedSteps.addAccounts}
+          onComplete={() => markStepComplete('addAccounts')}
+          highlightLevel={completedSteps.configureProxy ? "high" : "low"}
+        >
+          <div className="flex items-start gap-3">
+            <Users className="h-8 w-8 text-amber-500 mt-1" />
+            <div>
+              <h4 className="font-medium">Управление аккаунтами</h4>
+              <p className="text-sm text-muted-foreground">
+                Добавьте аккаунты социальных сетей или электронные почты для каждого бота через раздел учетных записей или при настройке бота.
+              </p>
+            </div>
+          </div>
+        </InteractiveHint>
+
+        <InteractiveHint
+          title="Настройка расписания"
+          description="Настройте время работы и режим действий для каждого бота."
+          step={4}
+          totalSteps={5}
+          completed={completedSteps.scheduleBot}
+          onComplete={() => markStepComplete('scheduleBot')}
+          highlightLevel={completedSteps.addAccounts ? "high" : "low"}
+        >
+          <div className="flex items-start gap-3">
+            <Settings className="h-8 w-8 text-green-500 mt-1" />
+            <div>
+              <h4 className="font-medium">Расписание работы</h4>
+              <p className="text-sm text-muted-foreground">
+                Установите дни недели, время начала и окончания работы для каждого бота. Рекомендуется настроить перерывы для более естественного поведения.
+              </p>
+            </div>
+          </div>
+        </InteractiveHint>
+
+        <InteractiveHint
+          title="Настройка безопасности"
+          description="Настройте параметры безопасности для защиты ваших ботов и аккаунтов."
+          step={5}
+          totalSteps={5}
+          completed={completedSteps.secureConnection}
+          onComplete={() => markStepComplete('secureConnection')}
+          highlightLevel={completedSteps.scheduleBot ? "high" : "low"}
+        >
+          <div className="flex items-start gap-3">
+            <Shield className="h-8 w-8 text-purple-500 mt-1" />
+            <div>
+              <h4 className="font-medium">Безопасность</h4>
+              <p className="text-sm text-muted-foreground">
+                Установите параметры безопасности для защиты от обнаружения. Настройте поведение ботов так, чтобы оно максимально напоминало поведение обычных пользователей.
+              </p>
+            </div>
+          </div>
+        </InteractiveHint>
+      </div>
     </Card>
   );
 }

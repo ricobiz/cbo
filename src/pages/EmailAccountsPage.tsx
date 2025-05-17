@@ -2,311 +2,455 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Table, 
   TableBody, 
-  TableCaption, 
   TableCell, 
   TableHead, 
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
 import { 
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash, MailPlus, Search, RefreshCw, Check, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Mail, Plus, Import, Download, Search, Trash2, Check, X, Filter } from "lucide-react";
 import { botService, EmailAccount } from "@/services/BotService";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { format } from "date-fns";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
 
-// Define an interface for account status
-interface EmailAccountWithStatus extends EmailAccount {
-  status?: string;
-  lastUsed?: string;
-}
-
 const EmailAccountsPage = () => {
-  const [accounts, setAccounts] = useState<EmailAccountWithStatus[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
+  const [filteredAccounts, setFilteredAccounts] = useState<EmailAccount[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [importText, setImportText] = useState("");
+  const [showHints, setShowHints] = useState(true);
+  
   const { toast } = useToast();
-
+  
+  // Load email accounts
   useEffect(() => {
-    loadAccounts();
+    const accounts = botService.getAllEmailAccounts();
+    setEmailAccounts(accounts);
+    setFilteredAccounts(accounts);
   }, []);
-
-  const loadAccounts = () => {
-    const allAccounts = botService.getAllEmailAccounts();
+  
+  // Filter accounts when search or status filter changes
+  useEffect(() => {
+    let filtered = [...emailAccounts];
     
-    // Add status property to each account
-    const accountsWithStatus = allAccounts.map(account => ({
-      ...account,
-      status: account.isInUse ? 'active' : 'inactive',
-      lastUsed: account.isInUse ? new Date().toISOString() : undefined
-    }));
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(account => {
+        if (statusFilter === "active") return account.status === "active";
+        if (statusFilter === "inactive") return account.status === "inactive";
+        if (statusFilter === "inUse") return account.isInUse;
+        if (statusFilter === "available") return !account.isInUse;
+        return true;
+      });
+    }
     
-    setAccounts(accountsWithStatus);
-  };
-
-  const handleAddAccount = () => {
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(account => 
+        account.email.toLowerCase().includes(query)
+      );
+    }
+    
+    setFilteredAccounts(filtered);
+  }, [emailAccounts, searchQuery, statusFilter]);
+  
+  // Add new email account
+  const handleAddEmail = () => {
     if (!newEmail || !newPassword) {
       toast({
-        title: "Validation Error",
-        description: "Please provide both email and password.",
+        title: "Необходимо заполнить все поля",
+        description: "Пожалуйста, введите адрес электронной почты и пароль.",
         variant: "destructive"
       });
       return;
     }
-
-    // Basic email validation
-    if (!newEmail.includes('@') || !newEmail.includes('.')) {
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
       toast({
-        title: "Invalid Email",
-        description: "Please provide a valid email address.",
+        title: "Неверный формат",
+        description: "Пожалуйста, введите корректный адрес электронной почты.",
         variant: "destructive"
       });
       return;
     }
-
-    // Check if email already exists
-    if (accounts.some(account => account.email === newEmail)) {
-      toast({
-        title: "Duplicate Email",
-        description: "This email address is already registered.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    
     try {
-      const id = botService.addEmailAccount(newEmail, newPassword);
+      const emailId = botService.addEmailAccount(newEmail, newPassword);
       
-      toast({
-        title: "Account Added",
-        description: "Email account has been added successfully."
-      });
-      
-      setNewEmail("");
-      setNewPassword("");
-      setIsAddDialogOpen(false);
-      loadAccounts();
+      if (emailId) {
+        const accounts = botService.getAllEmailAccounts();
+        setEmailAccounts(accounts);
+        
+        toast({
+          title: "Аккаунт добавлен",
+          description: `Электронная почта ${newEmail} успешно добавлена.`
+        });
+        
+        setNewEmail("");
+        setNewPassword("");
+        setShowAddDialog(false);
+      }
     } catch (error) {
       toast({
-        title: "Error Adding Account",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Ошибка при добавлении",
+        description: "Не удалось добавить учетную запись электронной почты.",
         variant: "destructive"
       });
     }
   };
-
-  const handleDeleteAccount = (id: string) => {
-    try {
-      // Check if the account is in use by any bot
-      const account = accounts.find(a => a.id === id);
-      if (account?.isInUse) {
-        toast({
-          title: "Deletion Failed",
-          description: "This account is currently in use by one or more bots and cannot be deleted.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Since we don't have a deleteEmailAccount method in botService,
-      // we'll simulate its functionality here
-      const success = true; // In a real implementation, this would be the result of botService.deleteEmailAccount(id)
-      
-      if (success) {
-        toast({
-          title: "Account Deleted",
-          description: "Email account has been removed successfully."
-        });
-        // Update the local state to remove the account
-        setAccounts(accounts.filter(account => account.id !== id));
-      } else {
-        toast({
-          title: "Deletion Failed",
-          description: "This account is currently in use by one or more bots and cannot be deleted.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
+  
+  // Import email accounts
+  const handleImportEmails = () => {
+    if (!importText.trim()) {
       toast({
-        title: "Error Deleting Account",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Нет данных для импорта",
+        description: "Пожалуйста, введите данные в формате email:password.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const lines = importText.split('\n');
+    let importCount = 0;
+    let errorCount = 0;
+    
+    lines.forEach(line => {
+      const parts = line.trim().split(/[,:;|]|\s+/);
+      if (parts.length >= 2) {
+        const email = parts[0].trim();
+        const password = parts[1].trim();
+        
+        if (email && password) {
+          try {
+            botService.addEmailAccount(email, password);
+            importCount++;
+          } catch (error) {
+            errorCount++;
+          }
+        }
+      }
+    });
+    
+    if (importCount > 0) {
+      const accounts = botService.getAllEmailAccounts();
+      setEmailAccounts(accounts);
+      
+      toast({
+        title: "Импорт завершен",
+        description: `Успешно импортировано ${importCount} аккаунтов${errorCount > 0 ? `, не удалось импортировать ${errorCount}` : ''}.`
+      });
+      
+      setImportText("");
+      setShowImportDialog(false);
+    } else {
+      toast({
+        title: "Импорт не выполнен",
+        description: "Не удалось импортировать аккаунты. Проверьте формат данных.",
         variant: "destructive"
       });
     }
   };
-
-  const filteredAccounts = accounts.filter(account => 
-    account.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  
+  // Delete email account
+  const handleDeleteEmail = (id: string) => {
+    const account = emailAccounts.find(a => a.id === id);
+    
+    if (account?.isInUse) {
+      toast({
+        title: "Невозможно удалить",
+        description: "Этот аккаунт используется ботом. Отключите его от бота перед удалением.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const success = botService.deleteEmailAccount(id);
+    
+    if (success) {
+      const accounts = botService.getAllEmailAccounts();
+      setEmailAccounts(accounts);
+      
+      toast({
+        title: "Аккаунт удален",
+        description: "Учетная запись электронной почты успешно удалена."
+      });
+    } else {
+      toast({
+        title: "Ошибка при удалении",
+        description: "Не удалось удалить учетную запись электронной почты.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Export email accounts
+  const handleExportEmails = () => {
+    const exportData = emailAccounts.map(account => {
+      return `${account.email}:${account.password || '[скрыто]'}`;
+    }).join('\n');
+    
+    // Create download link
+    const element = document.createElement('a');
+    const file = new Blob([exportData], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `email-accounts-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: "Экспорт выполнен",
+      description: "Учетные записи электронной почты успешно экспортированы."
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Email Accounts</h1>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Account
-        </Button>
+        <div className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          <h1 className="text-3xl font-bold">Учетные записи электронной почты</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+            <Import className="h-4 w-4 mr-2" />
+            Импорт
+          </Button>
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Добавить
+          </Button>
+        </div>
       </div>
-
-      <InteractiveHint
-        title="Добавление аккаунтов"
-        description="Добавьте почтовые аккаунты, которые будут использоваться ботами для авторизации на платформах."
-        highlightLevel="high"
-        step={1}
-        totalSteps={3}
-      >
-        <Card className="border-2">
-          <CardHeader className="pb-3">
-            <CardTitle>Accounts Management</CardTitle>
-            <CardDescription>Manage email accounts used by your bots.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <div className="relative max-w-sm">
-                <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
-                <Input 
-                  placeholder="Search accounts..." 
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-10 w-[300px]"
-                />
-              </div>
-              <Button variant="outline" size="icon" onClick={loadAccounts}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
+      
+      {showHints && (
+        <InteractiveHint
+          title="Управление электронной почтой"
+          description="Добавляйте и управляйте учетными записями электронной почты для использования с ботами."
+          onComplete={() => setShowHints(false)}
+          highlightLevel="medium"
+        >
+          <div className="flex items-start gap-3">
+            <Mail className="h-8 w-8 text-blue-500 mt-1" />
+            <div>
+              <h4 className="font-medium">Учетные записи электронной почты</h4>
+              <p className="text-sm text-muted-foreground">
+                Здесь вы можете добавлять и управлять учетными записями электронной почты, которые будут использоваться вашими ботами. Вы можете добавлять почты по одной или импортировать их массово.
+              </p>
             </div>
-
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
+          </div>
+        </InteractiveHint>
+      )}
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Все учетные записи</CardTitle>
+          <CardDescription>
+            Управление учетными записями электронной почты для всех ботов
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between mb-4">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по email..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Фильтр" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="all">Все аккаунты</SelectItem>
+                    <SelectItem value="active">Активные</SelectItem>
+                    <SelectItem value="inactive">Неактивные</SelectItem>
+                    <SelectItem value="inUse">Используемые</SelectItem>
+                    <SelectItem value="available">Доступные</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Последнее использование</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAccounts.length === 0 ? (
                   <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Used</TableHead>
-                    <TableHead>In Use</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      <Mail className="h-8 w-8 text-muted-foreground opacity-20 mx-auto mb-2" />
+                      <p className="text-muted-foreground">Нет учетных записей электронной почты</p>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAccounts.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-6">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <MailPlus className="h-10 w-10 mb-2 opacity-20" />
-                          <p>No email accounts found</p>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mt-2"
-                            onClick={() => setIsAddDialogOpen(true)}
-                          >
-                            Add Your First Account
-                          </Button>
-                        </div>
+                ) : (
+                  filteredAccounts.map((account) => (
+                    <TableRow key={account.id}>
+                      <TableCell className="font-medium">{account.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={account.isInUse ? "default" : account.status === "active" ? "outline" : "secondary"}>
+                          {account.isInUse ? "Используется" : account.status === "active" ? "Активен" : "Неактивен"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {account.lastUsed 
+                          ? new Date(account.lastUsed).toLocaleDateString() 
+                          : "Не использовался"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteEmail(account.id)}
+                          disabled={account.isInUse}
+                          title={account.isInUse ? "Невозможно удалить используемый аккаунт" : "Удалить"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    filteredAccounts.map((account) => (
-                      <TableRow key={account.id}>
-                        <TableCell className="font-medium">{account.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={account.status === 'active' ? 'default' : 'secondary'}>
-                            {account.status || 'Unknown'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{account.lastUsed ? format(new Date(account.lastUsed), 'MMM d, yyyy') : 'Never'}</TableCell>
-                        <TableCell>
-                          {account.isInUse ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <X className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={account.isInUse}
-                            onClick={() => handleDeleteAccount(account.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </InteractiveHint>
-
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+        <CardFooter className="border-t bg-muted/50 flex justify-between pt-2">
+          <div className="text-sm text-muted-foreground">
+            Всего: {filteredAccounts.length} из {emailAccounts.length}
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportEmails} disabled={emailAccounts.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Экспорт
+          </Button>
+        </CardFooter>
+      </Card>
+      
+      {/* Add Email Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add Email Account</DialogTitle>
+            <DialogTitle>Добавить учетную запись</DialogTitle>
             <DialogDescription>
-              Add a new email account to be used by your bots.
+              Добавьте новую учетную запись электронной почты для использования с ботами.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <InteractiveHint
-              title="Укажите email"
-              description="Используйте реальный email для авторизации ботов на целевых платформах"
-            >
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@example.com"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                />
-              </div>
-            </InteractiveHint>
-            
-            <InteractiveHint
-              title="Укажите пароль"
-              description="Используйте надежный пароль. Пароль будет храниться в зашифрованном виде"
-            >
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium">Password</label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-            </InteractiveHint>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="username@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Cancel
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+              Отмена
             </Button>
-            <Button onClick={handleAddAccount}>
-              Add Account
+            <Button onClick={handleAddEmail}>
+              Добавить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Import Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Импорт учетных записей</DialogTitle>
+            <DialogDescription>
+              Вставьте список учетных записей в формате email:password, по одной на строку.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="import-text">Данные для импорта</Label>
+              <textarea
+                id="import-text"
+                className="min-h-[150px] w-full px-3 py-2 text-sm rounded-md border border-input bg-background"
+                placeholder="user1@example.com:password1&#10;user2@example.com:password2&#10;user3@example.com:password3"
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+              ></textarea>
+              <p className="text-xs text-muted-foreground">
+                Поддерживаемые форматы: email:password, email,password, email|password или email password
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handleImportEmails}>
+              Импортировать
             </Button>
           </DialogFooter>
         </DialogContent>
