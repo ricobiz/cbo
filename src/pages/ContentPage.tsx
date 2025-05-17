@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
 import { externalAPIService } from "@/services/external-api";
+import { Badge } from "@/components/ui/badge";
 
 // Типы для генерации изображений
 type ImageGenerationSize = "512x512" | "1024x1024" | "1024x1792" | "1792x1024";
@@ -175,7 +175,7 @@ const ContentPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Генератор контента</h1>
+        <h1 className="text-3xl font-bold">Генератор ��онтента</h1>
         
         <Button variant="outline" onClick={() => {
           const randomTab = ["text", "image", "audio", "video", "schedule"][
