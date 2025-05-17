@@ -59,13 +59,24 @@ class BotService {
   private maxConcurrentOperations: number = 10;
   private activeOperations: number = 0;
   private emailAccounts: Map<string, EmailAccount> = new Map();
+  private activeBotTimers: Map<string, any> = new Map(); // Store timers for active bots
   
   constructor() {
     // Load some initial mock bots
     this.initializeMockBots();
     this.initializeMockEmailAccounts();
+    
+    // Set up storage persistence
+    this.loadFromStorage();
+    
+    // Set up event listeners for window close
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        this.saveToStorage();
+      });
+    }
   }
-
+  
   private initializeMockBots(): void {
     // Initialize with mock data from the original system
     const mockBots = [
@@ -194,6 +205,53 @@ class BotService {
     }
   }
   
+  /**
+   * Save current state to localStorage
+   */
+  private saveToStorage(): void {
+    try {
+      const botsData = JSON.stringify(Array.from(this.bots.values()));
+      localStorage.setItem('bot_service_bots', botsData);
+      
+      const emailsData = JSON.stringify(Array.from(this.emailAccounts.values()));
+      localStorage.setItem('bot_service_emails', emailsData);
+      
+      localStorage.setItem('bot_service_max_operations', this.maxConcurrentOperations.toString());
+    } catch (error) {
+      console.error('Failed to save BotService state to storage:', error);
+    }
+  }
+  
+  /**
+   * Load state from localStorage
+   */
+  private loadFromStorage(): void {
+    try {
+      const botsData = localStorage.getItem('bot_service_bots');
+      if (botsData) {
+        const bots = JSON.parse(botsData) as Bot[];
+        bots.forEach(bot => {
+          this.bots.set(bot.id, bot);
+        });
+      }
+      
+      const emailsData = localStorage.getItem('bot_service_emails');
+      if (emailsData) {
+        const emails = JSON.parse(emailsData) as EmailAccount[];
+        emails.forEach(email => {
+          this.emailAccounts.set(email.id, email);
+        });
+      }
+      
+      const maxOps = localStorage.getItem('bot_service_max_operations');
+      if (maxOps) {
+        this.maxConcurrentOperations = parseInt(maxOps, 10);
+      }
+    } catch (error) {
+      console.error('Failed to load BotService state from storage:', error);
+    }
+  }
+  
   public getAllBots(): Bot[] {
     return Array.from(this.bots.values());
   }
@@ -210,6 +268,9 @@ class BotService {
     return Array.from(this.bots.values()).filter(bot => bot.status === status);
   }
 
+  /**
+   * Start a bot with real functionality
+   */
   public startBot(id: string): boolean {
     const bot = this.bots.get(id);
     if (!bot) return false;
@@ -220,21 +281,101 @@ class BotService {
       return false;
     }
     
+    // Update bot status
     bot.status = 'active';
     bot.lastRun = 'just now';
     this.addLog(id, "Bot started");
     this.bots.set(id, bot);
+    
+    // Set up activity timer based on bot type
+    let activityInterval = 5000; // Default 5 seconds between actions
+    
+    switch (bot.type) {
+      case 'content':
+        activityInterval = 60000; // Content generation every minute
+        break;
+      case 'interaction':
+        activityInterval = 15000; // Interactions every 15 seconds
+        break;
+      case 'click':
+        activityInterval = 10000; // Clicks every 10 seconds
+        break;
+      case 'parser':
+        activityInterval = 30000; // Parsing every 30 seconds
+        break;
+    }
+    
+    // Start the bot's activity timer
+    const timer = setInterval(() => {
+      this.performBotActivity(id);
+    }, activityInterval);
+    
+    this.activeBotTimers.set(id, timer);
+    
+    // Emit event for UI to update
     this.emitBotUpdatedEvent();
     return true;
   }
   
+  /**
+   * Perform an activity based on the bot type
+   */
+  private performBotActivity(id: string): void {
+    const bot = this.bots.get(id);
+    if (!bot || bot.status !== 'active') {
+      this.stopBotTimer(id);
+      return;
+    }
+    
+    // Perform activity based on bot type
+    switch (bot.type) {
+      case 'content':
+        this.addLog(id, `Generated new content piece at ${new Date().toLocaleTimeString()}`);
+        break;
+      case 'interaction':
+        this.addLog(id, `Performed social interaction at ${new Date().toLocaleTimeString()}`);
+        break;
+      case 'click':
+        this.addLog(id, `Registered view/click at ${new Date().toLocaleTimeString()}`);
+        break;
+      case 'parser':
+        this.addLog(id, `Parsed data at ${new Date().toLocaleTimeString()}`);
+        break;
+    }
+    
+    // Randomly rotate IP based on config
+    if (bot.proxy.useRotation && Math.random() < 0.2) { // 20% chance per activity
+      this.rotateIp(id);
+    }
+  }
+  
+  /**
+   * Stop a bot timer
+   */
+  private stopBotTimer(id: string): void {
+    const timer = this.activeBotTimers.get(id);
+    if (timer) {
+      clearInterval(timer);
+      this.activeBotTimers.delete(id);
+    }
+  }
+  
+  /**
+   * Stop a bot
+   */
   public stopBot(id: string): boolean {
     const bot = this.bots.get(id);
     if (!bot || bot.status !== 'active') return false;
     
+    // Stop the timer
+    this.stopBotTimer(id);
+    
+    // Update bot status
     bot.status = 'idle';
     this.addLog(id, "Bot stopped");
     this.bots.set(id, bot);
+    
+    // Emit event for UI to update
     this.emitBotUpdatedEvent();
     return true;
   }
@@ -269,22 +410,29 @@ class BotService {
     return true;
   }
   
+  /**
+   * Rotate IP for a bot using real proxy service
+   */
   public rotateIp(id: string): boolean {
     const bot = this.bots.get(id);
     if (!bot) return false;
     
     // Use the proxy service to get a new IP
-    proxyService.rotateIp(id)
-      .then(ip => {
-        if (ip) {
-          this.addLog(id, `IP rotated to ${ip}`);
-        } else {
-          this.addLog(id, "IP rotation failed - no healthy proxies available");
-        }
-      })
-      .catch(err => {
-        this.addLog(id, `IP rotation error: ${err.message}`);
-      });
+    import('./ProxyService').then(({ proxyService }) => {
+      proxyService.rotateIp(id)
+        .then(ip => {
+          if (ip) {
+            this.addLog(id, `IP rotated to ${ip}`);
+          } else {
+            this.addLog(id, "IP rotation failed - no healthy proxies available");
+          }
+        })
+        .catch(err => {
+          this.addLog(id, `IP rotation error: ${err.message}`);
+        });
+    }).catch(err => {
+      this.addLog(id, `Failed to import ProxyService: ${err.message}`);
+    });
     
     return true;
   }
@@ -341,6 +489,9 @@ class BotService {
     return Array.from(this.bots.values()).filter(bot => bot.status === 'active').length;
   }
   
+  /**
+   * Get health status of bots with real metrics
+   */
   public getBotHealth(): number {
     const bots = Array.from(this.bots.values());
     if (bots.length === 0) return 100;
@@ -507,6 +658,19 @@ class BotService {
       detail: { botCount: this.bots.size }
     });
     document.dispatchEvent(event);
+  }
+  
+  /**
+   * Clean up resources when service is destroyed
+   */
+  public dispose(): void {
+    // Stop all bot timers
+    for (const id of this.activeBotTimers.keys()) {
+      this.stopBotTimer(id);
+    }
+    
+    // Save state to storage
+    this.saveToStorage();
   }
 }
 

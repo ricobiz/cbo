@@ -1,6 +1,5 @@
-
 import { useState, useCallback, useEffect } from "react";
-import { Bot, Send, Sparkles, X, Clock, Monitor, Info, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Bot, Send, Sparkles, X, Clock, Monitor, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { processAICommand } from "@/services/AICommandService";
-import { BotType } from "@/services/BotService";
 import { CommandListener } from "./CommandListener";
 import { externalAPIService } from "@/services/external-api";
 import { useNavigate } from "react-router-dom";
@@ -43,9 +41,22 @@ export function CommandCenter() {
   
   useEffect(() => {
     // Check API and mode status on component mount
-    setHasOpenRouter(externalAPIService.hasOpenRouterApiKey());
-    setHasBrowserUse(externalAPIService.hasBrowserUseApiKey());
-    setIsOfflineMode(externalAPIService.isOfflineMode());
+    const checkApiStatus = () => {
+      setHasOpenRouter(externalAPIService.hasOpenRouterApiKey());
+      setHasBrowserUse(externalAPIService.hasBrowserUseApiKey());
+      setIsOfflineMode(externalAPIService.isOfflineMode());
+    };
+    
+    // Initialize API keys from storage
+    externalAPIService.initializeFromStorage();
+    
+    // Check initial status
+    checkApiStatus();
+    
+    // Set up interval to check API status periodically
+    const intervalId = setInterval(checkApiStatus, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const processCommand = async (commandText: string) => {
@@ -65,7 +76,7 @@ export function CommandCenter() {
     setIsProcessing(true);
     
     try {
-      // Process the command
+      // Process the command with real API if available
       const result = await processAICommand(commandText);
       
       // Add assistant response
@@ -114,9 +125,11 @@ export function CommandCenter() {
       }
     } catch (error) {
       // Handle error
+      console.error("Error processing command:", error);
+      
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
-        content: "Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз.",
+        content: `Извините, произошла ошибка при обработке вашего запроса: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}. Пожалуйста, попробуйте еще раз.`,
         role: "assistant",
         timestamp: new Date()
       };
@@ -154,7 +167,7 @@ export function CommandCenter() {
   };
   
   const handleConfigureAPIs = () => {
-    navigate("/command", { state: { openIntegrationTab: true } });
+    navigate("/settings");
   };
 
   return (

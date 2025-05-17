@@ -18,7 +18,7 @@ export class ExternalAPIService {
   private openRouterService: OpenRouterService;
   private browserUseService: BrowserUseService;
   private verificationService: VerificationService;
-  private offlineMode: boolean = true;
+  private offlineMode: boolean = false; // Changed default to false for real operation
   
   constructor() {
     this.openRouterService = new OpenRouterService();
@@ -29,15 +29,18 @@ export class ExternalAPIService {
   // API Key management
   setOpenRouterApiKey(key: string): void {
     this.openRouterService.setApiKey(key);
+    localStorage.setItem('openrouter_api_key', key); // Save the API key for persistence
   }
   
   setBrowserUseApiKey(key: string): void {
     this.browserUseService.setApiKey(key);
+    localStorage.setItem('browseruse_api_key', key); // Save the API key for persistence
   }
   
   // Offline mode management
   setOfflineMode(enabled: boolean): void {
     this.offlineMode = enabled;
+    localStorage.setItem('offline_mode', enabled.toString());
   }
   
   isOfflineMode(): boolean {
@@ -53,8 +56,33 @@ export class ExternalAPIService {
     return this.browserUseService.hasApiKey();
   }
   
+  // Initialize API keys from localStorage on startup
+  initializeFromStorage(): void {
+    // Try to restore API keys from localStorage
+    const openRouterKey = localStorage.getItem('openrouter_api_key');
+    if (openRouterKey) {
+      this.openRouterService.setApiKey(openRouterKey);
+    }
+    
+    const browserUseKey = localStorage.getItem('browseruse_api_key');
+    if (browserUseKey) {
+      this.browserUseService.setApiKey(browserUseKey);
+    }
+    
+    // Restore offline mode setting
+    const offlineMode = localStorage.getItem('offline_mode');
+    if (offlineMode) {
+      this.offlineMode = offlineMode === 'true';
+    }
+  }
+  
   // OpenRouter API methods
   async sendToOpenRouter(prompt: string, model: string = 'gpt-4'): Promise<OpenRouterResponse | null> {
+    if (this.offlineMode) {
+      console.log('Offline mode is active. Skipping OpenRouter API call.');
+      return null;
+    }
+    
     if (!this.hasOpenRouterApiKey()) {
       console.error('OpenRouter API key not set');
       throw new Error('API key not configured');
@@ -65,6 +93,16 @@ export class ExternalAPIService {
   
   // Browser Use API methods
   async executeBrowserAction(action: BrowserUseAction, sessionId?: string): Promise<BrowserUseResponse> {
+    if (this.offlineMode) {
+      console.log('Offline mode is active. Simulating browser action:', action);
+      return {
+        success: true,
+        sessionId: sessionId || 'offline-session',
+        action: action.type,
+        result: { status: 'completed', message: 'Action simulated in offline mode' }
+      };
+    }
+    
     if (!this.hasBrowserUseApiKey()) {
       console.error('Browser Use API key not set');
       throw new Error('API key not configured');
@@ -78,6 +116,11 @@ export class ExternalAPIService {
     userAgent?: string;
     viewport?: { width: number; height: number };
   }): Promise<string> {
+    if (this.offlineMode) {
+      console.log('Offline mode is active. Creating simulated browser session');
+      return `offline-session-${Date.now()}`;
+    }
+    
     if (!this.hasBrowserUseApiKey()) {
       console.error('Browser Use API key not set');
       throw new Error('API key not configured');
@@ -92,18 +135,96 @@ export class ExternalAPIService {
     password: string;
     fullName?: string;
   }, sessionId?: string): Promise<BrowserUseResponse> {
+    if (this.offlineMode) {
+      console.log('Offline mode is active. Simulating account registration for:', platform);
+      return {
+        success: true,
+        sessionId: sessionId || 'offline-session',
+        action: 'register',
+        result: { 
+          status: 'completed', 
+          message: `Account registration simulated for ${platform}`,
+          data: { email: credentials.email }
+        }
+      };
+    }
+    
     const platformUrl = PlatformUrlService.getPlatformUrl(platform);
     return this.browserUseService.registerAccount(platform, credentials, platformUrl, sessionId);
   }
   
   // Command analysis
   async analyzeCommand(command: string): Promise<CommandAnalysisResult> {
+    if (this.offlineMode) {
+      console.log('Offline mode is active. Using simple command analysis');
+      // Implement basic command analysis
+      const result: CommandAnalysisResult = {
+        platform: '',
+        action: '',
+        count: 0,
+        url: undefined
+      };
+      
+      // Basic platform detection
+      const platforms = ['youtube', 'spotify', 'instagram', 'tiktok', 'twitter', 'facebook'];
+      for (const platform of platforms) {
+        if (command.toLowerCase().includes(platform)) {
+          result.platform = platform;
+          break;
+        }
+      }
+      
+      // Basic action detection
+      if (command.toLowerCase().includes('view') || command.toLowerCase().includes('watch')) {
+        result.action = 'view';
+      } else if (command.toLowerCase().includes('like')) {
+        result.action = 'like';
+      } else if (command.toLowerCase().includes('comment')) {
+        result.action = 'comment';
+      } else if (command.toLowerCase().includes('follow') || command.toLowerCase().includes('subscribe')) {
+        result.action = 'follow';
+      } else if (command.toLowerCase().includes('listen') || command.toLowerCase().includes('play')) {
+        result.action = 'listen';
+      }
+      
+      // Extract numbers for count
+      const numbers = command.match(/\d+/);
+      if (numbers) {
+        result.count = parseInt(numbers[0]);
+      } else {
+        result.count = 100; // Default
+      }
+      
+      // Extract URLs
+      const urlMatch = command.match(/(https?:\/\/[^\s]+)/);
+      if (urlMatch) {
+        result.url = urlMatch[0];
+      }
+      
+      return result;
+    }
+    
     return this.openRouterService.analyzeCommand(command);
   }
 
   // Verification methods
   async verifyAction(platform: string, contentId: string, metricType: 'view' | 'play' | 'click' | 'like' | 'follow' | 'comment', sessionId?: string): Promise<ActionVerification> {
     const timestamp = new Date().toISOString();
+    
+    if (this.offlineMode) {
+      console.log('Offline mode is active. Simulating verification for:', platform, metricType);
+      return {
+        platform,
+        contentId,
+        metricType,
+        timestamp,
+        verified: true,
+        metrics: {
+          before: Math.floor(Math.random() * 1000),
+          after: Math.floor(Math.random() * 1000) + 1
+        }
+      };
+    }
     
     try {
       // If no session provided, one needs to be created
