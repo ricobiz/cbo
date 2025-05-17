@@ -6,6 +6,11 @@ import Index from './pages/Index';
 import ContentPage from './pages/ContentPage';
 import CampaignsPage from './pages/CampaignsPage';
 import BotsPage from "./pages/BotsPage";
+import BotsList from './pages/Bots/BotsList';
+import BotDetail from './pages/Bots/BotDetail';
+import CreateBot from './pages/Bots/CreateBot';
+import CampaignsList from './pages/Campaigns/CampaignsList';
+import CampaignDetail from './pages/Campaigns/CampaignDetail';
 import ScenariosPage from "./pages/ScenariosPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -13,26 +18,34 @@ import CommandPage from "./pages/CommandPage";
 import NotFound from "./pages/NotFound";
 import BillingPage from "./pages/BillingPage";
 import AdminPage from "./pages/AdminPage";
+import { Toaster } from "sonner";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Index />} />
-          <Route path="/content" element={<ContentPage />} />
-          <Route path="/campaigns" element={<CampaignsPage />} />
-          <Route path="/bots" element={<BotsPage />} />
-          <Route path="/scenarios" element={<ScenariosPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/command" element={<CommandPage />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </Router>
+    <>
+      <Toaster position="top-right" richColors />
+      <Router>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/content" element={<ContentPage />} />
+            <Route path="/campaigns" element={<CampaignsPage />} />
+            <Route path="/campaigns/:id" element={<CampaignDetail />} />
+            <Route path="/bots" element={<BotsList />} />
+            <Route path="/bots/:id" element={<BotDetail />} />
+            <Route path="/bots/create" element={<CreateBot />} />
+            <Route path="/bots/:id/edit" element={<CreateBot />} />
+            <Route path="/scenarios" element={<ScenariosPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/command" element={<CommandPage />} />
+            <Route path="/billing" element={<BillingPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
   );
 }
 
