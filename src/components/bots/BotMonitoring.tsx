@@ -266,7 +266,7 @@ export function BotMonitoring() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-4 border rounded-lg">
             <div className="text-sm text-muted-foreground mb-1">Active Bots</div>
-            <div className="text-2xl font-bold">{activeBots}/{totalBots}</div>
+            <div className="text-2xl font-bold">{activeBots}</div>
             <div className="mt-2">
               <Progress value={totalBots > 0 ? (activeBots / totalBots) * 100 : 0} className="h-1" />
             </div>

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { BotCard } from "@/components/bots/BotCard";
 import { BotCreationWizard } from "@/components/bots/BotCreationWizard";
@@ -63,6 +64,9 @@ const BotsPage = () => {
   const filteredBots = getFilteredBots();
 
   const selectedBot = selectedBotId ? bots.find(bot => bot.id === selectedBotId) : null;
+
+  // Count active bots
+  const activeBots = bots.filter(bot => bot.status === "active").length;
 
   return (
     <div className="space-y-6">
