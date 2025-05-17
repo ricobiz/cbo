@@ -1,46 +1,44 @@
-
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import MainLayout from "./layouts/MainLayout";
-import Dashboard from "./pages/Index";
-import ContentPage from "./pages/ContentPage";
-import SettingsPage from "./pages/SettingsPage";
-import AccountsPage from "./pages/AccountsPage";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Index from './pages/Index';
+import ContentPage from './pages/ContentPage';
+import CampaignsPage from './pages/CampaignsPage';
 import BotsPage from "./pages/BotsPage";
-import CampaignsPage from "./pages/CampaignsPage";
-import CommandPage from "./pages/CommandPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import BillingPage from "./pages/BillingPage";
-import EmailAccountsPage from "./pages/EmailAccountsPage";
-import ProxyPage from "./pages/ProxyPage";
 import ScenariosPage from "./pages/ScenariosPage";
-import NotFound from "./pages/NotFound";
-import { Toaster } from "./components/ui/toaster";
-import { ThemeToggle } from "./components/theme/ThemeToggle";
 
 function App() {
   return (
-    <div className="app-container">
-      <BrowserRouter>
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Главная</Link>
+            </li>
+            <li>
+              <Link to="/content">Контент</Link>
+            </li>
+            <li>
+              <Link to="/campaigns">Кампании</Link>
+            </li>
+             <li>
+              <Link to="/bots">Боты</Link>
+            </li>
+            <li>
+              <Link to="/scenarios">Сценарии</Link>
+            </li>
+          </ul>
+        </nav>
+
         <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="content" element={<ContentPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="accounts" element={<AccountsPage />} />
-            <Route path="bots" element={<BotsPage />} />
-            <Route path="campaigns" element={<CampaignsPage />} />
-            <Route path="command" element={<CommandPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="billing" element={<BillingPage />} />
-            <Route path="email-accounts" element={<EmailAccountsPage />} />
-            <Route path="proxy" element={<ProxyPage />} />
-            <Route path="scenarios" element={<ScenariosPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
+          <Route path="/" element={<Index />} />
+          <Route path="/content" element={<ContentPage />} />
+          <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route path="/bots" element={<BotsPage />} />
+          <Route path="/scenarios" element={<ScenariosPage />} />
         </Routes>
-      </BrowserRouter>
-      <Toaster />
-    </div>
+      </div>
+    </Router>
   );
 }
 
