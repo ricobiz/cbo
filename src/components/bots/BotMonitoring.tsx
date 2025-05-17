@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Activity, AlertTriangle } from "lucide-react";
+import { Bot, Activity, AlertTriangle, Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBotStore } from "@/store/BotStore";
 import { BotActivity as BotActivityType } from "@/services/BotService";
@@ -25,8 +25,11 @@ export function BotMonitoring() {
   // Get active bots
   const activeBots = bots.filter(bot => bot.status === 'active');
   
-  // Show empty state if no active bots
-  if (activeBots.length === 0) {
+  // Count real activities - bots that have actual activity data
+  const realActivitiesCount = Object.values(botActivities).filter(activity => activity !== undefined).length;
+  
+  // Show empty state if no active bots or no real activities
+  if (activeBots.length === 0 || realActivitiesCount === 0) {
     return (
       <Card className="mt-4">
         <CardHeader>
@@ -38,10 +41,21 @@ export function BotMonitoring() {
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Bot className="h-12 w-12 text-muted-foreground opacity-20" />
-            <h3 className="mt-4 text-lg font-medium">Нет активных ботов</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Активируйте бота, чтобы начать мониторинг его действий в режиме реального времени. Здесь вы увидите все действия и статистику.
-            </p>
+            {activeBots.length === 0 ? (
+              <>
+                <h3 className="mt-4 text-lg font-medium">Нет активных ботов</h3>
+                <p className="mt-2 text-sm text-muted-foreground max-w-md">
+                  Активируйте бота, чтобы начать мониторинг его действий в режиме реального времени.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="mt-4 text-lg font-medium">Нет данных активности</h3>
+                <p className="mt-2 text-sm text-muted-foreground max-w-md">
+                  Боты активны, но пока нет данных о их действиях. Подождите, пока они начнут работу, или проверьте настройки подключения.
+                </p>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -77,11 +91,11 @@ export function BotMonitoring() {
             className="mb-4"
           >
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-8 w-8 text-amber-500 mt-1" />
+              <Info className="h-8 w-8 text-blue-500 mt-1" />
               <div>
-                <h4 className="font-medium">Мониторинг и наблюдение</h4>
+                <h4 className="font-medium">Данные реального времени</h4>
                 <p className="text-sm text-muted-foreground">
-                  Наблюдайте за действиями всех активных ботов. При возникновении ошибок, вы увидите их здесь. Рекомендуется регулярно проверять статус ботов для оптимальной работы.
+                  Здесь отображаются только реальные данные о работе ботов. Запустите ботов, чтобы увидеть их активность.
                 </p>
               </div>
             </div>
@@ -101,10 +115,27 @@ export function BotMonitoring() {
                 {activeBots.map(bot => {
                   const activity = botActivities[bot.id];
                   
+                  if (!activity) {
+                    return (
+                      <div key={bot.id} className="border rounded-md p-3 flex items-start">
+                        <div className="bg-primary/10 p-2 rounded-md mr-3 text-xl">🤖</div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">{bot.name}</h4>
+                            <Badge variant="outline">{bot.type}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Ожидание данных активности...
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
                   return (
                     <div key={bot.id} className="border rounded-md p-3 flex items-start">
                       <div className="bg-primary/10 p-2 rounded-md mr-3 text-xl">
-                        {activity ? getActivityIcon(activity.type) : '🤖'}
+                        {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
@@ -112,9 +143,9 @@ export function BotMonitoring() {
                           <Badge variant="outline">{bot.type}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {activity ? activity.details : 'Инициализация...'}
+                          {activity.details}
                         </p>
-                        {activity && activity.target && (
+                        {activity.target && (
                           <p className="text-xs text-muted-foreground mt-1">
                             {activity.target}
                           </p>
