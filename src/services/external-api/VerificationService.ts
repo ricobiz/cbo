@@ -1,6 +1,6 @@
 
 import { ActionVerification } from './types';
-import { ExternalAPIService } from './ExternalAPIService';
+import externalAPIService from './index';
 
 /**
  * Service for verifying actions on social media platforms
@@ -20,7 +20,7 @@ export class VerificationService {
   ): Promise<ActionVerification> {
     try {
       // This would be implemented to call the backend API
-      const result = await ExternalAPIService.makeRequest<ActionVerification>(
+      const result = await externalAPIService.makeRequest<ActionVerification>(
         '/analytics/verify', 'POST', { platform, contentId, metricType }
       );
       return result;
@@ -104,7 +104,7 @@ export class VerificationService {
   ): Promise<Record<string, any>> {
     try {
       // This would call the backend API
-      const result = await ExternalAPIService.makeRequest<Record<string, any>>(
+      const result = await externalAPIService.makeRequest<Record<string, any>>(
         '/analytics/stats', 'GET', { platform, period }
       );
       return result;
@@ -249,7 +249,7 @@ export class VerificationService {
   ): Promise<ActionVerification[]> {
     try {
       // This would call the backend API
-      const result = await ExternalAPIService.makeRequest<ActionVerification[]>(
+      const result = await externalAPIService.makeRequest<ActionVerification[]>(
         '/analytics/bulk-verify', 'POST', { actions }
       );
       return result;

@@ -1,6 +1,6 @@
 
 import { Bot, BotType, BotPlatform, BotStatus, BotHealthStatus, BotFilter, BotActivity } from "./types/bot";
-import { ExternalAPIService } from "./external-api/ExternalAPIService";
+import externalAPIService from "./external-api";
 
 /**
  * Service for Bot Management
@@ -15,7 +15,7 @@ export class BotManagementService {
     try {
       // Try to fetch from API first
       try {
-        const bots = await ExternalAPIService.makeRequest<Bot[]>('/bots');
+        const bots = await externalAPIService.makeRequest<Bot[]>('/bots');
         return bots;
       } catch (apiError) {
         console.warn("Could not fetch bots from API, falling back to localStorage", apiError);
@@ -34,7 +34,7 @@ export class BotManagementService {
    */
   static async getBotById(id: string): Promise<Bot | undefined> {
     try {
-      return await ExternalAPIService.makeRequest<Bot>(`/bots/${id}`);
+      return await externalAPIService.makeRequest<Bot>(`/bots/${id}`);
     } catch (apiError) {
       console.warn(`Could not fetch bot ${id} from API, falling back to localStorage`, apiError);
       const bots = await this.getAllBots();
@@ -85,10 +85,10 @@ export class BotManagementService {
     try {
       if (bot.id) {
         // Update existing bot
-        return await ExternalAPIService.makeRequest<Bot>(`/bots/${bot.id}`, 'PUT', bot);
+        return await externalAPIService.makeRequest<Bot>(`/bots/${bot.id}`, 'PUT', bot);
       } else {
         // Create new bot
-        return await ExternalAPIService.makeRequest<Bot>('/bots', 'POST', bot);
+        return await externalAPIService.makeRequest<Bot>('/bots', 'POST', bot);
       }
     } catch (apiError) {
       console.warn("Could not save bot to API, falling back to localStorage", apiError);
@@ -122,7 +122,7 @@ export class BotManagementService {
    */
   static async deleteBot(id: string): Promise<boolean> {
     try {
-      await ExternalAPIService.makeRequest(`/bots/${id}`, 'DELETE');
+      await externalAPIService.makeRequest(`/bots/${id}`, 'DELETE');
       return true;
     } catch (apiError) {
       console.warn(`Could not delete bot ${id} from API, falling back to localStorage`, apiError);

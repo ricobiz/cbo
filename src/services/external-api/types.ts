@@ -1,5 +1,4 @@
 
-
 // Base type for API responses
 export interface ApiResponse {
   success: boolean;
@@ -48,6 +47,8 @@ export interface OpenRouterResponse {
     index: number;
     finish_reason: string;
   }[];
+  created: number;
+  model: string;
   usage?: {
     prompt_tokens: number;
     completion_tokens: number;
@@ -84,7 +85,7 @@ export interface ActionVerification {
     after: number;
   };
   error?: string;
-  metricValue?: number; // Adding the metricValue property that was missing
+  metricValue?: number;
 }
 
 // Command Analysis Types
@@ -92,12 +93,10 @@ export interface CommandAnalysisResult {
   platform?: string;
   action?: string;
   count?: number;
-  url?: string;
-  parameters?: Record<string, any>;
+  url?: string | null;
 }
 
 // Platform URL Types
 export interface PlatformUrlMap {
   [key: string]: string;
 }
-

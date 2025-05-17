@@ -12,7 +12,8 @@ import {
   ImageGenerationParams,
   ImageGenerationResult,
   AudioGenerationParams,
-  AudioGenerationResult
+  AudioGenerationResult,
+  ApiResponse
 } from "./types";
 
 const LOCAL_STORAGE_KEYS = {
@@ -41,6 +42,37 @@ export class ExternalAPIService {
     
     // Initialize from localStorage if available
     this.initializeFromStorage();
+  }
+  
+  /**
+   * Make an API request to backend
+   */
+  async makeRequest<T>(
+    endpoint: string, 
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', 
+    data?: any
+  ): Promise<T> {
+    const baseUrl = 'http://localhost:8000'; // Should be configurable
+    const url = `${baseUrl}${endpoint}`;
+    
+    const options: RequestInit = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    };
+    
+    if (data && (method === 'POST' || method === 'PUT')) {
+      options.body = JSON.stringify(data);
+    }
+    
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+    
+    return await response.json();
   }
   
   /**
@@ -189,7 +221,7 @@ export class ExternalAPIService {
       return this.getMockImageGenerationResult();
     }
     
-    return this.imageGenerationService.generateImage(params);
+    return ImageGenerationService.generateImage(params);
   }
   
   /**
@@ -210,9 +242,6 @@ export class ExternalAPIService {
   private getMockOpenRouterResponse(prompt: string): OpenRouterResponse {
     return {
       id: `mock-${Date.now()}`,
-      object: "chat.completion",
-      created: Date.now(),
-      model: "mock-model",
       choices: [
         {
           index: 0,
@@ -222,7 +251,9 @@ export class ExternalAPIService {
           },
           finish_reason: "stop"
         }
-      ]
+      ],
+      created: Date.now(),
+      model: "mock-model"
     };
   }
   
@@ -255,18 +286,22 @@ export class ExternalAPIService {
       platform,
       action,
       count,
-      url: null,
-      additionalParams: {}
+      url: null
     };
   }
   
   private getMockBrowserResponse(): BrowserUseResponse {
     return {
       success: true,
-      message: "Mock browser action completed successfully",
-      data: {
-        screenshot: null,
-        html: "<html><body><h1>Mock HTML Content</h1></body></html>"
+      sessionId: `mock-session-${Date.now()}`,
+      action: "mock-action",
+      result: {
+        status: "completed",
+        message: "Mock browser action completed successfully",
+        data: {
+          screenshot: null,
+          html: "<html><body><h1>Mock HTML Content</h1></body></html>"
+        }
       }
     };
   }
@@ -274,14 +309,16 @@ export class ExternalAPIService {
   private getMockImageGenerationResult(): ImageGenerationResult {
     return {
       url: "https://via.placeholder.com/512x512?text=AI+Generated+Image+(Offline+Mode)",
-      prompt: "Mock generated image (offline mode)",
+      width: 512,
+      height: 512
     };
   }
   
   private getMockAudioGenerationResult(): AudioGenerationResult {
     return {
       url: "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg",
-      text: "Mock generated audio (offline mode)",
+      format: "audio/ogg",
+      duration: 3.5
     };
   }
 }
