@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Check, RefreshCw, Plus, Server, Settings, Shield } from "lucide-react";
-import { proxyService, ProxyProvider } from "@/services/ProxyService";
+import { proxyService, ProxyProvider } from "@/services/proxy";
 import { useToast } from "@/components/ui/use-toast";
 
 interface ProxySettingsProps {

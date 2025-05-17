@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Bot, Play, Pause, Settings, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { BotDetails } from "./BotDetails";
 import { BotStatus, BotType, BotConfig, BotSchedule, BotProxy } from "@/services/BotService";
-import { proxyService } from "@/services/ProxyService";
+import { proxyService } from "@/services/proxy";
 
 interface BotCardProps {
   id: string;
