@@ -257,7 +257,8 @@ export const AdminUsers = () => {
       case "admin":
         return "destructive";
       case "manager":
-        return "warning";
+        // Fix: Change "warning" to "secondary" since "warning" is not an allowed variant
+        return "secondary";
       case "user":
         return "secondary";
       default:
