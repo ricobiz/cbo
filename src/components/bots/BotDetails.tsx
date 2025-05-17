@@ -14,7 +14,7 @@ import { Bot, BotStatus, BotType } from '@/services/types/bot';
 
 export interface BotDetailsProps {
   bot: Bot;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function BotDetails({ bot, onBack }: BotDetailsProps) {

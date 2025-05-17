@@ -72,6 +72,10 @@ export default function BotDetail() {
     deleteMutation.mutate();
   };
 
+  const handleBack = () => {
+    navigate("/bots");
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Загрузка...</div>;
   }
@@ -112,7 +116,7 @@ export default function BotDetail() {
         </div>
       </div>
 
-      <BotDetails bot={bot} />
+      <BotDetails bot={bot} onBack={handleBack} />
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

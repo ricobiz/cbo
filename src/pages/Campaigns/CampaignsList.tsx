@@ -31,6 +31,11 @@ export default function CampaignsList() {
     refetchInterval: 5000 // Polling every 5 seconds
   });
 
+  const handleCampaignSubmit = (campaignData: any) => {
+    // Handle the campaign creation success
+    console.log('Campaign created:', campaignData);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -71,7 +76,11 @@ export default function CampaignsList() {
         </div>
       )}
 
-      <CreateCampaignDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      <CreateCampaignDialog 
+        open={showCreateDialog} 
+        onOpenChange={setShowCreateDialog} 
+        onSubmit={handleCampaignSubmit} 
+      />
     </div>
   );
 }
