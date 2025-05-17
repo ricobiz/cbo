@@ -33,10 +33,11 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
   const [platform, setPlatform] = useState("");
   const [botCount, setBotCount] = useState(1);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [readyToCreate, setReadyToCreate] = useState(false);
   const { toast } = useToast();
   const { fetchBots, createBot } = useBotStore();
 
-  const handleCreateBot = () => {
+  const handlePrepareBot = () => {
     if (!botName) {
       toast({
         title: "Требуется имя",
@@ -54,7 +55,13 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
       });
       return;
     }
+    
+    // Показываем расширенные настройки перед созданием
+    setShowAdvancedSettings(true);
+    setReadyToCreate(true);
+  };
 
+  const handleCreateBot = () => {
     // Создаем указанное количество ботов
     let createdCount = 0;
     for (let i = 0; i < botCount; i++) {
@@ -141,8 +148,20 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
               <SelectItem value="twitter">Twitter</SelectItem>
               <SelectItem value="instagram">Instagram</SelectItem>
               <SelectItem value="tiktok">TikTok</SelectItem>
-              <SelectItem value="spotify">Spotify</SelectItem>
+              <SelectItem value="telegram">Telegram</SelectItem>
+              <SelectItem value="vk">ВКонтакте</SelectItem>
               <SelectItem value="facebook">Facebook</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+              <SelectItem value="reddit">Reddit</SelectItem>
+              <SelectItem value="pinterest">Pinterest</SelectItem>
+              <SelectItem value="snapchat">Snapchat</SelectItem>
+              <SelectItem value="twitch">Twitch</SelectItem>
+              <SelectItem value="spotify">Spotify</SelectItem>
+              <SelectItem value="soundcloud">SoundCloud</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="discord">Discord</SelectItem>
+              <SelectItem value="clubhouse">Clubhouse</SelectItem>
+              <SelectItem value="other">Другая платформа</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -166,18 +185,24 @@ export function QuickBotCreator({ onClose }: QuickBotCreatorProps) {
           </>
         )}
 
-        <Button 
-          variant="outline" 
-          className="w-full flex items-center gap-2" 
-          onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-        >
-          <Settings className="h-4 w-4" />
-          {showAdvancedSettings ? "Скрыть дополнительные настройки" : "Показать дополнительные настройки"}
-        </Button>
+        {!showAdvancedSettings && (
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center gap-2" 
+            onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+          >
+            <Settings className="h-4 w-4" />
+            {showAdvancedSettings ? "Скрыть дополнительные настройки" : "Показать дополнительные настройки"}
+          </Button>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={onClose}>Отмена</Button>
-        <Button onClick={handleCreateBot}>Создать бота{botCount > 1 && `(${botCount})`}</Button>
+        {readyToCreate ? (
+          <Button onClick={handleCreateBot}>Создать бота{botCount > 1 && `(${botCount})`}</Button>
+        ) : (
+          <Button onClick={handlePrepareBot}>Продолжить</Button>
+        )}
       </CardFooter>
     </Card>
   );

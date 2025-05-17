@@ -2,7 +2,7 @@
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Image, Music, Video, Calendar } from "lucide-react";
+import { MessageSquare, Image, Music, Video, Calendar, Globe, Users } from "lucide-react";
 
 const ContentPage = () => {
   return (
@@ -12,7 +12,7 @@ const ContentPage = () => {
       </div>
 
       <Tabs defaultValue="text" className="w-full">
-        <TabsList className="grid grid-cols-5 mb-6">
+        <TabsList className="grid grid-cols-7 mb-6">
           <TabsTrigger value="text" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             <span>Текст</span>
@@ -32,6 +32,14 @@ const ContentPage = () => {
           <TabsTrigger value="schedule" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             <span>Расписание</span>
+          </TabsTrigger>
+          <TabsTrigger value="social" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>Соцсети</span>
+          </TabsTrigger>
+          <TabsTrigger value="web" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            <span>Веб</span>
           </TabsTrigger>
         </TabsList>
 
@@ -58,6 +66,10 @@ const ContentPage = () => {
                     <div className="border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
                       <div className="text-sm font-medium">Подписи для Instagram для запуска продукта</div>
                       <div className="text-xs text-muted-foreground mt-1">Сгенерировано 3 дня назад</div>
+                    </div>
+                    <div className="border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
+                      <div className="text-sm font-medium">Пост в Telegram канал про новые технологии</div>
+                      <div className="text-xs text-muted-foreground mt-1">Сгенерировано 4 дня назад</div>
                     </div>
                   </div>
                 </CardContent>
@@ -113,6 +125,42 @@ const ContentPage = () => {
             <CardContent>
               <div className="flex items-center justify-center p-12">
                 <p className="text-muted-foreground">Скоро! Возможности планирования контента будут доступны в ближайшем обновлении.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="social">
+          <Card>
+            <CardHeader>
+              <CardTitle>Мультиплатформенная публикация</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center justify-center p-12 space-y-4">
+                <p className="text-muted-foreground">Скоро! Возможность одновременной публикации во все социальные сети.</p>
+                <div className="grid grid-cols-4 md:grid-cols-8 gap-4 w-full max-w-2xl">
+                  {["telegram", "vk", "facebook", "instagram", "twitter", "linkedin", "tiktok", "youtube"].map((platform) => (
+                    <div key={platform} className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <span className="text-xs font-medium capitalize">{platform.slice(0, 2)}</span>
+                      </div>
+                      <span className="text-xs mt-1 capitalize">{platform}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="web">
+          <Card>
+            <CardHeader>
+              <CardTitle>Веб-контент</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-center p-12">
+                <p className="text-muted-foreground">Скоро! Генерация контента для веб-сайтов, блогов, лендингов и других онлайн-платформ.</p>
               </div>
             </CardContent>
           </Card>
