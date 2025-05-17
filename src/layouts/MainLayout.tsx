@@ -2,58 +2,41 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSidebarStore } from "@/store/SidebarStore";
 
 const MainLayout = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
+  const { isOpen, open, close } = useSidebarStore();
   
   // Auto-collapse sidebar on mobile devices by default
   useEffect(() => {
     if (isMobile) {
-      setIsSidebarCollapsed(true);
+      close();
     } else {
-      setIsSidebarCollapsed(false);
+      open();
     }
-  }, [isMobile]);
-  
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
+  }, [isMobile, open, close]);
 
   return (
     <div className="min-h-screen flex bg-background">
       {/* Overlay to close sidebar when clicked (mobile only) */}
-      {isMobile && !isSidebarCollapsed && (
+      {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-20"
-          onClick={toggleSidebar}
+          onClick={() => close()}
           aria-label="Close sidebar"
         />
       )}
       
       {/* Sidebar */}
-      <div 
-        className={`fixed inset-y-0 left-0 z-30 shadow-lg ${
-          isSidebarCollapsed && isMobile
-            ? '-translate-x-full' 
-            : isSidebarCollapsed && !isMobile
-            ? 'translate-x-0 w-[80px]'
-            : 'translate-x-0 w-[240px]'
-        } transition-all duration-300 ease-in-out bg-sidebar`}
-      >
-        <Sidebar />
-      </div>
+      <Sidebar />
       
       {/* Main Content */}
       <div 
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
-          isSidebarCollapsed && isMobile
-            ? 'ml-0'
-            : isSidebarCollapsed && !isMobile
-            ? 'ml-[80px]' 
-            : 'ml-0 md:ml-[240px]'
+          isMobile ? 'ml-0' : isOpen ? 'md:ml-64' : 'ml-0'
         }`}
       >
         <Header />
