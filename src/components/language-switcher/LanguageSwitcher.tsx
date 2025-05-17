@@ -15,15 +15,16 @@ interface Language {
   code: string;
   name: string;
   flag: string;
+  languageChangedMessage: string;
 }
 
 const languages: Language[] = [
-  { code: "ru", name: "Русский", flag: "🇷🇺" },
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "ru", name: "Русский", flag: "🇷🇺", languageChangedMessage: "Язык изменен на Русский" },
+  { code: "en", name: "English", flag: "🇺🇸", languageChangedMessage: "Language changed to English" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪", languageChangedMessage: "Sprache geändert zu Deutsch" },
+  { code: "fr", name: "Français", flag: "🇫🇷", languageChangedMessage: "Langue changée en Français" },
+  { code: "es", name: "Español", flag: "🇪🇸", languageChangedMessage: "Idioma cambiado a Español" },
+  { code: "zh", name: "中文", flag: "🇨🇳", languageChangedMessage: "语言已更改为中文" },
 ];
 
 export function LanguageSwitcher() {
@@ -36,7 +37,7 @@ export function LanguageSwitcher() {
     
     const selectedLang = languages.find(lang => lang.code === langCode);
     if (selectedLang) {
-      toast.success(`Язык изменен на ${selectedLang.name}`, {
+      toast.success(selectedLang.languageChangedMessage, {
         position: "bottom-right",
         duration: 2000,
       });

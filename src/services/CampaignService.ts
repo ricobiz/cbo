@@ -1,4 +1,3 @@
-
 import { Campaign, CampaignFilter, CampaignStatus, CampaignType, CampaignPlatform, CampaignAction } from "./types/campaign";
 
 /**
@@ -13,10 +12,10 @@ export class CampaignService {
   static getAllCampaigns(): Campaign[] {
     try {
       const campaigns = localStorage.getItem(this.STORAGE_KEY);
-      return campaigns ? JSON.parse(campaigns) : this.generateDemoCampaigns();
+      return campaigns ? JSON.parse(campaigns) : [];
     } catch (error) {
       console.error("Error retrieving campaigns:", error);
-      return this.generateDemoCampaigns();
+      return [];
     }
   }
 
