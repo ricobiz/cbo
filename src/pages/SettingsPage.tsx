@@ -8,8 +8,10 @@ import { BotSettings } from "@/components/settings/BotSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
 import { ProxySettings } from "@/components/settings/ProxySettings";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "@/store/LanguageStore";
+import { Button } from "@/components/ui/button";
+import { ShieldCheck } from "lucide-react";
 
 const SettingsPage = () => {
   const { toast } = useToast();
@@ -22,6 +24,11 @@ const SettingsPage = () => {
   const tabFromUrl = query.get("tab") || "general";
   
   const [activeTab, setActiveTab] = useState(tabFromUrl);
+
+  // В реальном приложении здесь были бы проверка прав администратора
+  // const { user, isAdmin } = useAuth();
+  // const isAdmin = true; // Временно для демо
+  const isAdmin = true; // Для демонстрации функциональности
 
   // Update URL when tab changes
   const handleTabChange = (value: string) => {
@@ -45,6 +52,14 @@ const SettingsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{t('settings') || "Settings"}</h1>
+        {isAdmin && (
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/admin">
+              <ShieldCheck className="h-4 w-4" />
+              Админ-панель
+            </Link>
+          </Button>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">

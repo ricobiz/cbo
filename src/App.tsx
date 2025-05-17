@@ -12,6 +12,7 @@ import SettingsPage from "./pages/SettingsPage";
 import CommandPage from "./pages/CommandPage";
 import NotFound from "./pages/NotFound";
 import BillingPage from "./pages/BillingPage";
+import AdminPage from "./pages/AdminPage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/command" element={<CommandPage />} />
           <Route path="/billing" element={<BillingPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

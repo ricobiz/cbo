@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 interface PlanFeature {
   name: string;
@@ -70,13 +71,18 @@ export function SubscriptionPlans() {
   const { toast } = useToast();
   const [billingPeriod, setBillingPeriod] = React.useState<"month" | "year">("month");
   
+  // В реальном приложении здесь были бы проверка прав администратора
+  // const { user, isAdmin } = useAuth();
+  // const isAdmin = true; // Временно для демо
+  const isAdmin = true; // Для демонстрации функциональности
+  
   const handleSelectPlan = (planId: string) => {
     toast({
       title: "План выбран",
       description: `Вы выбрали план ${planId}. Переход к оплате...`,
     });
     
-    // Here you would redirect to checkout or payment page
+    // Здесь был бы редирект на страницу оплаты
     // window.location.href = `/checkout?plan=${planId}`;
   };
   
@@ -134,6 +140,24 @@ export function SubscriptionPlans() {
 
   return (
     <div className="space-y-6">
+      {isAdmin && (
+        <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-blue-800 dark:text-blue-300">Режим администратора</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-400">
+                Вы можете изменить планы подписок и настройки ценообразования в админ-панели.
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/admin">
+                Перейти в админ-панель
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-center">
         <div className="inline-flex rounded-md border p-1">
           <Button
