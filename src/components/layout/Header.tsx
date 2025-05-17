@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Menu, PanelLeft, ChevronRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -10,33 +11,27 @@ interface HeaderProps {
 }
 
 const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
+  const isMobile = useIsMobile();
+
   return (
     <header className="border-b bg-background p-4 flex items-center justify-between sticky top-0 z-20">
       <div className="flex items-center gap-4">
-        {/* Mobile sidebar toggle */}
+        {/* Sidebar toggle button - always visible and prominent */}
         <Button 
           variant="secondary" 
           size="icon" 
           onClick={toggleSidebar} 
-          className="flex md:hidden"
-          aria-label="Toggle sidebar"
+          className="flex items-center justify-center"
+          aria-label={isSidebarCollapsed ? "Открыть меню" : "Закрыть меню"}
+          title={isSidebarCollapsed ? "Открыть меню" : "Закрыть меню"}
         >
-          <Menu className="h-5 w-5" />
+          {isMobile || isSidebarCollapsed ? 
+            <Menu className="h-5 w-5" /> : 
+            <PanelLeft className="h-5 w-5" />
+          }
         </Button>
         
-        {/* Desktop sidebar toggle - more visible now */}
-        <Button 
-          variant="secondary" 
-          size="icon" 
-          onClick={toggleSidebar} 
-          className="flex"
-          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isSidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-        </Button>
-        
-        <div className="relative">
+        <div className="relative md:flex hidden">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="search"
