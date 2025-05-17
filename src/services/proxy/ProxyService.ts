@@ -51,9 +51,10 @@ class ProxyService extends ProxyProviderService {
   /**
    * Assign a proxy to a specific bot
    */
-  public async assignProxyToBot(botId: string, provider?: string, region?: string): Promise<string | null> {
+  public async assignProxyToBot(botId: string, provider?: string): Promise<string | null> {
     try {
-      const proxy = await this.getHealthyProxy(provider, region);
+      // Get a healthy proxy without specifying a region (we'll determine the best one)
+      const proxy = await this.getHealthyProxy(); 
       if (!proxy) return null;
       
       this.activeProxies.set(botId, proxy);
@@ -76,15 +77,10 @@ class ProxyService extends ProxyProviderService {
    */
   public async rotateIp(botId: string): Promise<string | null> {
     try {
-      // Get the current provider and region if possible
-      const currentProxy = this.getBotProxy(botId);
-      let provider: string | undefined;
-      let region: string | undefined;
-      
-      // In a real implementation, we would parse the current proxy to extract provider and region
+      // In a real implementation, we would parse the current proxy to extract provider
       // For now, we'll just get a new proxy
       
-      const newProxy = await this.getHealthyProxy(provider, region);
+      const newProxy = await this.getHealthyProxy();
       if (newProxy) {
         this.activeProxies.set(botId, newProxy);
         console.log(`Rotated proxy for bot ${botId} to ${newProxy}`);

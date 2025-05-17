@@ -26,7 +26,13 @@ export interface BrowserUseResponse {
   sessionId?: string;
   screenshot?: string;
   error?: string;
+  action?: string; // Added missing property
   data?: any;
+  result?: {
+    status: string;
+    message: string;
+    data?: any;
+  };
 }
 
 // Types for Verification and Feedback
@@ -37,6 +43,10 @@ export interface ActionVerification {
   timestamp: string;
   verified: boolean;
   metricValue?: number;
+  metrics?: { // Added missing property
+    before: number;
+    after: number;
+  };
   error?: string;
 }
 
