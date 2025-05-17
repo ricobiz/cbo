@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Check, RefreshCw, Plus, Server, Settings, Shield } from "lucide-react";
-import { proxyService, ProxyProvider } from "@/services/proxy";
+import { proxyService, ProxyProvider } from "@/services/ProxyService";
 import { useToast } from "@/components/ui/use-toast";
+import { RotationConfig } from "@/services/proxy/types";
 
 interface ProxySettingsProps {
   onSave: () => void;
@@ -20,7 +22,13 @@ export function ProxySettings({ onSave }: ProxySettingsProps) {
   const [activeTab, setActiveTab] = useState("providers");
   const [provider, setProvider] = useState<ProxyProvider>("luminati");
   const [apiKey, setApiKey] = useState("");
-  const [rotationConfig, setRotationConfig] = useState(proxyService.getRotationConfig());
+  const [rotationConfig, setRotationConfig] = useState<RotationConfig>({
+    frequency: 60,
+    checkReputation: true,
+    avoidFlagged: true,
+    autoRetry: true,
+    regions: ["us", "eu"]
+  });
   const [customProxy, setCustomProxy] = useState({ ip: "", port: "", username: "", password: "" });
   const { toast } = useToast();
   

@@ -3,11 +3,23 @@ import { ProxyProviderService } from "./ProxyProviderService";
 import type { ProxyProvider, RotationConfig, ProxyStats } from "./types";
 
 /**
+ * Default rotation config
+ */
+const DEFAULT_ROTATION_CONFIG: RotationConfig = {
+  frequency: 60, // 60 minutes
+  checkReputation: true,
+  avoidFlagged: true,
+  autoRetry: true,
+  regions: ["us", "eu"]
+};
+
+/**
  * Main proxy service that implements real proxy rotation functionality
  */
 class ProxyService extends ProxyProviderService {
   private proxyRotationInterval: any = null;
   private activeProxies: Map<string, string> = new Map(); // botId -> proxyString
+  private rotationConfig: RotationConfig = { ...DEFAULT_ROTATION_CONFIG };
   
   constructor() {
     super();
@@ -51,7 +63,7 @@ class ProxyService extends ProxyProviderService {
   /**
    * Assign a proxy to a specific bot
    */
-  public async assignProxyToBot(botId: string, provider?: string): Promise<string | null> {
+  public async assignProxyToBot(botId: string): Promise<string | null> {
     try {
       // Get a healthy proxy without specifying a region (we'll determine the best one)
       const proxy = await this.getHealthyProxy(); 
@@ -102,6 +114,20 @@ class ProxyService extends ProxyProviderService {
   }
   
   /**
+   * Get the current rotation configuration
+   */
+  public getRotationConfig(): RotationConfig {
+    return { ...this.rotationConfig };
+  }
+  
+  /**
+   * Update the rotation configuration
+   */
+  public updateRotationConfig(config: RotationConfig): void {
+    this.rotationConfig = { ...config };
+  }
+  
+  /**
    * Clean up resources when service is no longer needed
    */
   public dispose(): void {
@@ -111,6 +137,36 @@ class ProxyService extends ProxyProviderService {
     }
     
     this.activeProxies.clear();
+  }
+
+  /**
+   * Implementation of loadProxies for ProxyService
+   * Uses the provider-specific implementation when available
+   */
+  protected async loadProxies(): Promise<void> {
+    // In a real implementation, this would load proxies based on the current provider
+    await super.loadProxies();
+    
+    // Add some additional provider-specific proxies
+    if (this.provider === 'luminati') {
+      this.proxies.set('luminati.proxy.com:8080', {
+        ip: 'luminati.proxy.com:8080',
+        location: 'EU',
+        latency: 80,
+        successRate: 0.95,
+        lastUsed: new Date(0),
+        blacklisted: false
+      });
+    } else if (this.provider === 'smartproxy') {
+      this.proxies.set('smartproxy.com:9090', {
+        ip: 'smartproxy.com:9090',
+        location: 'ASIA',
+        latency: 120,
+        successRate: 0.9,
+        lastUsed: new Date(0),
+        blacklisted: false
+      });
+    }
   }
 }
 
