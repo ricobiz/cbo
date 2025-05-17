@@ -68,6 +68,32 @@ const BotsPage = () => {
   // Count active bots
   const activeBots = bots.filter(bot => bot.status === "active").length;
 
+  // Initialize default values for config, schedule, proxy, and logs if they don't exist
+  const defaultConfig = {
+    actionDelay: [1000, 3000],
+    mouseMovement: 'natural' as const,
+    scrollPattern: 'variable' as const,
+    randomnessFactor: 0.5,
+    behaviorProfile: 'Casual Browser'
+  };
+
+  const defaultSchedule = {
+    active: false,
+    startTime: '09:00',
+    endTime: '17:00',
+    breakDuration: [15, 30] as [number, number],
+    daysActive: ['Monday', 'Wednesday', 'Friday']
+  };
+
+  const defaultProxy = {
+    useRotation: true,
+    rotationFrequency: 30,
+    provider: 'luminati',
+    regions: ['us', 'eu']
+  };
+
+  const defaultLogs: Array<{time: string, message: string}> = [];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -169,6 +195,10 @@ const BotsPage = () => {
                 <BotCard 
                   key={bot.id}
                   {...bot}
+                  config={bot.config || defaultConfig}
+                  schedule={bot.schedule || defaultSchedule}
+                  proxy={bot.proxy || defaultProxy}
+                  logs={bot.logs || defaultLogs}
                   onClick={() => selectBot(bot.id)}
                   onStart={() => startBot(bot.id)}
                   onStop={() => stopBot(bot.id)}
@@ -199,6 +229,10 @@ const BotsPage = () => {
                 <BotCard 
                   key={bot.id}
                   {...bot}
+                  config={bot.config || defaultConfig}
+                  schedule={bot.schedule || defaultSchedule}
+                  proxy={bot.proxy || defaultProxy}
+                  logs={bot.logs || defaultLogs}
                   onClick={() => selectBot(bot.id)}
                   onStart={() => startBot(bot.id)}
                   onStop={() => stopBot(bot.id)}
@@ -224,6 +258,10 @@ const BotsPage = () => {
                 <BotCard 
                   key={bot.id}
                   {...bot}
+                  config={bot.config || defaultConfig}
+                  schedule={bot.schedule || defaultSchedule}
+                  proxy={bot.proxy || defaultProxy}
+                  logs={bot.logs || defaultLogs}
                   onClick={() => selectBot(bot.id)}
                   onStart={() => startBot(bot.id)}
                   onStop={() => stopBot(bot.id)}
@@ -246,6 +284,10 @@ const BotsPage = () => {
                 <BotCard 
                   key={bot.id}
                   {...bot}
+                  config={bot.config || defaultConfig}
+                  schedule={bot.schedule || defaultSchedule}
+                  proxy={bot.proxy || defaultProxy}
+                  logs={bot.logs || defaultLogs}
                   onClick={() => selectBot(bot.id)}
                   onStart={() => startBot(bot.id)}
                   onStop={() => stopBot(bot.id)}
