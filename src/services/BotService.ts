@@ -1,11 +1,11 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
 
 export type BotActivityType = 'browsing' | 'content_creation' | 'engagement' | 'account_interaction' | 'data_collection' | 'ip_rotation';
 
 // Re-export the types from types/bot.ts so they can be imported from BotService
-export { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
+// Using 'export type' syntax for isolated modules compatibility
+export type { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
 
 // Add the missing interfaces
 export interface EmailAccount {
