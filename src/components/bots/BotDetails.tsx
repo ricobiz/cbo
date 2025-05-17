@@ -12,13 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Play, Pause, Settings, Clock, Zap, ChevronRight, Globe, MousePointer } from "lucide-react";
+import { BotStatus, BotType } from "@/services/BotService";
 
 interface BotDetailsProps {
   id: string;
   name: string;
   description: string;
-  status: "active" | "idle" | "error";
-  type: "content" | "interaction" | "click" | "parser";
+  status: BotStatus;
+  type: BotType;
   lastRun?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -55,6 +56,8 @@ export function BotDetails({
         return <Badge variant="outline">Idle</Badge>;
       case "error":
         return <Badge variant="destructive">Error</Badge>;
+      case "paused":
+        return <Badge variant="outline" className="bg-amber-500/20 text-amber-500 border-amber-500/20">Paused</Badge>;
       default:
         return null;
     }

@@ -55,8 +55,7 @@ export const BotHealthIndicator = ({
               </div>
               <Progress 
                 value={healthPercentage} 
-                className={`h-1.5 ${healthPercentage < 70 ? "bg-gray-200" : ""}`}
-                indicatorClassName={getProgressColor()}
+                className={`h-1.5 ${healthPercentage < 70 ? "bg-gray-200" : ""} ${getProgressColor()}`}
               />
             </div>
           </div>

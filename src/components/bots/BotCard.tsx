@@ -7,17 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { BotDetails } from "./BotDetails";
+import { BotStatus, BotType, BotConfig, BotSchedule, BotProxy } from "@/services/BotService";
 
 interface BotCardProps {
   id: string;
   name: string;
   description: string;
-  status: "active" | "idle" | "error";
-  type: "content" | "interaction" | "click" | "parser";
+  status: BotStatus;
+  type: BotType;
   lastRun?: string;
+  config: BotConfig;
+  schedule: BotSchedule;
+  proxy: BotProxy;
+  logs: Array<{time: string, message: string}>;
+  onClick?: () => void;
 }
 
-export function BotCard({ id, name, description, status, type, lastRun }: BotCardProps) {
+export function BotCard({ id, name, description, status, type, lastRun, onClick }: BotCardProps) {
   const [isActive, setIsActive] = useState(status === "active");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const { toast } = useToast();

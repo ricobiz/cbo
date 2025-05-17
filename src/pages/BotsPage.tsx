@@ -105,6 +105,7 @@ const BotsPage = () => {
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="idle">Idle</SelectItem>
               <SelectItem value="error">Error</SelectItem>
+              <SelectItem value="paused">Paused</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -114,8 +115,8 @@ const BotsPage = () => {
         {filteredBots.length > 0 ? (
           filteredBots.map((bot) => (
             <BotCard 
-              key={bot.id} 
-              {...bot} 
+              key={bot.id}
+              {...bot}
               onClick={() => selectBot(bot.id)}
             />
           ))
@@ -142,7 +143,12 @@ const BotsPage = () => {
 
       {selectedBot && (
         <BotDetails
-          {...selectedBot}
+          id={selectedBot.id}
+          name={selectedBot.name}
+          description={selectedBot.description}
+          status={selectedBot.status}
+          type={selectedBot.type}
+          lastRun={selectedBot.lastRun}
           open={!!selectedBotId}
           onOpenChange={(open) => !open && selectBot(null)}
         />
