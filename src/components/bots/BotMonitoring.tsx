@@ -9,6 +9,8 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  AreaChart,
+  Area,
 } from "recharts";
 
 const activityData = [
@@ -20,6 +22,17 @@ const activityData = [
   { time: "15:00", active: 9 },
   { time: "18:00", active: 12 },
   { time: "21:00", active: 7 },
+];
+
+const ipRotationData = [
+  { time: "00:00", rotations: 4 },
+  { time: "03:00", rotations: 5 },
+  { time: "06:00", rotations: 3 },
+  { time: "09:00", rotations: 7 },
+  { time: "12:00", rotations: 8 },
+  { time: "15:00", rotations: 6 },
+  { time: "18:00", rotations: 9 },
+  { time: "21:00", rotations: 5 },
 ];
 
 export function BotMonitoring() {
@@ -60,14 +73,14 @@ export function BotMonitoring() {
           </div>
           
           <div className="p-4 border rounded-lg">
-            <div className="text-sm text-muted-foreground mb-1">Recent Errors</div>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-sm text-muted-foreground mb-1">IP Rotation Status</div>
+            <div className="text-2xl font-bold">Active</div>
             <div className="mt-2 flex gap-2">
-              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-                2 Minor
+              <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                47 IPs Used
               </Badge>
-              <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">
-                1 Critical
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                3 Flagged
               </Badge>
             </div>
           </div>
@@ -100,6 +113,37 @@ export function BotMonitoring() {
                   activeDot={{ r: 8 }}
                 />
               </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        
+        <div className="border rounded-lg p-4">
+          <h3 className="text-sm font-medium mb-3">IP Rotations (24h)</h3>
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={ipRotationData}>
+                <XAxis 
+                  dataKey="time" 
+                  stroke="#888888" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                />
+                <YAxis 
+                  stroke="#888888" 
+                  fontSize={12} 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tickFormatter={(value) => `${value}`} 
+                />
+                <Tooltip />
+                <Area
+                  type="monotone"
+                  dataKey="rotations"
+                  fill="#16a34a20"
+                  stroke="#16a34a"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>

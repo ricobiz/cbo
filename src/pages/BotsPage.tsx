@@ -4,7 +4,7 @@ import { BotCard } from "@/components/bots/BotCard";
 import { BotCreationWizard } from "@/components/bots/BotCreationWizard";
 import { BotMonitoring } from "@/components/bots/BotMonitoring";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter } from "lucide-react";
+import { Plus, Filter, AlertTriangle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const mockBots = [
   {
@@ -70,6 +71,7 @@ const BotsPage = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [ipRotationEnabled, setIpRotationEnabled] = useState(true);
 
   const filteredBots = mockBots.filter(bot => {
     const matchesType = filterType === "all" || bot.type === filterType;
@@ -87,6 +89,16 @@ const BotsPage = () => {
           <Plus className="mr-2 h-4 w-4" /> Create Bot
         </Button>
       </div>
+
+      {!ipRotationEnabled && (
+        <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>IP Rotation Not Enabled</AlertTitle>
+          <AlertDescription>
+            Running bots without IP rotation significantly increases detection risk. Configure proxy settings to enable IP rotation.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <BotMonitoring />
 

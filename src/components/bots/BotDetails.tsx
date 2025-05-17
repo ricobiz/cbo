@@ -11,7 +11,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Play, Pause, Settings, Clock, Zap, ChevronRight } from "lucide-react";
+import { Bot, Play, Pause, Settings, Clock, Zap, ChevronRight, Globe, MousePointer } from "lucide-react";
 
 interface BotDetailsProps {
   id: string;
@@ -75,9 +75,10 @@ export function BotDetails({
         </DialogHeader>
         
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            <TabsTrigger value="proxy">Proxy</TabsTrigger>
             <TabsTrigger value="logs">Activity Logs</TabsTrigger>
           </TabsList>
           
@@ -98,20 +99,28 @@ export function BotDetails({
                     <div className="text-sm font-medium">Content Interaction</div>
                     <div className="text-sm">Personalized response patterns</div>
                   </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-sm font-medium">Scrolling Pattern</div>
+                    <div className="text-sm">Variable speed with pauses</div>
+                  </div>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label>Platform Settings</Label>
+                <Label>Human Emulation</Label>
                 <div className="rounded-md border p-4">
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="text-sm font-medium">Rotation Schedule</div>
-                      <div className="text-sm">Every 4 hours</div>
+                      <div className="text-sm font-medium">Randomness Factor</div>
+                      <div className="text-sm">High (80%)</div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="text-sm font-medium">Instance Limitation</div>
-                      <div className="text-sm">5 per IP address</div>
+                      <div className="text-sm font-medium">Session Variability</div>
+                      <div className="text-sm">Enabled with 15-30% variance</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="text-sm font-medium">Behavior Profile</div>
+                      <div className="text-sm">Gen-Z Content Consumer</div>
                     </div>
                   </div>
                 </div>
@@ -150,14 +159,79 @@ export function BotDetails({
             </div>
           </TabsContent>
           
+          <TabsContent value="proxy" className="space-y-4">
+            <div className="space-y-2">
+              <div className="rounded-md border p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">IP Rotation</span>
+                    </div>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">Active</Badge>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">Rotation frequency</div>
+                      <div>Every 60 minutes</div>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">Proxy provider</div>
+                      <div>Luminati Networks</div>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">Geographic distribution</div>
+                      <div>USA, Canada, UK, Australia</div>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">IP reputation check</div>
+                      <div>Enabled (rejects flagged IPs)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="rounded-md border p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MousePointer className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Browser Fingerprint</span>
+                    </div>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">Protected</Badge>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">Canvas fingerprint</div>
+                      <div>Randomized per session</div>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">User agent rotation</div>
+                      <div>Enabled (realistic patterns)</div>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                      <div className="text-muted-foreground">WebRTC protection</div>
+                      <div>Enabled (prevents leaks)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
           <TabsContent value="logs" className="h-[300px] overflow-y-auto space-y-4">
             <div className="space-y-3">
               {[
                 { time: "12:45", message: "Content interaction completed" },
+                { time: "12:40", message: "IP rotated to 185.23.131.98 (UK)" },
                 { time: "12:32", message: "Engaged with trending topic #viral" },
                 { time: "12:15", message: "Started content discovery routine" },
                 { time: "11:50", message: "Session rotation completed" },
+                { time: "11:45", message: "Browser fingerprint randomized" },
                 { time: "11:30", message: "Profile switching initiated" },
+                { time: "11:20", message: "IP rotated to 104.28.42.16 (US)" },
                 { time: "10:45", message: "Content interaction completed" },
                 { time: "10:32", message: "Engaged with trending topic #tech" },
                 { time: "10:15", message: "Started content discovery routine" }

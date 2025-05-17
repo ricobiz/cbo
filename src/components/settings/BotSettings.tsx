@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 
 interface BotSettingsProps {
   onSave: () => void;
@@ -33,11 +34,36 @@ export const BotSettings = ({ onSave }: BotSettingsProps) => {
             </SelectContent>
           </Select>
         </div>
+        
         <div className="space-y-2">
           <Label htmlFor="delay">Default Action Delay (ms)</Label>
           <Input id="delay" type="number" defaultValue="2000" />
           <p className="text-sm text-muted-foreground">Delay between actions to appear more human-like</p>
         </div>
+        
+        <div className="space-y-3">
+          <Label>Human-like Behavior Intensity</Label>
+          <Slider defaultValue={[75]} max={100} step={1} className="py-4" />
+          <div className="text-sm text-muted-foreground">Higher values increase randomness in timing, mouse movements, and scrolling patterns</div>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="rotation">IP Rotation Frequency</Label>
+          <Select defaultValue="60">
+            <SelectTrigger id="rotation">
+              <SelectValue placeholder="Select frequency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="15">Every 15 minutes</SelectItem>
+              <SelectItem value="30">Every 30 minutes</SelectItem>
+              <SelectItem value="60">Every 60 minutes</SelectItem>
+              <SelectItem value="120">Every 2 hours</SelectItem>
+              <SelectItem value="240">Every 4 hours</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">How often to switch IP addresses to avoid detection</p>
+        </div>
+        
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="proxy">Use Rotating Proxies</Label>
@@ -45,6 +71,7 @@ export const BotSettings = ({ onSave }: BotSettingsProps) => {
           </div>
           <Switch id="proxy" defaultChecked />
         </div>
+        
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="antiban">Anti-Ban Measures</Label>
