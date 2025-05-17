@@ -5,7 +5,7 @@
 
 export type BotType = 'content' | 'interaction' | 'view' | 'parser' | 'custom';
 
-export type BotStatus = 'idle' | 'running' | 'paused' | 'error' | 'setup-required';
+export type BotStatus = 'idle' | 'running' | 'paused' | 'error' | 'setup-required' | 'active';
 
 export type BotPlatform = 'youtube' | 'spotify' | 'instagram' | 'tiktok' | 'facebook' | 'twitter' | 'telegram' | 'multi';
 
@@ -38,6 +38,30 @@ export type BotAction = {
   details?: Record<string, any>;
 };
 
+// Add missing BotSchedule type
+export type BotSchedule = {
+  active: boolean;
+  startTime?: string;
+  endTime?: string;
+  breakDuration?: [number, number];
+  daysActive?: string[];
+  times?: {
+    start: string;
+    end: string;
+    days: number[];
+  }[];
+};
+
+// Add missing BotProxy type
+export type BotProxy = {
+  useRotation?: boolean;
+  rotationFrequency?: number;
+  provider?: string;
+  regions?: string[];
+  type?: 'http' | 'socks' | 'none';
+  url?: string;
+};
+
 export type BotConfig = {
   maxActions: number;
   targetUrls?: string[];
@@ -55,6 +79,12 @@ export type BotConfig = {
     }[];
   };
   advancedSettings?: Record<string, any>;
+  actionDelay?: [number, number];
+  mouseMovement?: 'natural' | 'direct' | 'random';
+  scrollPattern?: 'variable' | 'constant' | 'jump';
+  randomnessFactor?: number;
+  behaviorProfile?: string;
+  sessionVariability?: number;
 };
 
 export type Bot = {
@@ -68,12 +98,19 @@ export type Bot = {
   description?: string;
   avatar?: string;
   lastActive?: string;
+  lastRun?: string;
   createdAt: string;
   updatedAt: string;
   consumption: BotConsumption;
   activity: BotActivity[];
   actions: BotAction[];
   config: BotConfig;
+  schedule?: BotSchedule;
+  proxy?: BotProxy;
+  logs?: Array<{time: string, message: string}>;
+  healthPercentage?: number;
+  ipAddress?: string;
+  emailAccounts?: string[];
   associatedCampaignIds?: string[];
 };
 
