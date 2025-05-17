@@ -13,13 +13,17 @@ const CommandPage = () => {
   
   const [activeTab, setActiveTab] = useState("command");
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold flex items-center gap-2">
         <Bot className="h-7 w-7" /> AI Command Center
       </h1>
       
-      <Tabs defaultValue="command" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="command" className="flex items-center gap-2">
             <Command className="h-4 w-4" /> AI Command
