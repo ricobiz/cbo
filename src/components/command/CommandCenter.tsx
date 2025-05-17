@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from "react";
-import { Bot, Send, Sparkles, X, Clock, Monitor, Info, CheckCircle, AlertCircle } from "lucide-react";
+import { Bot, Send, Sparkles, X, Clock, Monitor, Info, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,12 +154,7 @@ export function CommandCenter() {
   };
   
   const handleConfigureAPIs = () => {
-    navigate("/settings");
-    toast({
-      title: "Настройки API",
-      description: "Перейдите во вкладку 'API Integration' для настройки внешних API или автономного режима.",
-      variant: "default"
-    });
+    navigate("/command", { state: { openIntegrationTab: true } });
   };
 
   return (

@@ -1,345 +1,193 @@
 
-import { useState } from "react";
-import { CampaignCard } from "@/components/campaigns/CampaignCard";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, SlidersHorizontal, BarChart } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CampaignProgressIndicator } from "@/components/campaigns/CampaignProgressIndicator";
-
-const mockCampaigns = [
-  {
-    id: "1",
-    name: "Летняя музыкальная акция",
-    description: "Продвижение новых электронных альбомов на лето",
-    platform: "Spotify",
-    progress: 65,
-    status: "active" as const,
-    startDate: "15 мая 2025",
-    endDate: "30 июня 2025",
-    target: {
-      type: "прослушиваний",
-      value: 10000
-    },
-    stats: {
-      views: 6500,
-      engagements: 842,
-      clicks: 1230
-    }
-  },
-  {
-    id: "2",
-    name: "Обзор технологического продукта",
-    description: "Подробный обзор нового смартфона",
-    platform: "YouTube",
-    progress: 42,
-    status: "active" as const,
-    startDate: "20 мая 2025",
-    endDate: "15 июля 2025",
-    target: {
-      type: "просмотров",
-      value: 50000
-    },
-    stats: {
-      views: 21000,
-      engagements: 1842,
-      clicks: 3120
-    }
-  },
-  {
-    id: "3",
-    name: "Повышение узнаваемости бренда",
-    description: "Увеличение видимости бренда и числа подписчиков",
-    platform: "Twitter",
-    progress: 78,
-    status: "active" as const,
-    startDate: "10 мая 2025",
-    endDate: "25 июня 2025",
-    target: {
-      type: "подписчиков",
-      value: 5000
-    },
-    stats: {
-      views: 32500,
-      engagements: 4210,
-      clicks: 1820
-    }
-  },
-  {
-    id: "4",
-    name: "Запуск нового продукта",
-    description: "Рекламная кампания для нового SaaS инструмента",
-    platform: "LinkedIn",
-    progress: 100,
-    status: "completed" as const,
-    startDate: "1 апреля 2025",
-    endDate: "15 мая 2025",
-    target: {
-      type: "лидов",
-      value: 200
-    },
-    stats: {
-      views: 15200,
-      engagements: 2100,
-      clicks: 580
-    }
-  },
-  {
-    id: "5",
-    name: "Предпраздничная акция",
-    description: "Продвижение интернет-магазина перед праздничным сезоном",
-    platform: "Instagram",
-    progress: 0,
-    status: "scheduled" as const,
-    startDate: "1 ноября 2025",
-    endDate: "31 декабря 2025",
-    target: {
-      type: "продаж",
-      value: 500
-    }
-  },
-  {
-    id: "6",
-    name: "Серия обучающих видео",
-    description: "Образовательная видеосерия о цифровом маркетинге",
-    platform: "YouTube",
-    progress: 35,
-    status: "paused" as const,
-    startDate: "1 мая 2025",
-    endDate: "31 июля 2025",
-    target: {
-      type: "подписчиков",
-      value: 2000
-    },
-    stats: {
-      views: 12400,
-      engagements: 950,
-      clicks: 340
-    }
-  }
-];
+import { PlusCircle, ClipboardList, Calendar, Search, ExternalLink } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CampaignCard } from "@/components/campaigns/CampaignCard";
+import { externalAPIService } from "@/services/ExternalAPIService";
 
 const CampaignsPage = () => {
-  const [filterPlatform, setFilterPlatform] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState<"grid" | "list">("grid");
+  useEffect(() => {
+    document.title = "Управление кампаниями";
+  }, []);
 
-  const filteredCampaigns = mockCampaigns.filter(campaign => {
-    const matchesPlatform = filterPlatform === "all" || campaign.platform.toLowerCase() === filterPlatform.toLowerCase();
-    const matchesStatus = filterStatus === "all" || campaign.status === filterStatus;
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         campaign.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesPlatform && matchesStatus && matchesSearch;
+  const [isOfflineMode, setIsOfflineMode] = useState(true);
+  const [currentTab, setCurrentTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterPlatform, setFilterPlatform] = useState("all");
+  
+  // Демо-данные для кампаний
+  const demoCampaigns = [
+    {
+      id: "1",
+      title: "Продвижение музыкального альбома",
+      platform: "spotify",
+      status: "active",
+      progress: 45,
+      startDate: "2024-05-10",
+      endDate: "2024-06-10",
+      type: "promotion",
+      metrics: {
+        views: 12500,
+        engagement: 2340,
+        conversions: 350
+      }
+    },
+    {
+      id: "2",
+      title: "Привлечение подписчиков YouTube",
+      platform: "youtube",
+      status: "draft",
+      progress: 0,
+      startDate: "2024-05-20",
+      endDate: "2024-06-20",
+      type: "growth",
+      metrics: {
+        views: 0,
+        engagement: 0,
+        conversions: 0
+      }
+    },
+    {
+      id: "3",
+      title: "Промо нового продукта в Instagram",
+      platform: "instagram",
+      status: "completed",
+      progress: 100,
+      startDate: "2024-04-01",
+      endDate: "2024-05-01",
+      type: "promotion",
+      metrics: {
+        views: 45000,
+        engagement: 5600,
+        conversions: 820
+      }
+    }
+  ];
+
+  // Проверка текущего режима при загрузке
+  useEffect(() => {
+    setIsOfflineMode(externalAPIService.isOfflineMode());
+  }, []);
+
+  // Фильтрация кампаний
+  const filteredCampaigns = demoCampaigns.filter(campaign => {
+    // Фильтрация по поиску
+    const matchesSearch = searchQuery === "" || 
+      campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Фильтрация по платформе
+    const matchesPlatform = filterPlatform === "all" || 
+      campaign.platform === filterPlatform;
+    
+    // Фильтрация по вкладке (статусу)
+    const matchesTab = currentTab === "all" || 
+      (currentTab === "active" && campaign.status === "active") ||
+      (currentTab === "draft" && campaign.status === "draft") ||
+      (currentTab === "completed" && campaign.status === "completed");
+    
+    return matchesSearch && matchesPlatform && matchesTab;
   });
-
-  // Calculate statistics
-  const activeCampaigns = mockCampaigns.filter(c => c.status === "active").length;
-  const completedCampaigns = mockCampaigns.filter(c => c.status === "completed").length;
-  const totalViews = mockCampaigns.reduce((sum, c) => sum + (c.stats?.views || 0), 0);
-  const totalEngagements = mockCampaigns.reduce((sum, c) => sum + (c.stats?.engagements || 0), 0);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Кампании</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <ClipboardList className="h-7 w-7" /> 
+          Управление кампаниями
+        </h1>
         <Button>
-          <Plus className="mr-2 h-4 w-4" /> Создать кампанию
+          <PlusCircle className="h-4 w-4 mr-2" />
+          Создать кампанию
         </Button>
       </div>
 
-      <Tabs defaultValue="all">
-        <div className="flex justify-between items-center">
+      {isOfflineMode && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-yellow-800">Автономный режим активен</CardTitle>
+            <CardDescription className="text-yellow-700">
+              В автономном режиме доступны только демонстрационные данные и ограниченная функциональность.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-yellow-700">
+              Для полноценной работы с кампаниями рекомендуется подключить внешние API.
+              <Button 
+                variant="link" 
+                className="h-auto p-0 ml-1 text-yellow-800 underline" 
+                onClick={() => window.location.href = '/command'}
+              >
+                Настроить API <ExternalLink className="h-3 w-3 ml-1" />
+              </Button>
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <Tabs defaultValue="all" className="w-full" onValueChange={setCurrentTab}>
           <TabsList>
             <TabsTrigger value="all">Все кампании</TabsTrigger>
             <TabsTrigger value="active">Активные</TabsTrigger>
-            <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+            <TabsTrigger value="draft">Черновики</TabsTrigger>
+            <TabsTrigger value="completed">Завершенные</TabsTrigger>
           </TabsList>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant={view === "grid" ? "default" : "outline"} 
-              size="icon" 
-              className="h-8 w-8"
-              onClick={() => setView("grid")}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant={view === "list" ? "default" : "outline"} 
-              size="icon" 
-              className="h-8 w-8"
-              onClick={() => setView("list")}
-            >
-              <BarChart className="h-4 w-4" />
-            </Button>
+        </Tabs>
+
+        <div className="flex gap-2 w-full md:w-auto">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-[50%] transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Поиск кампаний..." 
+              className="pl-8"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
           </div>
+          <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Платформа" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все платформы</SelectItem>
+              <SelectItem value="youtube">YouTube</SelectItem>
+              <SelectItem value="spotify">Spotify</SelectItem>
+              <SelectItem value="instagram">Instagram</SelectItem>
+              <SelectItem value="tiktok">TikTok</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        
-        <TabsContent value="all" className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Поиск кампаний..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
-            </div>
+      </div>
 
-            <div className="flex gap-2 items-center">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Фильтр по платформе" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все платформы</SelectItem>
-                  <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="spotify">Spotify</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="linkedin">LinkedIn</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Фильтр по статусу" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="active">Активные</SelectItem>
-                  <SelectItem value="paused">Приостановленные</SelectItem>
-                  <SelectItem value="completed">Завершенные</SelectItem>
-                  <SelectItem value="scheduled">Запланированные</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredCampaigns.length > 0 ? (
-              filteredCampaigns.map((campaign) => (
-                <CampaignCard key={campaign.id} {...campaign} />
-              ))
-            ) : (
-              <div className="col-span-full flex items-center justify-center p-12 border rounded-lg border-dashed">
-                <div className="text-center space-y-2">
-                  <p className="text-muted-foreground">Кампании, соответствующие вашим критериям, не найдены</p>
-                  <Button variant="outline" onClick={() => {
-                    setFilterPlatform("all");
-                    setFilterStatus("all");
-                    setSearchTerm("");
-                  }}>
-                    Сбросить фильтры
-                  </Button>
-                </div>
+      <TabsContent value={currentTab} className="mt-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredCampaigns.length > 0 ? (
+            filteredCampaigns.map(campaign => (
+              <CampaignCard key={campaign.id} campaign={campaign} />
+            ))
+          ) : (
+            <div className="col-span-full flex justify-center py-12">
+              <div className="text-center">
+                <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">Кампании не найдены</h3>
+                <p className="text-muted-foreground mt-1">
+                  {searchQuery || filterPlatform !== "all" 
+                    ? "Попробуйте изменить параметры поиска или фильтрации"
+                    : "Создайте новую кампанию чтобы начать работу"}
+                </p>
+                <Button className="mt-4">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Создать кампанию
+                </Button>
               </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="active" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {mockCampaigns
-              .filter(campaign => campaign.status === "active")
-              .map(campaign => (
-                <CampaignCard key={campaign.id} {...campaign} />
-              ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Всего кампаний</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{mockCampaigns.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {activeCampaigns} активных, {completedCampaigns} завершенных
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Всего просмотров</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  На всех платформах
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Всего взаимодействий</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalEngagements.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Лайки, комментарии, репосты
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Средняя завершенность</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {Math.round(mockCampaigns.reduce((sum, c) => sum + c.progress, 0) / mockCampaigns.length)}%
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Среднее значение прогресса
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Эффективность кампаний</CardTitle>
-              <CardDescription>Обзор прогресса всех ваших кампаний</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockCampaigns.map(campaign => (
-                  <div key={campaign.id} className="flex items-center gap-4">
-                    <div className="w-40 font-medium truncate">{campaign.name}</div>
-                    <div className="flex-1">
-                      <CampaignProgressIndicator progress={campaign.progress} />
-                    </div>
-                    <div className="w-24 text-right">
-                      <span className="text-sm font-medium">{campaign.platform}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          )}
+        </div>
+      </TabsContent>
     </div>
   );
 };

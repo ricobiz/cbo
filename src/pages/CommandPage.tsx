@@ -8,14 +8,17 @@ import { Bot, Globe, Command, MessageSquare } from "lucide-react";
 import { ApiSettings } from "@/components/settings/ApiSettings";
 import { useToast } from "@/components/ui/use-toast";
 import { externalAPIService } from "@/services/ExternalAPIService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CommandPage = () => {
+  const location = useLocation();
+  const showIntegrationTabByDefault = location.state?.openIntegrationTab === true;
+
   useEffect(() => {
     document.title = "Центр управления ИИ";
   }, []);
   
-  const [activeTab, setActiveTab] = useState("command");
+  const [activeTab, setActiveTab] = useState(showIntegrationTabByDefault ? "integration" : "command");
   const { toast } = useToast();
   const navigate = useNavigate();
 
