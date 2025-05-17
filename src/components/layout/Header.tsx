@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { Menu } from "lucide-react";
+import { Menu, PanelLeft, ChevronRight } from "lucide-react";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -13,7 +13,7 @@ const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
   return (
     <header className="border-b bg-background p-4 flex items-center justify-between sticky top-0 z-20">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="flex lg:hidden">
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="flex md:hidden">
           <Menu className="h-5 w-5" />
         </Button>
         <div className="relative">
@@ -30,9 +30,11 @@ const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
           variant="ghost" 
           size="icon" 
           onClick={toggleSidebar} 
-          className="hidden lg:flex"
+          className="hidden md:flex"
+          aria-label={isSidebarCollapsed ? "Развернуть сайдбар" : "Свернуть сайдбар"}
+          title={isSidebarCollapsed ? "Развернуть сайдбар" : "Свернуть сайдбар"}
         >
-          <Menu className="h-5 w-5" />
+          {isSidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
         </Button>
         <ThemeToggle />
       </div>

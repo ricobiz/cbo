@@ -74,7 +74,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       className={cn(
         "h-screen flex flex-col bg-background pb-12 transition-all shadow-md",
         isCollapsed ? "w-[80px]" : "w-[240px]",
-        isMobile ? "absolute inset-y-0 left-0 z-50 bg-background/95 backdrop-blur-sm transform transition-transform" : ""
+        isMobile ? "translate-x-0 md:translate-x-0" : ""
       )}
     >
       <ScrollArea className="flex-1">
