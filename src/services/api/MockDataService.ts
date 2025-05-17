@@ -13,39 +13,75 @@ export class MockDataService {
       id: "1",
       name: "Instagram Bot",
       status: "active",
+      type: "interaction",
       platform: "instagram",
+      health: "healthy",
+      proxyStatus: "active",
       createdAt: "2023-05-15T10:30:00Z",
       updatedAt: "2023-05-15T10:30:00Z",
+      consumption: {
+        cpu: 5,
+        memory: 120,
+        network: 25,
+        quota: 15
+      },
+      activity: [],
+      actions: [],
+      config: {
+        maxActions: 100
+      },
       proxy: {
-        id: "proxy1",
-        host: "proxy.example.com",
-        port: 8080,
-        username: "proxyuser",
-        protocol: "http"
+        type: "http",
+        url: "proxy.example.com:8080"
       }
     },
     {
       id: "2",
       name: "Twitter Bot",
       status: "paused",
+      type: "content",
       platform: "twitter",
+      health: "warning",
+      proxyStatus: "inactive",
       createdAt: "2023-06-20T14:15:00Z",
       updatedAt: "2023-06-25T09:45:00Z",
+      consumption: {
+        cpu: 0,
+        memory: 0,
+        network: 0,
+        quota: 0
+      },
+      activity: [],
+      actions: [],
+      config: {
+        maxActions: 50
+      },
       proxy: null
     },
     {
       id: "3",
       name: "Facebook Bot",
       status: "error",
+      type: "view",
       platform: "facebook",
+      health: "critical",
+      proxyStatus: "error",
       createdAt: "2023-07-05T16:20:00Z",
       updatedAt: "2023-07-10T11:30:00Z",
-      proxy: {
-        id: "proxy3",
-        host: "proxy3.example.com",
-        port: 8443,
-        username: "proxy3user",
-        protocol: "https"
+      consumption: {
+        cpu: 15,
+        memory: 250,
+        network: 60,
+        quota: 35
+      },
+      activity: [],
+      actions: [],
+      config: {
+        maxActions: 150,
+        proxy: {
+          type: "https",
+          url: "proxy3.example.com:8443"
+        }
       }
     }
   ];
@@ -77,7 +113,7 @@ export class MockDataService {
       name: "Запуск нового продукта",
       description: "Анонс и продвижение нового продукта",
       status: "paused",
-      type: "launch",
+      type: "brand",
       platforms: ["twitter", "facebook", "instagram"],
       startDate: "2023-09-01T00:00:00Z",
       endDate: "2023-10-15T23:59:59Z",
@@ -97,7 +133,7 @@ export class MockDataService {
       name: "Контент-маркетинг",
       description: "Серия образовательных постов",
       status: "draft",
-      type: "content",
+      type: "custom",
       platforms: ["facebook"],
       startDate: "2023-11-01T00:00:00Z",
       endDate: null,
@@ -126,10 +162,24 @@ export class MockDataService {
     const newBot: Bot = {
       id: uuidv4(),
       name: botData.name || "Новый бот",
-      status: botData.status || "inactive",
-      platform: botData.platform || "other",
+      status: botData.status || "idle",
+      type: botData.type || "custom",
+      platform: botData.platform || "multi",
+      health: botData.health || "unknown",
+      proxyStatus: botData.proxyStatus || "inactive",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      consumption: botData.consumption || {
+        cpu: 0,
+        memory: 0,
+        network: 0,
+        quota: 0
+      },
+      activity: botData.activity || [],
+      actions: botData.actions || [],
+      config: botData.config || {
+        maxActions: 100
+      },
       proxy: botData.proxy || null
     };
     

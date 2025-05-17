@@ -76,7 +76,7 @@ const SettingsPage = () => {
         </TabsContent>
 
         <TabsContent value="api" className="space-y-6">
-          <ApiSettings onSave={handleSave} />
+          <ApiSettings />
         </TabsContent>
 
         <TabsContent value="bots" className="space-y-6">
