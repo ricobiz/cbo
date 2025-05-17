@@ -283,7 +283,7 @@ async function setupBrowserUseSession(botId: string, task: BotTask): Promise<voi
       throw new Error("Не удалось создать сессию браузера");
     }
     
-    botService.addLog(botId, `Создана новая сессия б��аузера ${sessionId.substring(0, 8)}...`);
+    botService.addLog(botId, `Создана новая сессия браузера ${sessionId.substring(0, 8)}...`);
     
     // Если есть URL, переходим на него
     if (task.targetURL) {

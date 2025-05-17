@@ -1,12 +1,14 @@
 
 import { ExternalAPIService } from './ExternalAPIService';
 
+// Create a singleton instance
 export const externalAPIService = new ExternalAPIService();
 
+// Re-export types
 export type {
-  OpenRouterResponse,
+  ActionVerification,
   BrowserUseAction,
   BrowserUseResponse,
-  ActionVerification,
-  CommandAnalysisResult
+  CommandAnalysisResult,
+  OpenRouterResponse
 } from './types';
