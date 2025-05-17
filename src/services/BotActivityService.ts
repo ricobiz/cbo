@@ -7,12 +7,20 @@ const botActivities: Record<string, BotActivity> = {};
 
 class BotActivityService {
   // Get all current bot activities
-  getAllBotActivities(): Record<string, BotActivity | undefined> {
-    // Return only tracked activities - don't generate fake ones
-    return botService.getAllBots().reduce((activities, bot) => {
-      activities[bot.id] = botActivities[bot.id];
-      return activities;
-    }, {} as Record<string, BotActivity | undefined>);
+  async getAllBotActivities(): Promise<Record<string, BotActivity | undefined>> {
+    try {
+      // Получаем ботов и затем обрабатываем их
+      const bots = await botService.getAllBots();
+      
+      // Используем reduce на полученном массиве ботов
+      return bots.reduce((activities, bot) => {
+        activities[bot.id] = botActivities[bot.id];
+        return activities;
+      }, {} as Record<string, BotActivity | undefined>);
+    } catch (error) {
+      console.error("Error getting bot activities:", error);
+      return {};
+    }
   }
 
   // Get activity for a specific bot
@@ -35,12 +43,15 @@ class BotActivityService {
     botActivities[botId] = activity;
     
     // Also try to update the bot object directly
-    const bot = botService.getBotById(botId);
-    if (bot) {
-      // Update via spread to ensure we're not mutating the original object
-      const updatedBot = { ...bot, currentActivity: activity };
-      // This update might be lost unless we have proper state management
-    }
+    botService.getBotById(botId).then(bot => {
+      if (bot) {
+        // Update via spread to ensure we're not mutating the original object
+        const updatedBot = { ...bot, currentActivity: activity };
+        // This update might be lost unless we have proper state management
+      }
+    }).catch(error => {
+      console.error("Error updating bot activity:", error);
+    });
 
     return activity;
   }

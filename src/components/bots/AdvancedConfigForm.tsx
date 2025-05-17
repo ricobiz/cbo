@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -30,16 +29,45 @@ export function AdvancedConfigForm({ botId, open, onOpenChange }: AdvancedConfig
   const { toast } = useToast();
   const [bot, setBot] = useState<Bot | null>(null);
   const [loading, setLoading] = useState(false);
-  
+  const [formData, setFormData] = useState<BotConfig>({
+    maxActions: 0,
+    actionDelay: [0, 0],
+    mouseMovement: "natural",
+    scrollPattern: "variable",
+    randomnessFactor: 0.5,
+    behaviorProfile: "Gen-Z Content Consumer"
+  });
+
   // Load bot data
   useEffect(() => {
     if (open && botId) {
-      const botData = botService.getBot(botId);
-      if (botData) {
-        setBot(botData);
-      }
+      loadBotData(botId);
     }
   }, [open, botId]);
+  
+  const loadBotData = (botId: string) => {
+    if (botId) {
+      botService.getBot(botId)
+        .then(botData => {
+          if (botData) {
+            setBot(botData);
+            
+            // Initialize form with bot config
+            if (botData.config) {
+              setFormData({
+                maxActions: botData.config.maxActions,
+                actionDelay: botData.config.actionDelay,
+                mouseMovement: botData.config.mouseMovement,
+                scrollPattern: botData.config.scrollPattern,
+                randomnessFactor: botData.config.randomnessFactor,
+                behaviorProfile: botData.config.behaviorProfile
+              });
+            }
+          }
+        })
+        .catch(err => console.error("Failed to load bot data:", err));
+    }
+  };
   
   const handleSave = () => {
     if (!bot) return;
