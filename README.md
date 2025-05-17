@@ -32,6 +32,39 @@ This will:
 - Start all services with Docker Compose
 - Make the application available
 
+### Development
+
+#### Running in Development Mode
+
+1. Start the backend services:
+
+```bash
+# Option 1: Using Docker
+docker-compose up -d db redis api
+
+# Option 2: Running API locally
+cd orchestrator
+uvicorn main:app --reload
+```
+
+2. Start the frontend development server:
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start dev server
+pnpm dev
+```
+
+### Environment Variables
+
+- `VITE_API_URL` - URL of the API server (defaults to http://localhost:8000)
+  - Used for direct API communication when not using the Vite development proxy
+  - The application will automatically fallback to offline mode if the API is not available
+
+See `.env.example` for all available configuration options.
+
 ### Accessing the Application
 
 - Frontend: http://localhost:8080
@@ -58,38 +91,6 @@ This will:
 ├── Dockerfile                # Backend Docker configuration
 └── README.md                 # This file
 ```
-
-## Development
-
-### Running in Development Mode
-
-1. Start the backend services:
-
-```bash
-docker-compose up -d db redis api
-```
-
-2. Start the frontend development server:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Running Tests
-
-```bash
-# Backend tests
-docker-compose exec api pytest
-
-# Frontend tests
-npm test
-```
-
-## Environment Variables
-
-See `.env.example` for all available configuration options.
 
 ## API Testing
 
@@ -129,7 +130,7 @@ curl http://localhost:8000/campaigns
 # Create a new campaign
 curl -X POST http://localhost:8000/campaigns \
   -H "Content-Type: application/json" \
-  -d '{"name":"Summer Campaign","description":"Summer promotion","platforms":["instagram"]}'
+  -d '{"name":"Summer Campaign","description":"Summer promotion","platforms":["instagram"],"bot_ids":["1","2"]}'
 ```
 
 ## Offline Mode
@@ -139,4 +140,3 @@ The application supports an offline mode when API server is not available. To us
 1. Go to Settings > API
 2. Enable "Offline Mode" toggle
 3. The application will use mock data instead of real API calls
-

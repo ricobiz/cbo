@@ -1,161 +1,172 @@
 
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/services/api";
+import { apiService } from "@/services/api/ApiService";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Bot } from "@/services/types/bot";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
 
-export interface CreateCampaignDialogProps {
+interface CreateCampaignDialogProps {
   open: boolean;
-  onClose: () => void;
-  onSubmit: (campaignData: any) => void;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const CreateCampaignDialog = ({ open, onClose, onSubmit }: CreateCampaignDialogProps) => {
-  const [name, setName] = useState('');
-  const [platform, setPlatform] = useState('');
-  const [description, setDescription] = useState('');
-  const [budget, setBudget] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [targetAudience, setTargetAudience] = useState('');
+type FormData = {
+  name: string;
+  description: string;
+  platforms: string[];
+  bot_ids: string[];
+};
+
+export function CreateCampaignDialog({ open, onOpenChange }: CreateCampaignDialogProps) {
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [selectedBotIds, setSelectedBotIds] = useState<string[]>([]);
+  const isOfflineMode = apiService.isOfflineMode();
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const campaignData = {
-      name,
-      platform,
-      description,
-      budget: parseFloat(budget),
-      startDate,
-      endDate,
-      targetAudience,
-      status: 'draft',
-      progress: 0
-    };
-    
-    onSubmit(campaignData);
-    resetForm();
+  const { data: bots = [] } = useQuery({
+    queryKey: ['bots'],
+    queryFn: async () => {
+      if (isOfflineMode) {
+        return apiService.get<Bot[]>('/bots');
+      } else {
+        const response = await api.get('/bots');
+        return response.data;
+      }
+    }
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      if (isOfflineMode) {
+        return apiService.post('/campaigns', {
+          ...data,
+          bot_ids: selectedBotIds
+        });
+      } else {
+        const response = await api.post('/campaigns', {
+          ...data,
+          bot_ids: selectedBotIds
+        });
+        return response.data;
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      toast.success("Кампания создана", {
+        description: "Новая кампания была успешно создана"
+      });
+      reset();
+      onOpenChange(false);
+      navigate(`/campaigns/${data.id}`);
+    },
+    onError: () => {
+      toast.error("Ошибка", {
+        description: "Не удалось создать кампанию"
+      });
+    }
+  });
+
+  const onSubmit = (data: FormData) => {
+    mutation.mutate({
+      ...data,
+      bot_ids: selectedBotIds,
+      platforms: ['instagram', 'facebook'] // Hardcoded for simplicity, would be from form in real app
+    });
   };
-  
-  const resetForm = () => {
-    setName('');
-    setPlatform('');
-    setDescription('');
-    setBudget('');
-    setStartDate('');
-    setEndDate('');
-    setTargetAudience('');
+
+  const handleBotToggle = (botId: string) => {
+    setSelectedBotIds(prev => 
+      prev.includes(botId) 
+        ? prev.filter(id => id !== botId) 
+        : [...prev, botId]
+    );
   };
-  
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) reset();
+      onOpenChange(isOpen);
+    }}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Campaign</DialogTitle>
-          <DialogDescription>
-            Fill out the details to create a new marketing campaign.
-          </DialogDescription>
+          <DialogTitle>Создать новую кампанию</DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Campaign Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter campaign name"
-                required
+              <Label htmlFor="name">Название</Label>
+              <Input 
+                id="name" 
+                {...register("name", { required: "Название обязательно" })} 
+                placeholder="Введите название кампании" 
+              />
+              {errors.name && (
+                <p className="text-xs text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Описание</Label>
+              <Textarea 
+                id="description" 
+                {...register("description")} 
+                placeholder="Введите описание кампании" 
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="platform">Platform</Label>
-              <Select value={platform} onValueChange={setPlatform} required>
-                <SelectTrigger id="platform">
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
-                  <SelectItem value="spotify">Spotify</SelectItem>
-                  <SelectItem value="tiktok">TikTok</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the campaign"
-                rows={3}
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
+              <Label>Выберите ботов для кампании</Label>
+              <div className="border rounded-md p-4 space-y-2 max-h-52 overflow-y-auto">
+                {bots.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Нет доступных ботов</p>
+                ) : (
+                  bots.map(bot => (
+                    <div key={bot.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`bot-${bot.id}`} 
+                        checked={selectedBotIds.includes(bot.id)}
+                        onCheckedChange={() => handleBotToggle(bot.id)}
+                      />
+                      <Label htmlFor={`bot-${bot.id}`} className="cursor-pointer">
+                        {bot.name} ({bot.platform})
+                      </Label>
+                    </div>
+                  ))
+                )}
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="budget">Budget ($)</Label>
-              <Input
-                id="budget"
-                type="number"
-                min="0"
-                step="100"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                placeholder="Enter campaign budget"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="targetAudience">Target Audience</Label>
-              <Input
-                id="targetAudience"
-                value={targetAudience}
-                onChange={(e) => setTargetAudience(e.target.value)}
-                placeholder="Describe your target audience"
-              />
+              {selectedBotIds.length === 0 && (
+                <p className="text-xs text-amber-500">Выберите хотя бы одного бота для кампании</p>
+              )}
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+            >
+              Отмена
             </Button>
-            <Button type="submit">Create Campaign</Button>
+            <Button 
+              type="submit"
+              disabled={mutation.isPending || selectedBotIds.length === 0}
+            >
+              {mutation.isPending ? "Создание..." : "Создать кампанию"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-};
+}
