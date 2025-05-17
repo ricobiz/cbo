@@ -1,4 +1,3 @@
-
 /**
  * Types for all external API interactions
  */
@@ -63,27 +62,28 @@ export interface PlatformUrlMap {
 }
 
 // Types for Content Generation
-export interface ImageGenerationParams {
+export type ImageGenerationParams = {
   prompt: string;
   style?: string;
   size?: string;
   negativePrompt?: string;
-}
+  seed?: number;
+};
 
-export interface ImageGenerationResult {
+export type ImageGenerationResult = {
   url: string;
   width: number;
   height: number;
-}
+};
 
-export interface AudioGenerationParams {
+export type AudioGenerationParams = {
   text: string;
-  voice?: string;
-  speed?: number;
-  format?: string;
-}
+  voice: string;
+  speed: number;
+  format: string;
+};
 
-export interface AudioGenerationResult {
+export type AudioGenerationResult = {
   url: string;
   duration: number;
-}
+};
