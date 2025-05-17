@@ -1,5 +1,5 @@
 
-import { externalAPIService } from "./ExternalAPIService";
+import { ExternalAPIService } from "./ExternalAPIService";
 
 // Re-export types correctly using 'export type'
 export type { 
@@ -16,4 +16,4 @@ export type {
   ApiResponse
 } from "./types";
 
-export default externalAPIService;
+export default ExternalAPIService;

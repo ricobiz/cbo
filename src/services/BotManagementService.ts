@@ -1,3 +1,4 @@
+
 import { Bot, BotType, BotPlatform, BotStatus, BotHealthStatus, BotFilter, BotActivity } from "./types/bot";
 import { ExternalAPIService } from "./external-api/ExternalAPIService";
 
@@ -44,35 +45,37 @@ export class BotManagementService {
   /**
    * Filter bots based on criteria
    */
-  static filterBots(filters: BotFilter): Bot[] {
-    let bots = this.getAllBots();
+  static async filterBots(filters: BotFilter): Promise<Bot[]> {
+    const bots = await this.getAllBots();
     
     // Apply filters
+    let filteredBots = bots;
+    
     if (filters.type && filters.type.length > 0) {
-      bots = bots.filter(bot => filters.type!.includes(bot.type));
+      filteredBots = filteredBots.filter(bot => filters.type!.includes(bot.type));
     }
     
     if (filters.platform && filters.platform.length > 0) {
-      bots = bots.filter(bot => filters.platform!.includes(bot.platform));
+      filteredBots = filteredBots.filter(bot => filters.platform!.includes(bot.platform));
     }
     
     if (filters.status && filters.status.length > 0) {
-      bots = bots.filter(bot => filters.status!.includes(bot.status));
+      filteredBots = filteredBots.filter(bot => filters.status!.includes(bot.status));
     }
     
     if (filters.health && filters.health.length > 0) {
-      bots = bots.filter(bot => filters.health!.includes(bot.health));
+      filteredBots = filteredBots.filter(bot => filters.health!.includes(bot.health));
     }
     
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      bots = bots.filter(bot => 
+      filteredBots = filteredBots.filter(bot => 
         bot.name.toLowerCase().includes(searchLower) || 
         (bot.description && bot.description.toLowerCase().includes(searchLower))
       );
     }
     
-    return bots;
+    return filteredBots;
   }
 
   /**
@@ -139,8 +142,8 @@ export class BotManagementService {
   /**
    * Update bot status
    */
-  static updateBotStatus(id: string, status: BotStatus): Bot | undefined {
-    const bot = this.getBotById(id);
+  static async updateBotStatus(id: string, status: BotStatus): Promise<Bot | undefined> {
+    const bot = await this.getBotById(id);
     
     if (bot) {
       // Add activity record
@@ -151,7 +154,7 @@ export class BotManagementService {
         timestamp: new Date().toISOString()
       };
       
-      const updatedBot = {
+      const updatedBot: Bot = {
         ...bot,
         status,
         lastActive: new Date().toISOString(),
@@ -159,7 +162,7 @@ export class BotManagementService {
         updatedAt: new Date().toISOString()
       };
       
-      this.saveBot(updatedBot);
+      await this.saveBot(updatedBot);
       return updatedBot;
     }
     
@@ -169,8 +172,8 @@ export class BotManagementService {
   /**
    * Get bot health statistics
    */
-  static getBotHealthStats(): Record<BotHealthStatus, number> {
-    const bots = this.getAllBots();
+  static async getBotHealthStats(): Promise<Record<BotHealthStatus, number>> {
+    const bots = await this.getAllBots();
     const stats: Record<BotHealthStatus, number> = {
       healthy: 0,
       warning: 0,

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -222,10 +223,10 @@ export function BotList({ onSelectBot, onNewBot }: BotListProps) {
     loadBots();
   }, []);
 
-  const loadBots = () => {
+  const loadBots = async () => {
     setIsLoading(true);
     try {
-      const botData = BotManagementService.getAllBots();
+      const botData = await BotManagementService.getAllBots();
       setBots(botData);
     } catch (error) {
       console.error("Error loading bots:", error);
