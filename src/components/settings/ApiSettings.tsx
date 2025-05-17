@@ -1,13 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Key, ChevronRight, Info, Check } from "lucide-react";
+import { Key, ChevronRight, Info, Check, ToggleLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { externalAPIService } from "@/services/ExternalAPIService";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 interface ApiSettingsProps {
   onSave: () => void;
@@ -16,6 +18,7 @@ interface ApiSettingsProps {
 export function ApiSettings({ onSave }: ApiSettingsProps) {
   const [openRouterApiKey, setOpenRouterApiKey] = useState("");
   const [browserUseApiKey, setBrowserUseApiKey] = useState("");
+  const [offlineMode, setOfflineMode] = useState(true);
   const [activeTab, setActiveTab] = useState("keys");
   const { toast } = useToast();
   
@@ -29,22 +32,29 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
     if (externalAPIService.hasBrowserUseApiKey()) {
       setBrowserUseApiKey("API_KEY_SAVED");
     }
+    
+    setOfflineMode(externalAPIService.isOfflineMode());
   }, []);
   
   const handleSave = () => {
     try {
-      // Only update keys that have changed
-      if (openRouterApiKey && openRouterApiKey !== "API_KEY_SAVED") {
-        externalAPIService.setOpenRouterApiKey(openRouterApiKey);
-      }
+      // Set offline mode first
+      externalAPIService.setOfflineMode(offlineMode);
       
-      if (browserUseApiKey && browserUseApiKey !== "API_KEY_SAVED") {
-        externalAPIService.setBrowserUseApiKey(browserUseApiKey);
+      // Only update keys that have changed if not in offline mode
+      if (!offlineMode) {
+        if (openRouterApiKey && openRouterApiKey !== "API_KEY_SAVED") {
+          externalAPIService.setOpenRouterApiKey(openRouterApiKey);
+        }
+        
+        if (browserUseApiKey && browserUseApiKey !== "API_KEY_SAVED") {
+          externalAPIService.setBrowserUseApiKey(browserUseApiKey);
+        }
       }
       
       toast({
-        title: "API ключи сохранены",
-        description: "Настройки API успешно обновлены",
+        title: "Настройки сохранены",
+        description: offlineMode ? "Автономный режим активирован" : "API ключи успешно обновлены",
         variant: "default",
       });
       
@@ -52,7 +62,7 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
     } catch (error) {
       toast({
         title: "Ошибка при сохранении",
-        description: "Не удалось сохранить API ключи",
+        description: "Не удалось сохранить настройки",
         variant: "destructive",
       });
     }
@@ -60,6 +70,33 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
 
   return (
     <div className="space-y-6">
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <ToggleLeft className="h-5 w-5 text-primary" />
+            <CardTitle>Режим работы</CardTitle>
+          </div>
+          <CardDescription>
+            Выберите режим работы приложения
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <div className="flex-1">
+              <h3 className="text-base font-medium">Автономный режим</h3>
+              <p className="text-sm text-muted-foreground">
+                Использовать приложение без внешних API. 
+                Некоторые продвинутые функции будут ограничены, но основной функционал доступен.
+              </p>
+            </div>
+            <Switch 
+              checked={offlineMode}
+              onCheckedChange={setOfflineMode}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="keys">API Ключи</TabsTrigger>
@@ -67,81 +104,109 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
         </TabsList>
         
         <TabsContent value="keys" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-primary" />
-                <CardTitle>OpenRouter API</CardTitle>
-              </div>
-              <CardDescription>
-                Интеграция с OpenRouter API для анализа команд с использованием продвинутых языковых моделей
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="openrouter-key">API Ключ</Label>
-                <Input
-                  id="openrouter-key"
-                  type="password"
-                  value={openRouterApiKey}
-                  onChange={(e) => setOpenRouterApiKey(e.target.value)}
-                  placeholder="Введите ваш OpenRouter API ключ"
-                />
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                <a 
-                  href="https://openrouter.ai/keys" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline flex items-center gap-1"
-                >
-                  <Info className="h-3 w-3" /> Получить API ключ на OpenRouter
-                  <ChevronRight className="h-3 w-3" />
-                </a>
-              </div>
-            </CardContent>
-          </Card>
+          <div className={offlineMode ? "opacity-50 pointer-events-none" : ""}>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Key className="h-5 w-5 text-primary" />
+                  <CardTitle>OpenRouter API</CardTitle>
+                </div>
+                <CardDescription>
+                  Интеграция с OpenRouter API для анализа команд с использованием продвинутых языковых моделей
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="openrouter-key">API Ключ</Label>
+                  <Input
+                    id="openrouter-key"
+                    type="password"
+                    value={openRouterApiKey}
+                    onChange={(e) => setOpenRouterApiKey(e.target.value)}
+                    placeholder="Введите ваш OpenRouter API ключ"
+                    disabled={offlineMode}
+                  />
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                  <a 
+                    href="https://openrouter.ai/keys" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Info className="h-3 w-3" /> Получить API ключ на OpenRouter
+                    <ChevronRight className="h-3 w-3" />
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="mt-4">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Key className="h-5 w-5 text-primary" />
+                  <CardTitle>Browser Use API</CardTitle>
+                </div>
+                <CardDescription>
+                  Интеграция с Browser Use для автоматизации действий в браузере
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="browser-use-key">API Ключ</Label>
+                  <Input
+                    id="browser-use-key"
+                    type="password"
+                    value={browserUseApiKey}
+                    onChange={(e) => setBrowserUseApiKey(e.target.value)}
+                    placeholder="Введите ваш Browser Use API ключ"
+                    disabled={offlineMode}
+                  />
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                  <a 
+                    href="https://browser-use.ai/api" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Info className="h-3 w-3" /> Получить API ключ на Browser Use
+                    <ChevronRight className="h-3 w-3" />
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-primary" />
-                <CardTitle>Browser Use API</CardTitle>
-              </div>
-              <CardDescription>
-                Интеграция с Browser Use для автоматизации действий в браузере
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="browser-use-key">API Ключ</Label>
-                <Input
-                  id="browser-use-key"
-                  type="password"
-                  value={browserUseApiKey}
-                  onChange={(e) => setBrowserUseApiKey(e.target.value)}
-                  placeholder="Введите ваш Browser Use API ключ"
-                />
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-                <a 
-                  href="https://browser-use.ai/api" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline flex items-center gap-1"
-                >
-                  <Info className="h-3 w-3" /> Получить API ключ на Browser Use
-                  <ChevronRight className="h-3 w-3" />
-                </a>
-              </div>
-            </CardContent>
-          </Card>
+          {offlineMode && (
+            <Card className="border-primary">
+              <CardHeader className="bg-primary/5">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  <CardTitle>Автономный режим активен</CardTitle>
+                </div>
+                <CardDescription>
+                  Работа без внешних API включена. Система будет использовать встроенные возможности.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <p className="text-sm">
+                  В автономном режиме, система будет:
+                </p>
+                <ul className="text-sm list-disc list-inside space-y-1">
+                  <li>Использовать встроенные алгоритмы для анализа команд</li>
+                  <li>Эмулировать действия браузера локально</li>
+                  <li>Работать без необходимости оплаты внешних сервисов</li>
+                </ul>
+              </CardContent>
+            </Card>
+          )}
           
           <div className="flex justify-end">
             <Button onClick={handleSave}>
-              <Check className="h-4 w-4 mr-2" /> Сохранить API ключи
+              <Check className="h-4 w-4 mr-2" /> Сохранить настройки
             </Button>
           </div>
         </TabsContent>
@@ -155,6 +220,17 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Автономный режим</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  В автономном режиме приложение работает без внешних API. 
+                  Это позволяет использовать основной функционал без дополнительных затрат, 
+                  но с некоторыми ограничениями в производительности и точности.
+                </p>
+              </div>
+              
+              <Separator />
+
               <div>
                 <h3 className="text-lg font-medium">OpenRouter API</h3>
                 <p className="text-sm text-muted-foreground mt-1">

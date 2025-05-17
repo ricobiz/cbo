@@ -24,9 +24,13 @@ const CommandPage = () => {
   };
 
   const handleApiSettingsSave = () => {
+    const isOfflineMode = externalAPIService.isOfflineMode();
+    
     toast({
-      title: "API настройки сохранены",
-      description: "Ваши API ключи успешно сохранены и настроены",
+      title: isOfflineMode ? "Автономный режим активирован" : "API настройки сохранены",
+      description: isOfflineMode 
+        ? "Приложение будет работать без внешних API" 
+        : "Ваши API ключи успешно сохранены и настроены",
       variant: "default",
     });
     
@@ -34,26 +38,30 @@ const CommandPage = () => {
     setActiveTab("command");
   };
 
-  // Проверка наличия API ключей при загрузке страницы
+  // Проверка текущего режима при загрузке
   useEffect(() => {
-    const hasOpenRouter = externalAPIService.hasOpenRouterApiKey();
-    const hasBrowserUse = externalAPIService.hasBrowserUseApiKey();
+    const isOfflineMode = externalAPIService.isOfflineMode();
     
-    if (!hasOpenRouter || !hasBrowserUse) {
-      // Если ключи не настроены, показываем уведомление
-      toast({
-        title: "Настройка API ключей",
-        description: "Для полной функциональности рекомендуется настроить API ключи",
-        action: (
-          <button 
-            className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs"
-            onClick={() => setActiveTab("integration")}
-          >
-            Настроить
-          </button>
-        ),
-        duration: 5000
-      });
+    if (!isOfflineMode) {
+      const hasOpenRouter = externalAPIService.hasOpenRouterApiKey();
+      const hasBrowserUse = externalAPIService.hasBrowserUseApiKey();
+      
+      // Если режим онлайн, но ключи не настроены, показываем уведомление
+      if (!hasOpenRouter || !hasBrowserUse) {
+        toast({
+          title: "API ключи не настроены",
+          description: "Для использования внешних API необходимо добавить ключи или активировать автономный режим",
+          action: (
+            <button 
+              className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs"
+              onClick={() => setActiveTab("integration")}
+            >
+              Настроить
+            </button>
+          ),
+          duration: 5000
+        });
+      }
     }
   }, []);
 

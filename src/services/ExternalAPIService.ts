@@ -42,6 +42,7 @@ export interface ActionVerification {
 class ExternalAPIService {
   private openRouterApiKey: string | null = null;
   private browserUseApiKey: string | null = null;
+  private offlineMode: boolean = true;
   
   // Cache for verification data
   private verificationCache = new Map<string, ActionVerification>();
@@ -64,8 +65,21 @@ class ExternalAPIService {
     return !!this.browserUseApiKey;
   }
   
+  // Offline mode settings
+  setOfflineMode(value: boolean): void {
+    this.offlineMode = value;
+  }
+  
+  isOfflineMode(): boolean {
+    return this.offlineMode;
+  }
+  
   // OpenRouter API integration
   async sendToOpenRouter(prompt: string, model: string = 'gpt-4'): Promise<OpenRouterResponse | null> {
+    if (this.offlineMode) {
+      return this.simulateAIResponse(prompt);
+    }
+    
     if (!this.hasOpenRouterApiKey()) {
       console.error('OpenRouter API key not set');
       return null;
@@ -100,8 +114,75 @@ class ExternalAPIService {
     }
   }
   
+  // Simulate AI responses in offline mode
+  private simulateAIResponse(prompt: string): OpenRouterResponse {
+    console.log("Simulating AI response for:", prompt);
+    
+    // Extract potential information from the prompt
+    const lowercasePrompt = prompt.toLowerCase();
+    
+    // Pattern matching for platform
+    let platform = "";
+    if (lowercasePrompt.includes("spotify")) platform = "spotify";
+    else if (lowercasePrompt.includes("youtube")) platform = "youtube";
+    else if (lowercasePrompt.includes("instagram")) platform = "instagram";
+    else if (lowercasePrompt.includes("tiktok")) platform = "tiktok";
+    else if (lowercasePrompt.includes("facebook")) platform = "facebook";
+    else if (lowercasePrompt.includes("twitter")) platform = "twitter";
+    else platform = "youtube"; // Default platform
+    
+    // Pattern matching for action
+    let action = "";
+    if (lowercasePrompt.includes("слушать") || lowercasePrompt.includes("прослушивани")) action = "listen";
+    else if (lowercasePrompt.includes("просмотр") || lowercasePrompt.includes("смотреть")) action = "view";
+    else if (lowercasePrompt.includes("лайк")) action = "like";
+    else if (lowercasePrompt.includes("коммент")) action = "comment";
+    else if (lowercasePrompt.includes("подпис")) action = "follow";
+    else action = "view"; // Default action
+    
+    // Extract number from prompt (default to 100)
+    let count = 100;
+    const numberMatch = prompt.match(/\d+/);
+    if (numberMatch) {
+      count = parseInt(numberMatch[0]);
+    }
+    
+    // URL extraction (or empty if none)
+    let url = "";
+    const urlMatch = prompt.match(/(https?:\/\/[^\s]+)/);
+    if (urlMatch) {
+      url = urlMatch[0];
+    }
+    
+    // Create simulated JSON response
+    const simulatedResponseContent = JSON.stringify({
+      platform: platform,
+      action: action,
+      count: count,
+      url: url || undefined,
+      additionalParams: {}
+    }, null, 2);
+    
+    return {
+      id: `simulated-${Date.now()}`,
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: simulatedResponseContent
+          },
+          finish_reason: "stop"
+        }
+      ]
+    };
+  }
+  
   // Browser Use API integration
   async executeBrowserAction(action: BrowserUseAction, sessionId?: string): Promise<BrowserUseResponse | null> {
+    if (this.offlineMode) {
+      return this.simulateBrowserAction(action);
+    }
+    
     if (!this.hasBrowserUseApiKey()) {
       console.error('Browser Use API key not set');
       return null;
@@ -132,12 +213,72 @@ class ExternalAPIService {
     }
   }
   
+  // Simulate browser actions in offline mode
+  private simulateBrowserAction(action: BrowserUseAction): BrowserUseResponse {
+    console.log("Simulating browser action:", action);
+    
+    let simulatedResponse: BrowserUseResponse = {
+      success: true
+    };
+    
+    switch (action.type) {
+      case 'navigate':
+        simulatedResponse.data = {
+          url: action.params.url,
+          title: `Simulated page for ${action.params.url}`,
+          status: 200
+        };
+        break;
+        
+      case 'click':
+        if (action.params.execute) {
+          // Simulate executing some JavaScript
+          simulatedResponse.data = {
+            viewCount: "1,234 просмотров",
+            likeCount: "56 лайков",
+            isPlaying: true
+          };
+        } else {
+          simulatedResponse.data = { clicked: true };
+        }
+        break;
+        
+      case 'wait':
+        simulatedResponse.data = { waited: true, selector: action.params.selector };
+        break;
+        
+      case 'type':
+        simulatedResponse.data = { typed: action.params.text || "" };
+        break;
+        
+      case 'register':
+      case 'login':
+        simulatedResponse.data = { 
+          success: true, 
+          user: {
+            username: action.params.credentials?.username || "user123",
+            email: action.params.credentials?.email || "user@example.com"
+          }
+        };
+        break;
+        
+      default:
+        simulatedResponse.data = { message: "Action simulated" };
+    }
+    
+    return simulatedResponse;
+  }
+  
   // Create a new browser session
   async createBrowserSession(options?: {
     proxy?: string;
     userAgent?: string;
     viewport?: { width: number; height: number };
   }): Promise<string | null> {
+    if (this.offlineMode) {
+      return `simulated-session-${Date.now()}`;
+    }
+    
     if (!this.hasBrowserUseApiKey()) {
       console.error('Browser Use API key not set');
       return null;
@@ -217,6 +358,11 @@ class ExternalAPIService {
     url?: string;
     additionalParams?: Record<string, any>;
   } | null> {
+    if (this.offlineMode) {
+      // In offline mode, use simple pattern matching
+      return this.analyzeCommandOffline(command);
+    }
+    
     const prompt = `
       Analyze the following command and extract structured information:
       
@@ -249,6 +395,58 @@ class ExternalAPIService {
       return null;
     }
   }
+  
+  // Simple offline command analysis using pattern matching
+  private analyzeCommandOffline(command: string): {
+    platform?: string;
+    action?: string;
+    count?: number;
+    url?: string;
+  } {
+    const lowercaseCommand = command.toLowerCase();
+    
+    // Find platform
+    let platform = "";
+    if (lowercaseCommand.includes("spotify")) platform = "spotify";
+    else if (lowercaseCommand.includes("youtube") || lowercaseCommand.includes("ютуб")) platform = "youtube";
+    else if (lowercaseCommand.includes("instagram") || lowercaseCommand.includes("инстаграм")) platform = "instagram";
+    else if (lowercaseCommand.includes("tiktok") || lowercaseCommand.includes("тикток")) platform = "tiktok";
+    else if (lowercaseCommand.includes("facebook") || lowercaseCommand.includes("фейсбук")) platform = "facebook";
+    else if (lowercaseCommand.includes("twitter") || lowercaseCommand.includes("твиттер")) platform = "twitter";
+    else platform = "youtube"; // Default to YouTube
+    
+    // Find action
+    let action = "";
+    if (lowercaseCommand.includes("прослушива") || lowercaseCommand.includes("слушать")) {
+      action = "listen";
+    } else if (lowercaseCommand.includes("просмотр") || lowercaseCommand.includes("смотреть")) {
+      action = "view";
+    } else if (lowercaseCommand.includes("лайк") || lowercaseCommand.includes("нравится")) {
+      action = "like";
+    } else if (lowercaseCommand.includes("коммент")) {
+      action = "comment";
+    } else if (lowercaseCommand.includes("подпис") || lowercaseCommand.includes("фоллов")) {
+      action = "follow";
+    } else {
+      // Default actions based on platform
+      action = platform === "spotify" ? "listen" : "view";
+    }
+    
+    // Find count
+    const numberMatch = command.match(/\d+/);
+    const count = numberMatch ? parseInt(numberMatch[0]) : 100;
+    
+    // Find URL
+    const urlMatch = command.match(/(https?:\/\/[^\s]+)/);
+    const url = urlMatch ? urlMatch[0] : undefined;
+    
+    return {
+      platform,
+      action,
+      count,
+      url
+    };
+  }
 
   // NEW METHODS FOR VERIFICATION AND FEEDBACK
 
@@ -259,6 +457,20 @@ class ExternalAPIService {
   async verifyAction(platform: string, contentId: string, metricType: 'view' | 'play' | 'click' | 'like' | 'follow' | 'comment', sessionId?: string): Promise<ActionVerification> {
     const timestamp = new Date().toISOString();
     const verificationKey = `${platform}:${contentId}:${metricType}:${timestamp}`;
+    
+    // In offline mode, always return simulated verification
+    if (this.offlineMode) {
+      const simulatedVerification: ActionVerification = {
+        platform,
+        contentId,
+        metricType,
+        timestamp,
+        verified: true,
+        metricValue: metricType === 'view' ? 1234 : metricType === 'like' ? 56 : 10
+      };
+      this.verificationCache.set(verificationKey, simulatedVerification);
+      return simulatedVerification;
+    }
     
     try {
       // If no session provided, one needs to be created

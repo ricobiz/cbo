@@ -1,5 +1,6 @@
+
 import { useState, useCallback, useEffect } from "react";
-import { Bot, Send, Sparkles, X, Clock, Monitor, Info } from "lucide-react";
+import { Bot, Send, Sparkles, X, Clock, Monitor, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,11 +39,13 @@ export function CommandCenter() {
   // Check API integration status
   const [hasOpenRouter, setHasOpenRouter] = useState(false);
   const [hasBrowserUse, setHasBrowserUse] = useState(false);
+  const [isOfflineMode, setIsOfflineMode] = useState(true);
   
   useEffect(() => {
-    // Check API status on component mount
+    // Check API and mode status on component mount
     setHasOpenRouter(externalAPIService.hasOpenRouterApiKey());
     setHasBrowserUse(externalAPIService.hasBrowserUseApiKey());
+    setIsOfflineMode(externalAPIService.isOfflineMode());
   }, []);
 
   const processCommand = async (commandText: string) => {
@@ -154,7 +157,7 @@ export function CommandCenter() {
     navigate("/settings");
     toast({
       title: "Настройки API",
-      description: "Перейдите во вкладку 'API Integration' для настройки внешних API.",
+      description: "Перейдите во вкладку 'API Integration' для настройки внешних API или автономного режима.",
       variant: "default"
     });
   };
@@ -180,20 +183,27 @@ export function CommandCenter() {
               </div>
               
               <div className="flex flex-wrap gap-2 mt-1">
-                <Badge variant={hasOpenRouter ? "default" : "outline"} className="flex gap-1 items-center">
-                  <Info className="h-3 w-3" /> 
-                  OpenRouter API: {hasOpenRouter ? "Подключен" : "Не подключен"}
-                </Badge>
-                <Badge variant={hasBrowserUse ? "default" : "outline"} className="flex gap-1 items-center">
-                  <Monitor className="h-3 w-3" /> 
-                  Browser Use API: {hasBrowserUse ? "Подключен" : "Не подключен"}
-                </Badge>
-                
-                {(!hasOpenRouter || !hasBrowserUse) && (
-                  <Button variant="outline" size="sm" onClick={handleConfigureAPIs} className="ml-auto">
-                    Настроить API
-                  </Button>
+                {isOfflineMode ? (
+                  <Badge variant="secondary" className="flex gap-1 items-center">
+                    <CheckCircle className="h-3 w-3 text-primary" /> 
+                    Автономный режим активирован
+                  </Badge>
+                ) : (
+                  <>
+                    <Badge variant={hasOpenRouter ? "default" : "outline"} className="flex gap-1 items-center">
+                      <Info className="h-3 w-3" /> 
+                      OpenRouter API: {hasOpenRouter ? "Подключен" : "Не подключен"}
+                    </Badge>
+                    <Badge variant={hasBrowserUse ? "default" : "outline"} className="flex gap-1 items-center">
+                      <Monitor className="h-3 w-3" /> 
+                      Browser Use API: {hasBrowserUse ? "Подключен" : "Не подключен"}
+                    </Badge>
+                  </>
                 )}
+                
+                <Button variant="outline" size="sm" onClick={handleConfigureAPIs} className="ml-auto">
+                  Настройки режима
+                </Button>
               </div>
             </CardDescription>
           </CardHeader>
