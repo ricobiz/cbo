@@ -1,6 +1,6 @@
 
-import { useState, useCallback } from "react";
-import { Bot, Send, Sparkles, X, Clock, Monitor } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Bot, Send, Sparkles, X, Clock, Monitor, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { processAICommand } from "@/services/AICommandService";
 import { BotType } from "@/services/BotService";
 import { CommandListener } from "./CommandListener";
+import { externalAPIService } from "@/services/ExternalAPIService";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   id: string;
@@ -30,6 +32,17 @@ export function CommandCenter() {
     }
   ]);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Check API integration status
+  const [hasOpenRouter, setHasOpenRouter] = useState(false);
+  const [hasBrowserUse, setHasBrowserUse] = useState(false);
+  
+  useEffect(() => {
+    // Check API status on component mount
+    setHasOpenRouter(externalAPIService.hasOpenRouterApiKey());
+    setHasBrowserUse(externalAPIService.hasBrowserUseApiKey());
+  }, []);
 
   const processCommand = async (commandText: string) => {
     if (!commandText.trim() || isProcessing) return;
@@ -115,6 +128,15 @@ export function CommandCenter() {
       }
     ]);
   };
+  
+  const handleConfigureAPIs = () => {
+    navigate("/settings");
+    toast({
+      title: "Настройки API",
+      description: "Перейдите во вкладку 'API Integration' для настройки внешних API.",
+      variant: "default"
+    });
+  };
 
   return (
     <>
@@ -131,8 +153,27 @@ export function CommandCenter() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <CardDescription>
-              Опишите задачу естественным языком и система автоматически настроит ботов для её выполнения
+            <CardDescription className="flex flex-col gap-2">
+              <div>
+                Опишите задачу естественным языком и система автоматически настроит ботов для её выполнения
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mt-1">
+                <Badge variant={hasOpenRouter ? "default" : "outline"} className="flex gap-1 items-center">
+                  <Info className="h-3 w-3" /> 
+                  OpenRouter API: {hasOpenRouter ? "Подключен" : "Не подключен"}
+                </Badge>
+                <Badge variant={hasBrowserUse ? "default" : "outline"} className="flex gap-1 items-center">
+                  <Monitor className="h-3 w-3" /> 
+                  Browser Use API: {hasBrowserUse ? "Подключен" : "Не подключен"}
+                </Badge>
+                
+                {(!hasOpenRouter || !hasBrowserUse) && (
+                  <Button variant="outline" size="sm" onClick={handleConfigureAPIs} className="ml-auto">
+                    Настроить API
+                  </Button>
+                )}
+              </div>
             </CardDescription>
           </CardHeader>
 

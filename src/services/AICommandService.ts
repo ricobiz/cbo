@@ -1,5 +1,5 @@
-
 import { botService, BotConfig, BotProxy, BotSchedule, BotType } from './BotService';
+import { externalAPIService } from './ExternalAPIService';
 
 interface AICommandResult {
   success: boolean;
@@ -16,16 +16,36 @@ interface BotTask {
   targetCount: number;
   targetDuration?: number; // в часах
   description: string;
+  useExternalAPIs?: boolean;
 }
 
 // Функция для обработки команды от ИИ
 export async function processAICommand(command: string): Promise<AICommandResult> {
-  // Здесь будет подключение к реальному AI API (OpenAI, etc)
-  // Сейчас используем упрощенный анализ команды для демонстрации
-
   try {
-    // Анализ команды и определение типа задачи
-    const taskInfo = analyzeCommand(command);
+    // Сначала попытаемся анализировать с помощью OpenRouter, если настроен
+    let taskInfo: BotTask | null = null;
+    
+    if (externalAPIService.hasOpenRouterApiKey()) {
+      console.log("Using OpenRouter for command analysis");
+      const aiAnalysis = await externalAPIService.analyzeCommand(command);
+      
+      if (aiAnalysis) {
+        taskInfo = {
+          type: mapActionToType(aiAnalysis.action || ""),
+          targetPlatform: aiAnalysis.platform || "",
+          targetURL: aiAnalysis.url,
+          targetAction: aiAnalysis.action || "",
+          targetCount: aiAnalysis.count || 100,
+          description: generateTaskDescription(aiAnalysis.platform || "", aiAnalysis.action || "", aiAnalysis.count || 100),
+          useExternalAPIs: true
+        };
+      }
+    }
+    
+    // Если не получилось с OpenRouter, используем встроенный анализатор
+    if (!taskInfo) {
+      taskInfo = analyzeCommand(command);
+    }
     
     if (!taskInfo) {
       return {
@@ -61,6 +81,19 @@ export async function processAICommand(command: string): Promise<AICommandResult
       botsCreated: 0
     };
   }
+}
+
+function mapActionToType(action: string): BotType {
+  if (['listen', 'view', 'watch'].includes(action?.toLowerCase())) {
+    return 'click';
+  }
+  if (['like', 'follow', 'subscribe'].includes(action?.toLowerCase())) {
+    return 'interaction';
+  }
+  if (['comment', 'generate', 'create'].includes(action?.toLowerCase())) {
+    return 'content';
+  }
+  return 'click'; // Default
 }
 
 // Анализ команды (упрощенная имплементация)
@@ -185,7 +218,20 @@ function setupBotsForTask(task: BotTask): number {
         // Добавляем специфичные для задачи логи
         botService.addLog(botId, "Бот создан для автоматизированной задачи");
         botService.addLog(botId, `Цель: ${actionsPerBot} ${getActionName(task.targetAction)} на ${task.targetPlatform}`);
-        if (task.targetURL) {
+        
+        if (task.useExternalAPIs && externalAPIService.hasBrowserUseApiKey()) {
+          botService.addLog(botId, "Будет использован Browser Use API для выполнения задачи");
+          
+          // При наличии Browser Use API, запускаем бота через него
+          if (task.targetURL) {
+            botService.addLog(botId, `Целевой URL: ${task.targetURL}`);
+            
+            // Запустить сессию Browser Use асинхронно
+            setupBrowserUseSession(botId, task).catch(err => {
+              botService.addLog(botId, `Ошибка настройки сессии Browser Use: ${err.message}`);
+            });
+          }
+        } else if (task.targetURL) {
           botService.addLog(botId, `Целевой URL: ${task.targetURL}`);
         }
       }
@@ -198,10 +244,88 @@ function setupBotsForTask(task: BotTask): number {
   }
 }
 
+// Функция для настройки сессии Browser Use
+async function setupBrowserUseSession(botId: string, task: BotTask): Promise<void> {
+  try {
+    // Создаём сессию браузера
+    const sessionId = await externalAPIService.createBrowserSession({
+      proxy: "auto" // Использовать прокси автоматически
+    });
+    
+    if (!sessionId) {
+      throw new Error("Не удалось создать сессию браузера");
+    }
+    
+    botService.addLog(botId, `Создана новая сессия браузера ${sessionId.substring(0, 8)}...`);
+    
+    // Если есть URL, переходим на него
+    if (task.targetURL) {
+      const navResult = await externalAPIService.executeBrowserAction({
+        type: 'navigate',
+        params: { url: task.targetURL }
+      }, sessionId);
+      
+      if (navResult?.success) {
+        botService.addLog(botId, `Успешно открыт URL: ${task.targetURL}`);
+      } else {
+        botService.addLog(botId, `Ошибка при открытии URL: ${task.targetURL}`);
+      }
+    } else {
+      // Если URL нет, но есть платформа, переходим на платформу
+      const platformUrl = getPlatformUrl(task.targetPlatform);
+      const navResult = await externalAPIService.executeBrowserAction({
+        type: 'navigate',
+        params: { url: platformUrl }
+      }, sessionId);
+      
+      if (navResult?.success) {
+        botService.addLog(botId, `Успешно открыта платформа: ${task.targetPlatform}`);
+      } else {
+        botService.addLog(botId, `Ошибка при открытии платформы: ${task.targetPlatform}`);
+      }
+    }
+    
+    // Дополнительные действия в зависим��сти от типа задачи
+    // Это упрощенный пример, в реальности нужна более сложная логика
+    switch (task.targetAction) {
+      case 'listen':
+        botService.addLog(botId, "Запуск сценария прослушивания...");
+        break;
+      case 'view':
+        botService.addLog(botId, "Запуск сценария просмотра...");
+        break;
+      case 'like':
+        botService.addLog(botId, "Запуск сценария лайков...");
+        break;
+      case 'comment':
+        botService.addLog(botId, "Запуск сценария комментирования...");
+        break;
+      default:
+        botService.addLog(botId, "Запуск базового сценария взаимодействия...");
+    }
+  } catch (error) {
+    console.error("Error setting up Browser Use session:", error);
+    throw error;
+  }
+}
+
+function getPlatformUrl(platform: string): string {
+  const platforms: Record<string, string> = {
+    'spotify': 'https://open.spotify.com',
+    'youtube': 'https://www.youtube.com',
+    'instagram': 'https://www.instagram.com',
+    'tiktok': 'https://www.tiktok.com',
+    'facebook': 'https://www.facebook.com',
+    'twitter': 'https://twitter.com',
+  };
+  
+  return platforms[platform.toLowerCase()] || 'https://www.google.com';
+}
+
 // Вспомогательные функции
 function calculateOptimalBotCount(task: BotTask): number {
   // Упрощенная логика: 1 бот на каждые 100-200 действий
-  // В реальном приложении здесь будет более сложная логика с учетом доступных ресурсов и ограничений
+  // В реальном пр��ложении здесь будет более сложная логика с учетом доступных ресурсов и ограничений
   const actionsPerBot = task.targetAction === "comment" ? 50 : 200;
   return Math.max(1, Math.min(5, Math.ceil(task.targetCount / actionsPerBot)));
 }
@@ -301,7 +425,7 @@ function generateSuccessMessage(task: BotTask, botsCreated: number): string {
   let message = `Задача принята! Я создал ${botsCreated} ${botsCreated === 1 ? "бота" : botsCreated < 5 ? "бота" : "ботов"}, которые ${future} контент на ${platformName}.`;
   
   if (task.targetCount) {
-    message += ` Целевое количество: ${task.targetCount}.`;
+    message += ` Целево�� количество: ${task.targetCount}.`;
   }
   
   if (task.targetDuration) {
