@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,6 +135,14 @@ const BotsPage = () => {
     regions: ["us", "eu"]
   });
 
+  // Calculate overall health percentage for all bots
+  const calculateOverallHealth = () => {
+    if (bots.length === 0) return 100; // Default to 100% if no bots
+    
+    const totalHealth = bots.reduce((sum, bot) => sum + bot.healthPercentage, 0);
+    return Math.round(totalHealth / bots.length);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -196,7 +203,12 @@ const BotsPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <BotHealthIndicator />
+          <BotHealthIndicator 
+            healthPercentage={calculateOverallHealth()} 
+            size="md" 
+            showIcon={true}
+            animate={true}
+          />
 
           <div className="flex items-center gap-2">
             <Label htmlFor="ip-rotation" className="text-sm">IP Rotation</Label>
