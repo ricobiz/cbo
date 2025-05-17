@@ -4,18 +4,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-const data = [
-  { name: "Mon", clicks: 120, engagements: 80, views: 240 },
-  { name: "Tue", clicks: 150, engagements: 100, views: 320 },
-  { name: "Wed", clicks: 180, engagements: 120, views: 280 },
-  { name: "Thu", clicks: 220, engagements: 140, views: 290 },
-  { name: "Fri", clicks: 250, engagements: 160, views: 400 },
-  { name: "Sat", clicks: 280, engagements: 180, views: 450 },
-  { name: "Sun", clicks: 300, engagements: 200, views: 500 },
+// More realistic data for the chart
+const dailyData = [
+  { name: "Mon", clicks: 34, engagements: 23, views: 67 },
+  { name: "Tue", clicks: 42, engagements: 31, views: 89 },
+  { name: "Wed", clicks: 38, engagements: 26, views: 72 },
+  { name: "Thu", clicks: 51, engagements: 37, views: 102 },
+  { name: "Fri", clicks: 63, engagements: 45, views: 128 },
+  { name: "Sat", clicks: 47, engagements: 28, views: 91 },
+  { name: "Sun", clicks: 36, engagements: 21, views: 74 },
+];
+
+const weeklyData = [
+  { name: "Week 1", clicks: 263, engagements: 187, views: 512 },
+  { name: "Week 2", clicks: 321, engagements: 215, views: 624 },
+  { name: "Week 3", clicks: 287, engagements: 194, views: 578 },
+  { name: "Week 4", clicks: 345, engagements: 231, views: 692 },
+];
+
+const monthlyData = [
+  { name: "Jan", clicks: 1145, engagements: 763, views: 2290 },
+  { name: "Feb", clicks: 1253, engagements: 812, views: 2465 },
+  { name: "Mar", clicks: 1492, engagements: 973, views: 3015 },
+  { name: "Apr", clicks: 1357, engagements: 884, views: 2715 },
+  { name: "May", clicks: 1623, engagements: 1047, views: 3246 },
 ];
 
 export function ActivityChart() {
   const [timeRange, setTimeRange] = useState("7d");
+  
+  // Choose the appropriate dataset based on the selected time range
+  const getChartData = () => {
+    switch(timeRange) {
+      case "24h":
+        // For 24h we'll just use the daily data but with fewer points
+        return dailyData.slice(2);
+      case "7d":
+        return dailyData;
+      case "30d":
+        return weeklyData;
+      case "90d":
+        return monthlyData;
+      default:
+        return dailyData;
+    }
+  };
   
   return (
     <Card className="col-span-full">
@@ -32,6 +65,7 @@ export function ActivityChart() {
             <SelectItem value="24h">Last 24 hours</SelectItem>
             <SelectItem value="7d">Last 7 days</SelectItem>
             <SelectItem value="30d">Last 30 days</SelectItem>
+            <SelectItem value="90d">Last 90 days</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -39,7 +73,7 @@ export function ActivityChart() {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={data}
+              data={getChartData()}
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
               <defs>

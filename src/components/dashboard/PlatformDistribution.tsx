@@ -8,11 +8,13 @@ type PlatformData = {
   color: string;
 }
 
+// Updated with more realistic distribution
 const data: PlatformData[] = [
-  { name: "YouTube", value: 40, color: "#FF0000" },
-  { name: "Spotify", value: 30, color: "#1DB954" },
-  { name: "Twitter", value: 20, color: "#1DA1F2" },
-  { name: "Instagram", value: 10, color: "#C13584" },
+  { name: "YouTube", value: 35, color: "#FF0000" },
+  { name: "Spotify", value: 25, color: "#1DB954" },
+  { name: "Twitter", value: 15, color: "#1DA1F2" },
+  { name: "Instagram", value: 15, color: "#C13584" },
+  { name: "TikTok", value: 10, color: "#000000" },
 ];
 
 export function PlatformDistribution() {
