@@ -49,7 +49,7 @@ export function BotMonitoring() {
   // Calculate metrics
   const activeBots = bots.filter(bot => bot.status === "active").length;
   const totalBots = bots.length;
-  const botHealth = botService.getBotHealth();
+  const botHealth = totalBots > 0 ? botService.getBotHealth() : 100;
   
   // Count active sessions by platform
   const sessionsByPlatform = bots.reduce((acc, bot) => {
@@ -136,8 +136,8 @@ export function BotMonitoring() {
         
         <div className="border rounded-lg p-4">
           <h3 className="text-sm font-medium mb-3">Bot Activity (24h)</h3>
-          {activeBots > 0 ? (
-            <div className="h-[200px]">
+          <div className="h-[200px]">
+            {activeBots > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={activityData}>
                   <XAxis 
@@ -163,18 +163,18 @@ export function BotMonitoring() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-[200px] flex items-center justify-center border-dashed border rounded-lg bg-muted/30">
-              <p className="text-muted-foreground">No activity data available</p>
-            </div>
-          )}
+            ) : (
+              <div className="h-[200px] flex items-center justify-center border-dashed border rounded-lg bg-muted/30">
+                <p className="text-muted-foreground">No activity data available</p>
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="border rounded-lg p-4">
           <h3 className="text-sm font-medium mb-3">IP Rotations (24h)</h3>
-          {activeBots > 0 ? (
-            <div className="h-[200px]">
+          <div className="h-[200px]">
+            {activeBots > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={ipRotationData}>
                   <XAxis 
@@ -200,12 +200,12 @@ export function BotMonitoring() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-[200px] flex items-center justify-center border-dashed border rounded-lg bg-muted/30">
-              <p className="text-muted-foreground">No IP rotation data available</p>
-            </div>
-          )}
+            ) : (
+              <div className="h-[200px] flex items-center justify-center border-dashed border rounded-lg bg-muted/30">
+                <p className="text-muted-foreground">No IP rotation data available</p>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
