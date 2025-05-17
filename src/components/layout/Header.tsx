@@ -13,8 +13,23 @@ const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
   return (
     <header className="border-b bg-background p-4 flex items-center justify-between sticky top-0 z-20">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="flex md:hidden">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleSidebar} 
+          className="flex md:hidden"
+        >
           <Menu className="h-5 w-5" />
+        </Button>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={toggleSidebar} 
+          className="hidden md:flex"
+          aria-label={isSidebarCollapsed ? "Развернуть сайдбар" : "Свернуть сайдбар"}
+          title={isSidebarCollapsed ? "Развернуть сайдбар" : "Свернуть сайдбар"}
+        >
+          {isSidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
         </Button>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -26,16 +41,6 @@ const Header = ({ toggleSidebar, isSidebarCollapsed }: HeaderProps) => {
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleSidebar} 
-          className="hidden md:flex"
-          aria-label={isSidebarCollapsed ? "Развернуть сайдбар" : "Свернуть сайдбар"}
-          title={isSidebarCollapsed ? "Развернуть сайдбар" : "Свернуть сайдбар"}
-        >
-          {isSidebarCollapsed ? <ChevronRight className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-        </Button>
         <ThemeToggle />
       </div>
     </header>
