@@ -1,5 +1,5 @@
 
-import { Bell, User } from "lucide-react";
+import { Bell, User, Rocket, Bot } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
