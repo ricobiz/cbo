@@ -9,10 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBotStore } from "@/store/BotStore";
 import { BotActivity as BotActivityType } from "@/services/BotService";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
+import { useTranslation } from "@/store/LanguageStore";
 
 export function BotMonitoring() {
   const { bots, botActivities, refreshBotActivities } = useBotStore();
   const [showHint, setShowHint] = useState(true);
+  const { t } = useTranslation();
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -35,7 +37,7 @@ export function BotMonitoring() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Мониторинг активности
+            {t('monitoring')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -43,16 +45,16 @@ export function BotMonitoring() {
             <Bot className="h-12 w-12 text-muted-foreground opacity-20" />
             {activeBots.length === 0 ? (
               <>
-                <h3 className="mt-4 text-lg font-medium">Нет активных ботов</h3>
+                <h3 className="mt-4 text-lg font-medium">{t('noActiveBotsOrData')}</h3>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md">
-                  Активируйте бота, чтобы начать мониторинг его действий в режиме реального времени.
+                  {t('activateBot')}
                 </p>
               </>
             ) : (
               <>
-                <h3 className="mt-4 text-lg font-medium">Нет данных активности</h3>
+                <h3 className="mt-4 text-lg font-medium">{t('noActivityData')}</h3>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md">
-                  Боты активны, но пока нет данных о их действиях. Подождите, пока они начнут работу, или проверьте настройки подключения.
+                  {t('waitingForActivityData')}
                 </p>
               </>
             )}
@@ -79,23 +81,23 @@ export function BotMonitoring() {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Activity className="h-5 w-5" />
-          Мониторинг активности в реальном времени
+          {t('monitoring')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {showHint && (
           <InteractiveHint
-            title="Мониторинг ботов"
-            description="Здесь вы можете отслеживать действия ваших ботов в реальном времени."
+            title={t('monitoring')}
+            description={t('monitoringDesc')}
             onComplete={() => setShowHint(false)}
             className="mb-4"
           >
             <div className="flex items-start gap-3">
               <Info className="h-8 w-8 text-blue-500 mt-1" />
               <div>
-                <h4 className="font-medium">Данные реального времени</h4>
+                <h4 className="font-medium">{t('realTimeData')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Здесь отображаются только реальные данные о работе ботов. Запустите ботов, чтобы увидеть их активность.
+                  {t('realTimeDataDesc')}
                 </p>
               </div>
             </div>
@@ -104,9 +106,9 @@ export function BotMonitoring() {
         
         <Tabs defaultValue="activity">
           <TabsList className="mb-4">
-            <TabsTrigger value="activity">Активность</TabsTrigger>
-            <TabsTrigger value="performance">Производительность</TabsTrigger>
-            <TabsTrigger value="errors">Ошибки</TabsTrigger>
+            <TabsTrigger value="activity">{t('activity')}</TabsTrigger>
+            <TabsTrigger value="performance">{t('performance')}</TabsTrigger>
+            <TabsTrigger value="errors">{t('errors')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="activity" className="space-y-4">
@@ -125,7 +127,7 @@ export function BotMonitoring() {
                             <Badge variant="outline">{bot.type}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Ожидание данных активности...
+                            {t('waitingForActivityData')}
                           </p>
                         </div>
                       </div>
@@ -180,9 +182,9 @@ export function BotMonitoring() {
           <TabsContent value="errors">
             <div className="border rounded-md p-4 text-center">
               <AlertTriangle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <h4 className="font-medium">Нет критических ошибок</h4>
+              <h4 className="font-medium">{t('noErrors')}</h4>
               <p className="text-sm text-muted-foreground mt-1">
-                В данный момент все боты работают нормально.
+                {t('botsWorkingNormally')}
               </p>
             </div>
           </TabsContent>
