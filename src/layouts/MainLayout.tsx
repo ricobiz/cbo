@@ -2,14 +2,21 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import { useState } from "react";
 
 const MainLayout = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-background grid-bg">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
-        <Header />
-        <main className="flex-1 p-6">
+    <div className="min-h-screen flex bg-background">
+      <Sidebar isCollapsed={isSidebarCollapsed} />
+      <div className={`flex-1 flex flex-col min-h-screen ${isSidebarCollapsed ? 'lg:ml-[80px]' : 'lg:ml-[240px]'} transition-all`}>
+        <Header toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
+        <main className="flex-1 p-6 overflow-auto">
           <Outlet />
         </main>
       </div>

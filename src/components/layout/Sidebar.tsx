@@ -72,9 +72,9 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   return (
     <aside 
       className={cn(
-        "h-full flex flex-col border-r bg-background pb-12 transition-all",
+        "h-screen flex flex-col border-r bg-background pb-12 transition-all z-30",
         isCollapsed ? "w-[80px]" : "w-[240px]",
-        isMobile && "fixed inset-y-0 z-20 bg-background/95 backdrop-blur-sm w-screen"
+        isMobile ? "fixed inset-y-0 left-0 z-50 bg-background/95 backdrop-blur-sm" : ""
       )}
     >
       <ScrollArea className="flex-1">
