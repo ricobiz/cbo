@@ -7,6 +7,7 @@ import { PlusCircle, ClipboardList, Calendar, Search, ExternalLink } from "lucid
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CampaignCard } from "@/components/campaigns/CampaignCard";
+import { CreateCampaignDialog } from "@/components/campaigns/CreateCampaignDialog";
 import { externalAPIService } from "@/services/external-api";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -36,6 +37,7 @@ const CampaignsPage = () => {
   const [currentTab, setCurrentTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlatform, setFilterPlatform] = useState("all");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
   
   // Real campaign data with reset counters
@@ -118,6 +120,32 @@ const CampaignsPage = () => {
     });
   };
 
+  // Обработчик создания новой кампании
+  const handleCreateCampaign = (formData: any) => {
+    // Генерируем уникальный ID для новой кампании
+    const newId = String(Math.max(...campaigns.map(c => Number(c.id)), 0) + 1);
+    
+    // Создаем объект новой кампании
+    const newCampaign: Campaign = {
+      id: newId,
+      title: formData.title,
+      platform: formData.platform,
+      status: "draft", // По умолчанию создается как черновик
+      progress: 0, // Начальный прогресс 0%
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      type: formData.type,
+      metrics: {
+        views: 0,
+        engagement: 0,
+        conversions: 0
+      }
+    };
+    
+    // Добавляем новую кампанию в начало списка
+    setCampaigns(prevCampaigns => [newCampaign, ...prevCampaigns]);
+  };
+
   // Проверка текущего режима при загрузке
   useEffect(() => {
     setIsOfflineMode(externalAPIService.isOfflineMode());
@@ -149,7 +177,7 @@ const CampaignsPage = () => {
           <ClipboardList className="h-7 w-7" /> 
           Управление кампаниями
         </h1>
-        <Button>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
           <PlusCircle className="h-4 w-4 mr-2" />
           Создать кампанию
         </Button>
@@ -210,7 +238,7 @@ const CampaignsPage = () => {
                           ? "Попробуйте изменить параметры поиска или фильтрации"
                           : "Создайте новую кампанию чтобы начать работу"}
                       </p>
-                      <Button className="mt-4">
+                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Создать кампанию
                       </Button>
@@ -240,7 +268,7 @@ const CampaignsPage = () => {
                       <p className="text-muted-foreground mt-1">
                         Создайте новую кампанию или активируйте существующий черновик
                       </p>
-                      <Button className="mt-4">
+                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Создать кампанию
                       </Button>
@@ -270,7 +298,7 @@ const CampaignsPage = () => {
                       <p className="text-muted-foreground mt-1">
                         Создайте новую кампанию чтобы начать работу
                       </p>
-                      <Button className="mt-4">
+                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Создать кампанию
                       </Button>
@@ -300,7 +328,7 @@ const CampaignsPage = () => {
                       <p className="text-muted-foreground mt-1">
                         У вас еще нет завершенных кампаний
                       </p>
-                      <Button className="mt-4">
+                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Создать кампанию
                       </Button>
@@ -336,6 +364,13 @@ const CampaignsPage = () => {
           </Select>
         </div>
       </div>
+
+      {/* Диалоговое окно создания кампании */}
+      <CreateCampaignDialog 
+        open={isCreateDialogOpen} 
+        onOpenChange={setIsCreateDialogOpen}
+        onCreateCampaign={handleCreateCampaign}
+      />
     </div>
   );
 };
