@@ -3,8 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CampaignProgressIndicator } from "@/components/campaigns/CampaignProgressIndicator";
 import { Instagram, Youtube, Twitter, Music } from "lucide-react";
+import { useTranslation } from "@/store/LanguageStore";
 
 export interface CampaignCardProps {
   campaign: any;
@@ -12,6 +12,8 @@ export interface CampaignCardProps {
 }
 
 export const CampaignCard = ({ campaign, onClick }: CampaignCardProps) => {
+  const { t } = useTranslation();
+  
   const getPlatformIcon = () => {
     switch (campaign.platform?.toLowerCase()) {
       case 'instagram':
@@ -42,13 +44,21 @@ export const CampaignCard = ({ campaign, onClick }: CampaignCardProps) => {
     }
   };
 
+  const getProgressColor = (progress: number) => {
+    if (progress >= 90) return "bg-green-500";
+    if (progress >= 70) return "bg-emerald-500";
+    if (progress >= 50) return "bg-blue-500";
+    if (progress >= 30) return "bg-amber-500";
+    return "bg-red-500";
+  };
+
   return (
-    <Card onClick={onClick} className="cursor-pointer hover:border-primary transition-colors">
+    <Card onClick={onClick} className="cursor-pointer hover:border-primary transition-colors overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <h3 className="font-semibold">{campaign.name}</h3>
           <Badge variant={getStatusBadgeVariant()} className="capitalize">
-            {campaign.status}
+            {t(campaign.status)}
           </Badge>
         </div>
         <div className="flex items-center text-sm text-muted-foreground">
@@ -59,10 +69,13 @@ export const CampaignCard = ({ campaign, onClick }: CampaignCardProps) => {
       <CardContent className="pb-2">
         <div className="mt-2">
           <div className="flex justify-between items-center mb-1 text-sm">
-            <span>Progress</span>
+            <span>{t('progress')}</span>
             <span>{campaign.progress}%</span>
           </div>
-          <Progress value={campaign.progress} />
+          <Progress 
+            value={campaign.progress} 
+            className={`h-2 ${getProgressColor(campaign.progress)}`} 
+          />
         </div>
       </CardContent>
       <CardFooter className="text-sm text-muted-foreground pt-0">
@@ -71,7 +84,7 @@ export const CampaignCard = ({ campaign, onClick }: CampaignCardProps) => {
             {new Date(campaign.startDate).toLocaleDateString()} - {new Date(campaign.endDate).toLocaleDateString()}
           </div>
         ) : (
-          <div className="text-xs">No dates specified</div>
+          <div className="text-xs">{t('noDateSpecified')}</div>
         )}
       </CardFooter>
     </Card>

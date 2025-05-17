@@ -11,8 +11,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, Settings, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/store/LanguageStore";
 
 export function UserMenu() {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  
+  const handleNavigate = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,25 +35,25 @@ export function UserMenu() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">Имя пользователя</p>
+            <p className="text-sm font-medium">{t('userName')}</p>
             <p className="text-xs text-muted-foreground">user@example.com</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleNavigate("/settings?tab=profile")}>
             <User className="mr-2 h-4 w-4" />
-            <span>Профиль</span>
+            <span>{t('profile')}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleNavigate("/settings")}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Настройки</span>
+            <span>{t('settings')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => console.log("Logged out")}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Выйти</span>
+          <span>{t('logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
