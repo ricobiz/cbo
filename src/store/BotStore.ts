@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { botService } from '../services/BotService';
 import { Bot } from '../services/BotService';
@@ -6,6 +5,7 @@ import { BotStatus, BotType } from '../services/types/bot';
 import { BotActivity } from '../services/BotService';
 import { botActivityService } from '../services/BotActivityService';
 import { proxyService } from '../services/ProxyService';
+import { useToast } from '@/components/ui/use-toast';
 
 interface BotState {
   bots: Bot[];
@@ -19,20 +19,20 @@ interface BotState {
   botActivities: Record<string, BotActivity | undefined>;
   
   // Actions
-  fetchBots: () => void;
-  startBot: (id: string) => void;
-  stopBot: (id: string) => void;
+  fetchBots: () => Promise<void>;
+  startBot: (id: string) => Promise<void>;
+  stopBot: (id: string) => Promise<void>;
   setFilterType: (type: string) => void;
   setFilterStatus: (status: string) => void;
   setSearchTerm: (term: string) => void;
   setIpRotationEnabled: (enabled: boolean) => void;
   selectBot: (id: string | null) => void;
-  updateBotConfig: (id: string, config: any) => void;
-  updateBotSchedule: (id: string, schedule: any) => void;
-  updateBotProxy: (id: string, proxy: any) => void;
-  rotateIp: (id: string) => void;
-  createBot: (botData: Partial<Bot>) => string | null;
-  refreshBotActivities: () => void;
+  updateBotConfig: (id: string, config: any) => Promise<void>;
+  updateBotSchedule: (id: string, schedule: any) => Promise<void>;
+  updateBotProxy: (id: string, proxy: any) => Promise<void>;
+  rotateIp: (id: string) => Promise<void>;
+  createBot: (botData: Partial<Bot>) => Promise<string | null>;
+  refreshBotActivities: () => Promise<void>;
   startActivityPolling: () => void;
   stopActivityPolling: () => void;
 }
@@ -52,32 +52,42 @@ export const useBotStore = create<BotState>((set, get) => {
     error: null,
     botActivities: {},
     
-    fetchBots: () => {
+    fetchBots: async () => {
       set({ loading: true, error: null });
       try {
-        const bots = botService.getAllBots();
+        const bots = await botService.getAllBots();
         set({ bots, loading: false });
         
         // Also refresh activities when fetching bots
-        get().refreshBotActivities();
+        await get().refreshBotActivities();
       } catch (error) {
         set({ error: (error as Error).message, loading: false });
       }
     },
     
-    startBot: (id: string) => {
-      const success = botService.startBot(id);
-      if (success) {
-        set({ bots: botService.getAllBots() });
-        get().refreshBotActivities();
+    startBot: async (id: string) => {
+      try {
+        const success = await botService.startBot(id);
+        if (success) {
+          const bots = await botService.getAllBots();
+          set({ bots });
+          await get().refreshBotActivities();
+        }
+      } catch (error) {
+        set({ error: (error as Error).message });
       }
     },
     
-    stopBot: (id: string) => {
-      const success = botService.stopBot(id);
-      if (success) {
-        set({ bots: botService.getAllBots() });
-        get().refreshBotActivities();
+    stopBot: async (id: string) => {
+      try {
+        const success = await botService.stopBot(id);
+        if (success) {
+          const bots = await botService.getAllBots();
+          set({ bots });
+          await get().refreshBotActivities();
+        }
+      } catch (error) {
+        set({ error: (error as Error).message });
       }
     },
     
@@ -101,38 +111,59 @@ export const useBotStore = create<BotState>((set, get) => {
       set({ selectedBotId: id });
     },
     
-    updateBotConfig: (id: string, config: any) => {
-      const success = botService.updateBotConfig(id, config);
-      if (success) {
-        set({ bots: botService.getAllBots() });
-      }
-    },
-    
-    updateBotSchedule: (id: string, schedule: any) => {
-      const success = botService.updateBotSchedule(id, schedule);
-      if (success) {
-        set({ bots: botService.getAllBots() });
-      }
-    },
-    
-    updateBotProxy: (id: string, proxy: any) => {
-      const success = botService.updateBotProxy(id, proxy);
-      if (success) {
-        set({ bots: botService.getAllBots() });
-      }
-    },
-    
-    rotateIp: (id: string) => {
-      const success = botService.rotateIp(id);
-      if (success) {
-        set({ bots: botService.getAllBots() });
-      }
-    },
-    
-    createBot: (botData: Partial<Bot>) => {
+    updateBotConfig: async (id: string, config: any) => {
       try {
-        const newBotId = botService.createBot(botData);
-        set({ bots: botService.getAllBots() });
+        const success = await botService.updateBotConfig(id, config);
+        if (success) {
+          const bots = await botService.getAllBots();
+          set({ bots });
+        }
+      } catch (error) {
+        set({ error: (error as Error).message });
+      }
+    },
+    
+    updateBotSchedule: async (id: string, schedule: any) => {
+      try {
+        const success = await botService.updateBotSchedule(id, schedule);
+        if (success) {
+          const bots = await botService.getAllBots();
+          set({ bots });
+        }
+      } catch (error) {
+        set({ error: (error as Error).message });
+      }
+    },
+    
+    updateBotProxy: async (id: string, proxy: any) => {
+      try {
+        const success = await botService.updateBotProxy(id, proxy);
+        if (success) {
+          const bots = await botService.getAllBots();
+          set({ bots });
+        }
+      } catch (error) {
+        set({ error: (error as Error).message });
+      }
+    },
+    
+    rotateIp: async (id: string) => {
+      try {
+        const success = await botService.rotateIp(id);
+        if (success) {
+          const bots = await botService.getAllBots();
+          set({ bots });
+        }
+      } catch (error) {
+        set({ error: (error as Error).message });
+      }
+    },
+    
+    createBot: async (botData: Partial<Bot>) => {
+      try {
+        const newBotId = await botService.createBot(botData);
+        const bots = await botService.getAllBots();
+        set({ bots });
         return newBotId;
       } catch (error) {
         set({ error: (error as Error).message });
@@ -140,9 +171,13 @@ export const useBotStore = create<BotState>((set, get) => {
       }
     },
     
-    refreshBotActivities: () => {
-      const activities = botActivityService.getAllBotActivities();
-      set({ botActivities: activities });
+    refreshBotActivities: async () => {
+      try {
+        const activities = await botActivityService.getAllBotActivities();
+        set({ botActivities: activities });
+      } catch (error) {
+        console.error("Error refreshing bot activities:", error);
+      }
     },
     
     startActivityPolling: () => {

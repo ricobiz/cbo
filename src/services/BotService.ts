@@ -1,5 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
+import { apiService } from './api/ApiService';
+import { API_CONFIG, AUTO_FALLBACK_TO_OFFLINE } from '@/config/api';
 import { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
+import { useToast } from '@/components/ui/use-toast';
 
 export type BotActivityType = 'browsing' | 'content_creation' | 'engagement' | 'account_interaction' | 'data_collection' | 'ip_rotation';
 
@@ -72,7 +75,7 @@ let mockEmailAccounts: EmailAccount[] = [
   }
 ];
 
-// Mock bot data
+// Mock bot data - используется только при отсутствии соединения с API
 let mockBots: Bot[] = [
   {
     id: '1',
@@ -269,74 +272,138 @@ let mockActivities: Record<string, BotActivity> = {};
 const botEmailAssignments: Record<string, string[]> = {};
 
 class BotService {
-  getAllBots(): Bot[] {
-    return [...mockBots];
-  }
-  
-  startBot(id: string): boolean {
-    const botIndex = mockBots.findIndex(bot => bot.id === id);
-    if (botIndex >= 0) {
-      mockBots[botIndex].status = 'active';
-      mockBots[botIndex].lastRun = new Date().toISOString();
-      return true;
+  async getAllBots(): Promise<Bot[]> {
+    try {
+      // Пытаемся получить данные из API
+      const bots = await apiService.get<Bot[]>(API_CONFIG.ENDPOINTS.BOTS);
+      return bots;
+    } catch (error) {
+      // В случае ошибки или оффлайн режима возвращаем мок-данные
+      console.warn("Could not fetch bots from API, using mock data", error);
+      
+      if (AUTO_FALLBACK_TO_OFFLINE) {
+        return [...mockBots];
+      }
+      
+      throw error;
     }
-    return false;
   }
   
-  stopBot(id: string): boolean {
-    const botIndex = mockBots.findIndex(bot => bot.id === id);
-    if (botIndex >= 0) {
-      mockBots[botIndex].status = 'idle';
+  async startBot(id: string): Promise<boolean> {
+    try {
+      // Отправляем запрос на старт бота
+      await apiService.post(`${API_CONFIG.ENDPOINTS.BOTS}/${id}/start`, {});
       return true;
+    } catch (error) {
+      console.warn(`Could not start bot ${id} via API, falling back to mock`, error);
+      
+      // Fallback to mock
+      if (AUTO_FALLBACK_TO_OFFLINE) {
+        const botIndex = mockBots.findIndex(bot => bot.id === id);
+        if (botIndex >= 0) {
+          mockBots[botIndex].status = 'active';
+          mockBots[botIndex].lastRun = new Date().toISOString();
+          return true;
+        }
+        return false;
+      }
+      
+      throw error;
     }
-    return false;
   }
   
-  getBotById(id: string): Bot | undefined {
-    return mockBots.find(bot => bot.id === id);
+  async stopBot(id: string): Promise<boolean> {
+    try {
+      // Отправляем запрос на остановку бота
+      await apiService.post(`${API_CONFIG.ENDPOINTS.BOTS}/${id}/stop`, {});
+      return true;
+    } catch (error) {
+      console.warn(`Could not stop bot ${id} via API, falling back to mock`, error);
+      
+      // Fallback to mock
+      if (AUTO_FALLBACK_TO_OFFLINE) {
+        const botIndex = mockBots.findIndex(bot => bot.id === id);
+        if (botIndex >= 0) {
+          mockBots[botIndex].status = 'idle';
+          return true;
+        }
+        return false;
+      }
+      
+      throw error;
+    }
+  }
+  
+  async getBotById(id: string): Promise<Bot | undefined> {
+    try {
+      // Пытаемся получить бота по ID из API
+      return await apiService.get<Bot>(`${API_CONFIG.ENDPOINTS.BOTS}/${id}`);
+    } catch (error) {
+      console.warn(`Could not fetch bot ${id} from API, falling back to mock`, error);
+      
+      // Fallback to mock
+      if (AUTO_FALLBACK_TO_OFFLINE) {
+        return mockBots.find(bot => bot.id === id);
+      }
+      
+      throw error;
+    }
   }
   
   // Alias for getBotById to match the component's expected method name
-  getBot(id: string): Bot | undefined {
+  getBot(id: string): Promise<Bot | undefined> {
     return this.getBotById(id);
   }
   
-  createBot(botData: Partial<Bot>): string {
-    const newBot: Bot = {
-      id: uuidv4(),
-      name: botData.name || 'New Bot',
-      description: botData.description || 'Bot description',
-      type: botData.type || 'content',
-      status: 'idle',
-      lastRun: new Date().toISOString(),
-      healthPercentage: 100,
-      config: botData.config || {
-        maxActions: 100, // Add maxActions as required by BotConfig type
-        actionDelay: [1000, 3000],
-        mouseMovement: 'natural',
-        scrollPattern: 'variable',
-        randomnessFactor: 0.5,
-        behaviorProfile: 'Casual Browser'
-      },
-      schedule: botData.schedule || {
-        active: false,
-        startTime: '09:00',
-        endTime: '17:00',
-        breakDuration: [15, 30],
-        daysActive: ['Monday', 'Wednesday', 'Friday']
-      },
-      proxy: botData.proxy || {
-        useRotation: true,
-        rotationFrequency: 30,
-        provider: 'luminati',
-        regions: ['us', 'eu']
-      },
-      logs: [],
-      ...botData
-    };
-    
-    mockBots.push(newBot);
-    return newBot.id;
+  async createBot(botData: Partial<Bot>): Promise<string> {
+    try {
+      // Создаем нового бота через API
+      const newBot = await apiService.post<Bot>(API_CONFIG.ENDPOINTS.BOTS, botData);
+      return newBot.id;
+    } catch (error) {
+      console.warn("Could not create bot via API, falling back to mock", error);
+      
+      // Fallback to mock
+      if (AUTO_FALLBACK_TO_OFFLINE) {
+        const newBot: Bot = {
+          id: uuidv4(),
+          name: botData.name || 'New Bot',
+          description: botData.description || 'Bot description',
+          type: botData.type || 'content',
+          status: 'idle',
+          lastRun: new Date().toISOString(),
+          healthPercentage: 100,
+          config: botData.config || {
+            maxActions: 100,
+            actionDelay: [1000, 3000],
+            mouseMovement: 'natural',
+            scrollPattern: 'variable',
+            randomnessFactor: 0.5,
+            behaviorProfile: 'Casual Browser'
+          },
+          schedule: botData.schedule || {
+            active: false,
+            startTime: '09:00',
+            endTime: '17:00',
+            breakDuration: [15, 30],
+            daysActive: ['Monday', 'Wednesday', 'Friday']
+          },
+          proxy: botData.proxy || {
+            useRotation: true,
+            rotationFrequency: 30,
+            provider: 'luminati',
+            regions: ['us', 'eu']
+          },
+          logs: [],
+          ...botData
+        };
+        
+        mockBots.push(newBot);
+        return newBot.id;
+      }
+      
+      throw error;
+    }
   }
   
   updateBotConfig(id: string, config: BotConfig): boolean {

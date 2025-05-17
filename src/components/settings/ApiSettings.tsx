@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import externalAPIService from "@/services/external-api";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { ApiConnectionSettings } from "./ApiConnectionSettings";
 
 interface ApiSettingsProps {
   onSave: () => void;
@@ -18,7 +20,7 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
   const [openRouterApiKey, setOpenRouterApiKey] = useState("");
   const [browserUseApiKey, setBrowserUseApiKey] = useState("");
   const [offlineMode, setOfflineMode] = useState(true);
-  const [activeTab, setActiveTab] = useState("keys");
+  const [activeTab, setActiveTab] = useState("connection");
   const { toast } = useToast();
   
   // Load current keys from service on mount
@@ -69,38 +71,16 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <ToggleLeft className="h-5 w-5 text-primary" />
-            <CardTitle>Режим работы</CardTitle>
-          </div>
-          <CardDescription>
-            Выберите режим работы приложения
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <div className="flex-1">
-              <h3 className="text-base font-medium">Автономный режим</h3>
-              <p className="text-sm text-muted-foreground">
-                Использовать приложение без внешних API. 
-                Некоторые продвинутые функции будут ограничены, но основной функционал доступен.
-              </p>
-            </div>
-            <Switch 
-              checked={offlineMode}
-              onCheckedChange={setOfflineMode}
-            />
-          </div>
-        </CardContent>
-      </Card>
-      
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
+          <TabsTrigger value="connection">Подключение</TabsTrigger>
           <TabsTrigger value="keys">API Ключи</TabsTrigger>
           <TabsTrigger value="docs">Документация</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="connection" className="space-y-6 mt-6">
+          <ApiConnectionSettings />
+        </TabsContent>
         
         <TabsContent value="keys" className="space-y-6 mt-6">
           <div className={offlineMode ? "opacity-50 pointer-events-none" : ""}>
@@ -179,30 +159,6 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
             </Card>
           </div>
           
-          {offlineMode && (
-            <Card className="border-primary">
-              <CardHeader className="bg-primary/5">
-                <div className="flex items-center gap-2">
-                  <Info className="h-5 w-5 text-primary" />
-                  <CardTitle>Автономный режим активен</CardTitle>
-                </div>
-                <CardDescription>
-                  Работа без внешних API включена. Система будет использовать встроенные возможности.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <p className="text-sm">
-                  В автономном режиме, система будет:
-                </p>
-                <ul className="text-sm list-disc list-inside space-y-1">
-                  <li>Использовать встроенные алгоритмы для анализа команд</li>
-                  <li>Эмулировать действия браузера локально</li>
-                  <li>Работать без необходимости оплаты внешних сервисов</li>
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-          
           <div className="flex justify-end">
             <Button onClick={handleSave}>
               <Check className="h-4 w-4 mr-2" /> Сохранить настройки
@@ -226,6 +182,28 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
                   Это позволяет использовать основной функционал без дополнительных затрат, 
                   но с некоторыми ограничениями в производительности и точности.
                 </p>
+              </div>
+              
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-medium">Бэкенд API</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Приложение может подключаться к бэкенду на FastAPI через RESTful API.
+                  API предоставляет доступ ко всем функциям платформы, включая управление ботами,
+                  кампаниями и аналитикой.
+                </p>
+                <div className="mt-2">
+                  <a 
+                    href="/orchestrator/main.py" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Info className="h-3 w-3" /> Открыть код API
+                    <ChevronRight className="h-3 w-3" />
+                  </a>
+                </div>
               </div>
               
               <Separator />
