@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { botService, Bot, BotStatus, BotType, BotActivity } from '../services/BotService';
+import { botActivityService } from '../services/BotActivityService';
 import { proxyService } from '../services/ProxyService';
 
 interface BotState {
@@ -137,7 +138,7 @@ export const useBotStore = create<BotState>((set, get) => {
     },
     
     refreshBotActivities: () => {
-      const activities = botService.getAllBotActivities();
+      const activities = botActivityService.getAllBotActivities();
       set({ botActivities: activities });
     },
     
