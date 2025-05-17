@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ApiKey, ChevronRight, Info, Check } from "lucide-react";
+import { Key, ChevronRight, Info, Check } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { externalAPIService } from "@/services/ExternalAPIService";
 import { useToast } from "@/components/ui/use-toast";
@@ -71,7 +71,7 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <ApiKey className="h-5 w-5 text-primary" />
+                <Key className="h-5 w-5 text-primary" />
                 <CardTitle>OpenRouter API</CardTitle>
               </div>
               <CardDescription>
@@ -107,7 +107,7 @@ export function ApiSettings({ onSave }: ApiSettingsProps) {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <ApiKey className="h-5 w-5 text-primary" />
+                <Key className="h-5 w-5 text-primary" />
                 <CardTitle>Browser Use API</CardTitle>
               </div>
               <CardDescription>
