@@ -1,3 +1,4 @@
+
 import { proxyService } from './ProxyService';
 
 export type BotStatus = 'active' | 'idle' | 'error' | 'paused';
@@ -225,6 +226,28 @@ class BotService {
     return true;
   }
 
+  public createBot(botData: Partial<Bot>): string {
+    // Generate a new unique ID
+    const newId = (Math.max(...Array.from(this.bots.keys()).map(id => parseInt(id)), 0) + 1).toString();
+    
+    const newBot: Bot = {
+      id: newId,
+      name: botData.name || `New Bot ${newId}`,
+      description: botData.description || "A new bot",
+      status: "idle" as BotStatus,
+      type: botData.type || "content" as BotType,
+      config: this.getDefaultConfig(),
+      schedule: this.getDefaultSchedule(),
+      proxy: this.getDefaultProxy(),
+      lastRun: "Never",
+      logs: []
+    };
+    
+    this.bots.set(newId, newBot);
+    this.addLog(newId, "Bot created");
+    return newId;
+  }
+
   public addLog(id: string, message: string): void {
     const bot = this.bots.get(id);
     if (!bot) return;
@@ -266,6 +289,23 @@ class BotService {
       bot.name.toLowerCase().includes(lowerTerm) || 
       bot.description.toLowerCase().includes(lowerTerm)
     );
+  }
+
+  public duplicateBot(id: string): string | null {
+    const bot = this.bots.get(id);
+    if (!bot) return null;
+    
+    const newBot = {...bot};
+    const newId = (Math.max(...Array.from(this.bots.keys()).map(id => parseInt(id)), 0) + 1).toString();
+    newBot.id = newId;
+    newBot.name = `${bot.name} (Copy)`;
+    newBot.status = "idle";
+    newBot.lastRun = "Never";
+    newBot.logs = [];
+    
+    this.bots.set(newId, newBot);
+    this.addLog(newId, "Bot created as duplicate");
+    return newId;
   }
 
   private getDefaultConfig(): BotConfig {

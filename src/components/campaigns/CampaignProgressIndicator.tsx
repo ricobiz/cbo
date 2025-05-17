@@ -6,12 +6,14 @@ interface CampaignProgressIndicatorProps {
   progress: number;
   showPercentage?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  showTooltip?: boolean;
 }
 
 export function CampaignProgressIndicator({ 
   progress, 
   showPercentage = true,
-  size = 'md' 
+  size = 'md',
+  showTooltip = true 
 }: CampaignProgressIndicatorProps) {
   const getProgressColor = () => {
     if (progress >= 90) return "bg-green-500";
@@ -37,22 +39,28 @@ export function CampaignProgressIndicator({
     return "Significantly behind - urgent action required";
   };
   
+  const ProgressBar = (
+    <div className="space-y-1">
+      {showPercentage && (
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Progress</span>
+          <span className="font-medium">{progress}%</span>
+        </div>
+      )}
+      <Progress 
+        value={progress} 
+        className={`${getProgressHeight()} ${progress < 30 ? "bg-muted/50" : ""} ${getProgressColor()} transition-all duration-300 ease-in-out`} 
+      />
+    </div>
+  );
+
+  if (!showTooltip) return ProgressBar;
+  
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="space-y-1">
-            {showPercentage && (
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">{progress}%</span>
-              </div>
-            )}
-            <Progress 
-              value={progress} 
-              className={`${getProgressHeight()} ${progress < 30 ? "bg-muted/50" : ""} ${getProgressColor()}`} 
-            />
-          </div>
+          {ProgressBar}
         </TooltipTrigger>
         <TooltipContent>
           <p>{getTooltipMessage()}</p>

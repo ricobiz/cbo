@@ -26,6 +26,7 @@ interface BotState {
   updateBotSchedule: (id: string, schedule: any) => void;
   updateBotProxy: (id: string, proxy: any) => void;
   rotateIp: (id: string) => void;
+  createBot: (botData: Partial<Bot>) => string | null;
 }
 
 export const useBotStore = create<BotState>((set, get) => ({
@@ -107,6 +108,17 @@ export const useBotStore = create<BotState>((set, get) => ({
     const success = botService.rotateIp(id);
     if (success) {
       set({ bots: botService.getAllBots() });
+    }
+  },
+  
+  createBot: (botData: Partial<Bot>) => {
+    try {
+      const newBotId = botService.createBot(botData);
+      set({ bots: botService.getAllBots() });
+      return newBotId;
+    } catch (error) {
+      set({ error: (error as Error).message });
+      return null;
     }
   }
 }));

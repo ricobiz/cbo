@@ -23,6 +23,8 @@ interface BotDetailsProps {
   lastRun?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onStart?: () => void;
+  onStop?: () => void;
 }
 
 export function BotDetails({ 
@@ -33,7 +35,9 @@ export function BotDetails({
   type, 
   lastRun,
   open,
-  onOpenChange
+  onOpenChange,
+  onStart,
+  onStop
 }: BotDetailsProps) {
   const getBotTypeBadge = () => {
     switch (type) {
@@ -254,11 +258,11 @@ export function BotDetails({
           </Button>
           
           {status === "active" ? (
-            <Button variant="outline">
+            <Button variant="outline" onClick={onStop}>
               <Pause className="mr-2 h-4 w-4" /> Pause Bot
             </Button>
           ) : (
-            <Button>
+            <Button onClick={onStart}>
               <Play className="mr-2 h-4 w-4" /> Start Bot
             </Button>
           )}
