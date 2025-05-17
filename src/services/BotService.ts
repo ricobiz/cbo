@@ -414,7 +414,9 @@ class BotService {
       id,
       email,
       password,
-      isInUse: false
+      isInUse: false,
+      status: 'active',
+      lastUsed: null
     };
     mockEmailAccounts.push(newAccount);
     return id;
