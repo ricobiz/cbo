@@ -1,6 +1,9 @@
 
 import { create } from 'zustand';
-import { botService, Bot, BotStatus, BotType, BotActivity } from '../services/BotService';
+import { botService } from '../services/BotService';
+import { Bot } from '../services/BotService';
+import { BotStatus, BotType } from '../services/types/bot';
+import { BotActivity } from '../services/BotService';
 import { botActivityService } from '../services/BotActivityService';
 import { proxyService } from '../services/ProxyService';
 

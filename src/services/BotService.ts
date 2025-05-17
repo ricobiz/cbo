@@ -1,7 +1,11 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
 
 export type BotActivityType = 'browsing' | 'content_creation' | 'engagement' | 'account_interaction' | 'data_collection' | 'ip_rotation';
+
+// Re-export the types from types/bot.ts so they can be imported from BotService
+export { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
 
 // Add the missing interfaces
 export interface EmailAccount {
@@ -79,6 +83,7 @@ let mockBots: Bot[] = [
     lastRun: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
     healthPercentage: 95,
     config: {
+      maxActions: 100, // Add maxActions as required by BotConfig type
       actionDelay: [1000, 3000],
       mouseMovement: 'natural',
       scrollPattern: 'variable',
@@ -109,6 +114,7 @@ let mockBots: Bot[] = [
     lastRun: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
     healthPercentage: 87,
     config: {
+      maxActions: 150, // Add maxActions as required by BotConfig type
       actionDelay: [2000, 5000],
       mouseMovement: 'natural',
       scrollPattern: 'variable',
@@ -139,6 +145,7 @@ let mockBots: Bot[] = [
     lastRun: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
     healthPercentage: 92,
     config: {
+      maxActions: 200, // Add maxActions as required by BotConfig type
       actionDelay: [1500, 4000],
       mouseMovement: 'natural',
       scrollPattern: 'variable',
@@ -162,13 +169,14 @@ let mockBots: Bot[] = [
   },
   {
     id: '4',
-    name: 'TikTok Click Bot',
+    name: 'TikTok View Bot',
     description: 'Simulates user clicks on videos',
-    type: 'click',
+    type: 'view', // Change from 'click' to 'view' to match BotType
     status: 'idle',
     lastRun: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
     healthPercentage: 79,
     config: {
+      maxActions: 300, // Add maxActions as required by BotConfig type
       actionDelay: [800, 2500],
       mouseMovement: 'random',
       scrollPattern: 'jump',
@@ -199,6 +207,7 @@ let mockBots: Bot[] = [
     lastRun: new Date(Date.now() - 1000 * 60 * 200).toISOString(),
     healthPercentage: 83,
     config: {
+      maxActions: 250, // Add maxActions as required by BotConfig type
       actionDelay: [500, 1500],
       mouseMovement: 'direct',
       scrollPattern: 'constant',
@@ -229,6 +238,7 @@ let mockBots: Bot[] = [
     lastRun: new Date(Date.now() - 1000 * 60 * 320).toISOString(),
     healthPercentage: 88,
     config: {
+      maxActions: 120, // Add maxActions as required by BotConfig type
       actionDelay: [1200, 3500],
       mouseMovement: 'natural',
       scrollPattern: 'variable',
@@ -301,6 +311,7 @@ class BotService {
       lastRun: new Date().toISOString(),
       healthPercentage: 100,
       config: botData.config || {
+        maxActions: 100, // Add maxActions as required by BotConfig type
         actionDelay: [1000, 3000],
         mouseMovement: 'natural',
         scrollPattern: 'variable',
