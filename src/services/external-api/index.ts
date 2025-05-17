@@ -10,7 +10,8 @@ export type {
   ImageGenerationParams, 
   ImageGenerationResult,
   AudioGenerationParams,
-  AudioGenerationResult
+  AudioGenerationResult,
+  CommandAnalysisResult
 } from "./types";
 
 export default externalAPIService;

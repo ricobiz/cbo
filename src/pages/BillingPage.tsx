@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { UsageChart } from "@/components/billing/UsageChart";
 import { PaymentSettings } from "@/components/billing/PaymentSettings";
 import { SubscriptionPlans } from "@/components/billing/SubscriptionPlans";
 import { Badge } from "@/components/ui/badge";
+import { DollarSign, CreditCard, Settings } from "lucide-react";
 
 const BillingPage = () => {
   const [activeTab, setActiveTab] = useState("plans");
