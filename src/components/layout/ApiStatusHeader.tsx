@@ -5,39 +5,41 @@ import { apiConnectionService } from "@/services/api/ApiConnectionService";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useConnectionStore } from "@/services/api/ApiConnectionService";
+import { CloudOff } from "lucide-react";
 
 export function ApiStatusHeader() {
   const [offlineMode, setOfflineMode] = useState(apiService.isOfflineMode());
   const { isConnected, isChecking } = useConnectionStore();
-  const { toast } = useToast();
   
   useEffect(() => {
     // Initialize from service
     setOfflineMode(apiService.isOfflineMode());
     
-    // Check connection initially
+    // Check connection initially if not in offline mode
     if (!offlineMode) {
       apiConnectionService.testConnection();
     }
-  }, []);
+  }, [offlineMode]);
   
   const handleToggleOffline = (checked: boolean) => {
     apiService.setOfflineMode(checked);
     setOfflineMode(checked);
     
-    if (!checked) {
-      // If switching to online mode, check connection
+    // Toggle periodic checks based on mode
+    if (checked) {
+      apiConnectionService.stopPeriodicCheck();
+    } else {
+      apiConnectionService.startPeriodicCheck();
       apiConnectionService.testConnection();
     }
     
-    toast({
-      title: checked ? "Offline Mode Enabled" : "Online Mode Enabled",
+    toast.success(checked ? "Offline Mode Enabled" : "Online Mode Enabled", {
       description: checked 
         ? "Application is now using mock data" 
         : "Application is now connecting to backend API",
-      variant: "default"
+      icon: checked ? <CloudOff className="h-4 w-4" /> : undefined
     });
   };
   

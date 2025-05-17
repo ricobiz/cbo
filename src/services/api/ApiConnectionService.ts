@@ -1,7 +1,8 @@
 
 import { apiService } from './ApiService';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, CONNECTION_CHECK_INTERVAL, MAX_RETRY_ATTEMPTS } from '@/config/api';
 import { create } from 'zustand';
+import { toast } from "sonner";
 
 // Define interface for API health response
 interface HealthCheckResponse {
@@ -28,6 +29,8 @@ interface ConnectionState {
     api: boolean;
     message?: string;
   };
+  retryCount: number;
+  maxRetries: number;
 }
 
 export const useConnectionStore = create<ConnectionState>((set, get) => ({
@@ -36,6 +39,8 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   error: null,
   isChecking: false,
   serverVersion: null,
+  retryCount: 0,
+  maxRetries: MAX_RETRY_ATTEMPTS,
   serverStatus: {
     database: false,
     api: false,
@@ -43,11 +48,17 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   },
   
   checkConnection: async () => {
+    // Don't run multiple checks simultaneously
+    if (get().isChecking) return get().isConnected;
+    
     set({ isChecking: true });
     
     try {
       // Try to ping the API server
       const response = await apiService.get<HealthCheckResponse>(`${API_CONFIG.ENDPOINTS.HEALTH}`);
+      
+      // Reset retry count on successful connection
+      set({ retryCount: 0 });
       
       // Update server status information
       set({ 
@@ -64,17 +75,34 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       });
       return true;
     } catch (error) {
+      const currentRetries = get().retryCount;
+      const maxRetries = get().maxRetries;
+      
+      // Increment retry count
+      set({ retryCount: currentRetries + 1 });
+      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect to API';
+      
       set({ 
         isConnected: false, 
-        error: error instanceof Error ? error.message : 'Failed to connect to API',
+        error: errorMessage,
         lastChecked: new Date().toISOString(),
         isChecking: false,
         serverStatus: {
           database: false,
           api: false,
-          message: error instanceof Error ? error.message : 'Connection failed'
+          message: errorMessage
         }
       });
+      
+      // Only show toast after multiple failures to avoid spamming the user
+      if (currentRetries >= 2 && currentRetries < maxRetries) {
+        toast.error(`Connection issue: ${errorMessage}`, {
+          description: `Attempt ${currentRetries + 1} of ${maxRetries}`,
+          id: "connection-error" // Use ID to prevent duplicate toasts
+        });
+      }
+      
       return false;
     }
   },
@@ -83,20 +111,56 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     set({ 
       isConnected: status,
       error: error,
-      lastChecked: new Date().toISOString() 
+      lastChecked: new Date().toISOString(),
+      // Reset retry count when status is explicitly set
+      retryCount: status ? 0 : get().retryCount
     });
   }
 }));
 
 class ApiConnectionService {
+  private checkInterval: number | null = null;
+  private pingTimeout: number = 5000; // 5 second timeout for ping requests
+  
+  constructor() {
+    // Initialize the connection check
+    this.startPeriodicCheck();
+  }
+  
+  startPeriodicCheck(interval: number = CONNECTION_CHECK_INTERVAL) {
+    // Clear any existing interval
+    if (this.checkInterval) {
+      window.clearInterval(this.checkInterval);
+    }
+    
+    // Only start periodic checks if we're not in offline mode
+    if (!apiService.isOfflineMode()) {
+      this.checkInterval = window.setInterval(() => {
+        this.testConnection();
+      }, interval);
+    }
+  }
+  
+  stopPeriodicCheck() {
+    if (this.checkInterval) {
+      window.clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+  }
+
   async testConnection(baseUrl: string = API_CONFIG.BASE_URL): Promise<boolean> {
+    // Skip check if in offline mode
+    if (apiService.isOfflineMode()) {
+      return false;
+    }
+    
     try {
       const response = await fetch(`${baseUrl}${API_CONFIG.ENDPOINTS.HEALTH}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(5000) // 5 second timeout
+        signal: AbortSignal.timeout(this.pingTimeout)
       });
       
       if (response.ok) {
@@ -141,6 +205,20 @@ class ApiConnectionService {
       version: useConnectionStore.getState().serverVersion,
       status: useConnectionStore.getState().serverStatus
     };
+  }
+  
+  // Method to attempt pingback with shortened timeout for quick checks
+  async pingApi(): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PING}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(2000) // Shorter timeout for ping
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 }
 

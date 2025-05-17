@@ -4,41 +4,54 @@ import { useConnectionStore } from "@/services/api/ApiConnectionService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
-import { RefreshCw, WifiOff, Wifi, Database, Server } from "lucide-react";
+import { toast } from "sonner";
+import { RefreshCw, WifiOff, Wifi, Database, Server, AlertTriangle } from "lucide-react";
+import { apiService } from "@/services/api/ApiService";
 
 export function ApiStatusIndicator() {
-  const { isConnected, error, isChecking, lastChecked, checkConnection, serverStatus } = useConnectionStore();
-  const { toast } = useToast();
+  const { isConnected, error, isChecking, lastChecked, checkConnection, serverStatus, retryCount } = useConnectionStore();
   const [showDetails, setShowDetails] = useState(false);
   
   useEffect(() => {
     // Check connection status on component mount
-    checkConnection();
+    if (!apiService.isOfflineMode()) {
+      checkConnection();
+    }
     
     // Set up interval to check connection periodically
     const interval = setInterval(() => {
-      checkConnection();
+      if (!apiService.isOfflineMode()) {
+        checkConnection();
+      }
     }, 60000); // Check every minute
     
     return () => clearInterval(interval);
   }, [checkConnection]);
   
+  // Handle manual connection check with feedback
   const handleManualCheck = async () => {
-    const result = await checkConnection();
+    if (apiService.isOfflineMode()) {
+      toast.info("Offline Mode Active", {
+        description: "Cannot check API connection while in offline mode."
+      });
+      return;
+    }
     
-    toast({
-      title: result ? "API Connected" : "API Disconnected",
-      description: result 
-        ? "Successfully connected to the API server" 
-        : `Failed to connect to API: ${error || "Unknown error"}`,
-      variant: result ? "default" : "destructive"
+    toast.promise(checkConnection(), {
+      loading: 'Checking API connection...',
+      success: () => 'Successfully connected to API',
+      error: (err) => `Connection failed: ${err || 'Unknown error'}`
     });
   };
   
   const formattedLastChecked = lastChecked 
     ? new Date(lastChecked).toLocaleTimeString() 
     : "Never";
+  
+  // Don't show indicator in offline mode
+  if (apiService.isOfflineMode()) {
+    return null;
+  }
   
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -50,7 +63,11 @@ export function ApiStatusIndicator() {
               className="cursor-pointer"
               onClick={() => setShowDetails(!showDetails)}
             >
-              {isConnected ? (
+              {isChecking ? (
+                <div className="flex items-center gap-1">
+                  <RefreshCw className="h-3 w-3 animate-spin" /> Checking...
+                </div>
+              ) : isConnected ? (
                 <div className="flex items-center gap-1">
                   <Wifi className="h-3 w-3" /> API Connected
                 </div>
@@ -97,6 +114,13 @@ export function ApiStatusIndicator() {
               <Database className={`h-4 w-4 ${serverStatus.database ? "text-green-500" : "text-red-500"}`} />
               <span>Database: {serverStatus.database ? "Connected" : "Disconnected"}</span>
             </div>
+            
+            {retryCount > 0 && (
+              <div className="flex items-center gap-2 text-amber-500">
+                <AlertTriangle className="h-4 w-4" />
+                <span>Reconnection attempts: {retryCount}</span>
+              </div>
+            )}
             
             {serverStatus.message && (
               <p className="text-sm text-muted-foreground mt-1">{serverStatus.message}</p>
