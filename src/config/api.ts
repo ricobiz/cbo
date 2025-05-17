@@ -7,6 +7,7 @@ export const API_CONFIG = {
     CAMPAIGNS: '/campaigns',
     CONTENT: '/content',
     ANALYTICS: '/analytics',
+    HEALTH: '/health', // New health check endpoint
   },
 };
 

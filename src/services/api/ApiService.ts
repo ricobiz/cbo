@@ -1,5 +1,4 @@
-
-import { API_CONFIG, API_TIMEOUT } from '@/config/api';
+import { API_CONFIG, API_TIMEOUT, DEFAULT_OFFLINE_MODE } from '@/config/api';
 
 /**
  * Сервис для работы с внешним API
@@ -10,7 +9,9 @@ export class ApiService {
 
   constructor(baseUrl: string = API_CONFIG.BASE_URL) {
     this.baseUrl = baseUrl;
-    this.offlineMode = localStorage.getItem('offlineMode') === 'true';
+    // Check local storage first, then fall back to default
+    const storedMode = localStorage.getItem('offlineMode');
+    this.offlineMode = storedMode !== null ? storedMode === 'true' : DEFAULT_OFFLINE_MODE;
   }
 
   /**
@@ -26,6 +27,20 @@ export class ApiService {
    */
   isOfflineMode(): boolean {
     return this.offlineMode;
+  }
+
+  /**
+   * Получить текущий базовый URL API
+   */
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
+  /**
+   * Установить новый базовый URL API
+   */
+  setBaseUrl(url: string): void {
+    this.baseUrl = url;
   }
 
   /**
