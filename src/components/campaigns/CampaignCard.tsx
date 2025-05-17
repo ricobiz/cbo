@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Calendar, Rocket, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,10 +23,11 @@ export interface CampaignCardProps {
       engagement: number;
       conversions: number;
     }
-  }
+  },
+  onStatusChange?: (id: string, newStatus: string) => void;
 }
 
-export function CampaignCard({ campaign }: CampaignCardProps) {
+export function CampaignCard({ campaign, onStatusChange }: CampaignCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const { toast } = useToast();
   
@@ -47,16 +49,24 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
   };
   
   const handleStatusChange = () => {
-    if (campaign.status === "active") {
-      toast({
-        title: "Кампания приостановлена",
-        description: `${campaign.title} была успешно приостановлена.`,
-      });
-    } else if (campaign.status === "paused" || campaign.status === "draft") {
-      toast({
-        title: "Кампания возобновлена",
-        description: `${campaign.title} была успешно возобновлена.`,
-      });
+    const newStatus = campaign.status === "active" ? "paused" : "active";
+    
+    // Call the parent component's handler if provided
+    if (onStatusChange) {
+      onStatusChange(campaign.id, newStatus);
+    } else {
+      // If no handler is provided, show toast only
+      if (campaign.status === "active") {
+        toast({
+          title: "Кампания приостановлена",
+          description: `${campaign.title} была успешно приостановлена.`,
+        });
+      } else if (campaign.status === "paused" || campaign.status === "draft") {
+        toast({
+          title: "Кампания возобновлена",
+          description: `${campaign.title} была успешно возобновлена.`,
+        });
+      }
     }
   };
 

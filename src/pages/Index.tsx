@@ -10,23 +10,23 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 const activeCampaigns = [
   {
     name: "Spotify Summer Track",
-    target: "10,000 plays",
-    progress: 65,
+    target: "50,000 plays",
+    progress: 100,
     platform: "Spotify",
     endDate: "Jun 30, 2025"
   },
   {
     name: "YouTube Product Review",
-    target: "50,000 views",
-    progress: 42,
+    target: "100,000 views",
+    progress: 85,
     platform: "YouTube",
     endDate: "Jul 15, 2025"
   },
   {
-    name: "Twitter Growth Campaign",
-    target: "5,000 followers",
-    progress: 78,
-    platform: "Twitter",
+    name: "TikTok Marketing Campaign",
+    target: "250,000 views",
+    progress: 75,
+    platform: "TikTok",
     endDate: "Jun 25, 2025"
   }
 ];
@@ -39,23 +39,31 @@ const recentContent = [
     status: "approved" as const,
     timestamp: "2 hours ago",
     stats: {
-      likes: 127,
-      comments: 34
+      likes: 8245,
+      comments: 1256
     }
   },
   {
     id: "2",
     title: "AI-powered automation can boost your productivity by 200%!",
     platform: "Twitter",
-    status: "pending" as const,
-    timestamp: "4 hours ago"
+    status: "approved" as const,
+    timestamp: "4 hours ago",
+    stats: {
+      likes: 3458,
+      comments: 521
+    }
   },
   {
     id: "3",
     title: "The Future of Marketing: AI Trends for 2026",
     platform: "Instagram",
-    status: "rejected" as const,
-    timestamp: "Yesterday"
+    status: "approved" as const,
+    timestamp: "Yesterday",
+    stats: {
+      likes: 5672,
+      comments: 894
+    }
   }
 ];
 
@@ -90,7 +98,7 @@ const Dashboard = () => {
         />
         <StatsCard
           title="Total Views"
-          value="128.5k"
+          value="825.3k"
           icon={<Eye className="h-4 w-4 text-muted-foreground" />}
           trend={{ value: 24, isPositive: true }}
         />

@@ -11,6 +11,14 @@ interface CampaignProps {
 }
 
 export function CampaignProgress({ campaigns }: { campaigns: CampaignProps[] }) {
+  const getProgressColor = (progress: number) => {
+    if (progress >= 90) return "bg-green-500";
+    if (progress >= 70) return "bg-emerald-500";
+    if (progress >= 50) return "bg-blue-500";
+    if (progress >= 30) return "bg-amber-500";
+    return "bg-red-500";
+  };
+
   return (
     <Card className="col-span-full lg:col-span-2">
       <CardHeader>
@@ -29,7 +37,7 @@ export function CampaignProgress({ campaigns }: { campaigns: CampaignProps[] }) 
                 </div>
                 <span className="text-sm font-medium">{campaign.progress}%</span>
               </div>
-              <Progress value={campaign.progress} className="h-2" />
+              <Progress value={campaign.progress} className={`h-2 ${getProgressColor(campaign.progress)}`} />
               <div className="text-xs text-muted-foreground text-right">
                 End date: {campaign.endDate}
               </div>

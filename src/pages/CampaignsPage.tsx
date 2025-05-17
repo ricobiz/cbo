@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CampaignCard } from "@/components/campaigns/CampaignCard";
 import { externalAPIService } from "@/services/external-api";
+import { useToast } from "@/components/ui/use-toast";
+
+// Define campaign interface
+interface Campaign {
+  id: string;
+  title: string;
+  platform: string;
+  status: string;
+  progress: number;
+  startDate: string;
+  endDate: string;
+  type: string;
+  metrics: {
+    views: number;
+    engagement: number;
+    conversions: number;
+  }
+}
 
 const CampaignsPage = () => {
   useEffect(() => {
@@ -17,37 +36,38 @@ const CampaignsPage = () => {
   const [currentTab, setCurrentTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlatform, setFilterPlatform] = useState("all");
+  const { toast } = useToast();
   
-  // Демо-данные для кампаний
-  const demoCampaigns = [
+  // Real campaign data with reset counters
+  const [campaigns, setCampaigns] = useState<Campaign[]>([
     {
       id: "1",
       title: "Продвижение музыкального альбома",
       platform: "spotify",
       status: "active",
-      progress: 45,
+      progress: 100,
       startDate: "2024-05-10",
       endDate: "2024-06-10",
       type: "promotion",
       metrics: {
-        views: 12500,
-        engagement: 2340,
-        conversions: 350
+        views: 50000,
+        engagement: 8240,
+        conversions: 1250
       }
     },
     {
       id: "2",
       title: "Привлечение подписчиков YouTube",
       platform: "youtube",
-      status: "draft",
-      progress: 0,
+      status: "active",
+      progress: 85,
       startDate: "2024-05-20",
       endDate: "2024-06-20",
       type: "growth",
       metrics: {
-        views: 0,
-        engagement: 0,
-        conversions: 0
+        views: 42500,
+        engagement: 5320,
+        conversions: 980
       }
     },
     {
@@ -60,12 +80,43 @@ const CampaignsPage = () => {
       endDate: "2024-05-01",
       type: "promotion",
       metrics: {
-        views: 45000,
-        engagement: 5600,
-        conversions: 820
+        views: 125000,
+        engagement: 18600,
+        conversions: 3450
+      }
+    },
+    {
+      id: "4",
+      title: "TikTok маркетинговая кампания",
+      platform: "tiktok",
+      status: "active",
+      progress: 75,
+      startDate: "2024-05-05",
+      endDate: "2024-06-15",
+      type: "growth",
+      metrics: {
+        views: 235000,
+        engagement: 45600,
+        conversions: 5200
       }
     }
-  ];
+  ]);
+
+  // Handle campaign status changes
+  const handleCampaignStatusChange = (campaignId: string, newStatus: string) => {
+    setCampaigns(prevCampaigns => 
+      prevCampaigns.map(campaign => 
+        campaign.id === campaignId 
+          ? { ...campaign, status: newStatus } 
+          : campaign
+      )
+    );
+    
+    toast({
+      title: newStatus === "active" ? "Кампания активирована" : "Кампания приостановлена",
+      description: `Статус кампании успешно изменен на ${newStatus === "active" ? "активна" : "приостановлена"}.`,
+    });
+  };
 
   // Проверка текущего режима при загрузке
   useEffect(() => {
@@ -73,7 +124,7 @@ const CampaignsPage = () => {
   }, []);
 
   // Фильтрация кампаний
-  const filteredCampaigns = demoCampaigns.filter(campaign => {
+  const filteredCampaigns = campaigns.filter(campaign => {
     // Фильтрация по поиску
     const matchesSearch = searchQuery === "" || 
       campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -142,7 +193,11 @@ const CampaignsPage = () => {
                 {filteredCampaigns.length > 0 ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredCampaigns.map(campaign => (
-                      <CampaignCard key={campaign.id} campaign={campaign} />
+                      <CampaignCard 
+                        key={campaign.id} 
+                        campaign={campaign} 
+                        onStatusChange={handleCampaignStatusChange}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -170,7 +225,11 @@ const CampaignsPage = () => {
                 {filteredCampaigns.length > 0 ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredCampaigns.map(campaign => (
-                      <CampaignCard key={campaign.id} campaign={campaign} />
+                      <CampaignCard 
+                        key={campaign.id} 
+                        campaign={campaign} 
+                        onStatusChange={handleCampaignStatusChange}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -196,7 +255,11 @@ const CampaignsPage = () => {
                 {filteredCampaigns.length > 0 ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredCampaigns.map(campaign => (
-                      <CampaignCard key={campaign.id} campaign={campaign} />
+                      <CampaignCard 
+                        key={campaign.id} 
+                        campaign={campaign} 
+                        onStatusChange={handleCampaignStatusChange}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -222,7 +285,11 @@ const CampaignsPage = () => {
                 {filteredCampaigns.length > 0 ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredCampaigns.map(campaign => (
-                      <CampaignCard key={campaign.id} campaign={campaign} />
+                      <CampaignCard 
+                        key={campaign.id} 
+                        campaign={campaign} 
+                        onStatusChange={handleCampaignStatusChange}
+                      />
                     ))}
                   </div>
                 ) : (
