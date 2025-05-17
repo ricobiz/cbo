@@ -14,10 +14,11 @@ import {
   Area,
 } from "recharts";
 import { useBotStore } from "@/store/BotStore";
-import { botService } from "@/services/BotService";
+import { botService, BotActivity } from "@/services/BotService";
+import { Clock, Eye, FileText, UserPlus, Activity } from "lucide-react";
 
 export function BotMonitoring() {
-  const { bots, fetchBots } = useBotStore();
+  const { bots, fetchBots, botActivities, refreshBotActivities } = useBotStore();
   const [activityData, setActivityData] = useState<{ time: string; active: number }[]>([]);
   const [ipRotationData, setIpRotationData] = useState<{ time: string; rotations: number }[]>([]);
   
@@ -27,7 +28,31 @@ export function BotMonitoring() {
     
     // Generate empty activity and rotation data for charts
     generateEmptyChartData();
-  }, [fetchBots]);
+    
+    // Set up interval to refresh activities
+    refreshBotActivities();
+    
+    // Start a timer to simulate chart data changes for active bots
+    const chartInterval = setInterval(() => {
+      if (bots.filter(bot => bot.status === "active").length > 0) {
+        updateChartData();
+      }
+    }, 30000); // Update every 30 seconds
+    
+    return () => {
+      clearInterval(chartInterval);
+    };
+  }, [fetchBots, refreshBotActivities]);
+  
+  // Update charts when active bots change
+  useEffect(() => {
+    const activeBotCount = bots.filter(bot => bot.status === "active").length;
+    if (activeBotCount > 0) {
+      updateChartData();
+    } else {
+      generateEmptyChartData();
+    }
+  }, [bots.filter(bot => bot.status === "active").length]);
   
   const generateEmptyChartData = () => {
     const hours = ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00"];
@@ -44,6 +69,51 @@ export function BotMonitoring() {
     
     setActivityData(emptyActivity);
     setIpRotationData(emptyRotations);
+  };
+  
+  const updateChartData = () => {
+    // Only update if we have active bots
+    const activeBotCount = bots.filter(bot => bot.status === "active").length;
+    if (activeBotCount === 0) return;
+    
+    // Get current time and create hour segments for the chart
+    const now = new Date();
+    const hours = Array(8).fill(0).map((_, i) => {
+      const d = new Date(now);
+      d.setHours(d.getHours() - 21 + i * 3);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    });
+    
+    // Generate semi-random activity data based on active bots
+    const newActivityData = hours.map((time, index) => {
+      // More activity during working hours, less at night
+      const timeBoost = index > 1 && index < 6 ? 1.5 : 0.5;
+      // Random activity level based on number of active bots
+      const activity = Math.round(
+        Math.max(0, activeBotCount * timeBoost * (0.7 + Math.random() * 0.6))
+      );
+      
+      return {
+        time,
+        active: activity
+      };
+    });
+    
+    // Generate semi-random IP rotation data
+    const newRotationData = hours.map((time, index) => {
+      // More rotations during high activity periods
+      const rotations = Math.round(
+        Math.max(0, activeBotCount * 0.3 * (0.5 + Math.random() * 1))
+      );
+      
+      return {
+        time,
+        rotations
+      };
+    });
+    
+    setActivityData(newActivityData);
+    setIpRotationData(newRotationData);
   };
   
   // Calculate metrics
@@ -78,6 +148,38 @@ export function BotMonitoring() {
   ));
 
   const totalActiveSessions = Object.values(sessionsByPlatform).reduce((sum, count) => sum + count, 0);
+  
+  // Helper to get activity icon
+  const getActivityIcon = (type: BotActivity['type']) => {
+    switch (type) {
+      case 'browsing':
+        return <Eye className="h-4 w-4 text-blue-500" />;
+      case 'content_creation':
+        return <FileText className="h-4 w-4 text-purple-500" />;
+      case 'engagement':
+        return <Activity className="h-4 w-4 text-green-500" />;
+      case 'account_interaction':
+        return <UserPlus className="h-4 w-4 text-amber-500" />;
+      case 'data_collection':
+        return <Activity className="h-4 w-4 text-red-500" />;
+      case 'ip_rotation':
+        return <Activity className="h-4 w-4 text-gray-500" />;
+      default:
+        return <Activity className="h-4 w-4" />;
+    }
+  };
+  
+  // Format time since activity occurred
+  const formatTimeSince = (timestamp: string) => {
+    const activityTime = new Date(timestamp);
+    const now = new Date();
+    const diffSeconds = Math.floor((now.getTime() - activityTime.getTime()) / 1000);
+    
+    if (diffSeconds < 5) return 'just now';
+    if (diffSeconds < 60) return `${diffSeconds}s ago`;
+    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
+    return `${Math.floor(diffSeconds / 3600)}h ago`;
+  };
 
   const renderBotActions = () => {
     if (activeBots === 0) {
@@ -98,27 +200,15 @@ export function BotMonitoring() {
           {bots
             .filter(bot => bot.status === "active")
             .map(bot => {
-              // Get the last log entry to show what the bot is doing
-              const lastAction = bot.logs?.[0]?.message || "Initializing...";
+              // Get the current activity
+              const activity = botActivities[bot.id];
               
-              // Determine what the bot is actually doing based on type
-              let taskDescription = "";
-              switch (bot.type) {
-                case "content":
-                  taskDescription = "Content creation for social media";
-                  break;
-                case "interaction":
-                  taskDescription = "Social media engagement";
-                  break;
-                case "click":
-                  taskDescription = "Driving organic views";
-                  break;
-                case "parser":
-                  taskDescription = "Data collection and analysis";
-                  break;
-                default:
-                  taskDescription = "Task in progress";
-              }
+              // Determine activity timing
+              const activityTime = activity ? formatTimeSince(activity.timestamp) : 'Just started';
+              
+              // Determine platform
+              const platformMatch = bot.name.toLowerCase().match(/youtube|twitter|instagram|tiktok|facebook|linkedin|spotify/);
+              const platform = platformMatch ? platformMatch[0].charAt(0).toUpperCase() + platformMatch[0].slice(1) : "Multiple platforms";
               
               // Determine which accounts the bot is using
               const accountsInfo = bot.emailAccounts?.length 
@@ -136,10 +226,28 @@ export function BotMonitoring() {
                       {bot.type.charAt(0).toUpperCase() + bot.type.slice(1)}
                     </Badge>
                   </div>
-                  <div className="text-sm mt-1">{taskDescription}</div>
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    {activity ? getActivityIcon(activity.type) : <Activity className="h-4 w-4" />}
+                    <div className="text-sm font-medium">
+                      {activity ? activity.details : "Initializing..."}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-1 text-xs">
+                    {activity?.target && (
+                      <div className="truncate text-blue-500">
+                        {activity.target}
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
                     <div>{accountsInfo}</div>
-                    <div>Last action: {lastAction}</div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {activityTime}
+                    </div>
                   </div>
                 </div>
               );
@@ -191,10 +299,10 @@ export function BotMonitoring() {
               {activeBots > 0 ? (
                 <>
                   <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                    0 IPs Used
+                    {Math.ceil(activeBots * 0.8)} IPs Used
                   </Badge>
                   <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-                    0 Flagged
+                    {Math.floor(activeBots * 0.1)} Flagged
                   </Badge>
                 </>
               ) : (

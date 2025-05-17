@@ -1,4 +1,5 @@
 import { proxyService } from './ProxyService';
+import { logger } from './LoggingService';
 
 export type BotStatus = 'active' | 'idle' | 'error' | 'paused';
 export type BotType = 'content' | 'interaction' | 'click' | 'parser';
@@ -36,6 +37,14 @@ export interface EmailAccount {
   status: 'active' | 'blocked' | 'flagged';
 }
 
+export interface BotActivity {
+  type: 'browsing' | 'content_creation' | 'engagement' | 'account_interaction' | 'data_collection' | 'ip_rotation';
+  target?: string;
+  details: string;
+  timestamp: string;
+  platform?: string;
+}
+
 export interface Bot {
   id: string;
   name: string;
@@ -49,6 +58,7 @@ export interface Bot {
   logs: Array<{time: string, message: string}>;
   emailAccounts?: string[]; // IDs of associated email accounts
   createdAt?: string;
+  currentActivity?: BotActivity;
 }
 
 // A new event to notify when bot list changes
@@ -60,6 +70,7 @@ class BotService {
   private activeOperations: number = 0;
   private emailAccounts: Map<string, EmailAccount> = new Map();
   private activeBotTimers: Map<string, any> = new Map(); // Store timers for active bots
+  private activityUpdateTimers: Map<string, any> = new Map(); // Store timers for activity updates
   
   constructor() {
     // Load some initial mock bots
@@ -285,6 +296,46 @@ class BotService {
     bot.status = 'active';
     bot.lastRun = 'just now';
     this.addLog(id, "Bot started");
+    
+    // Determine what platform this bot is focused on
+    const platformMatch = bot.name.toLowerCase().match(/youtube|twitter|instagram|tiktok|facebook|linkedin|spotify/);
+    const platform = platformMatch ? platformMatch[0].charAt(0).toUpperCase() + platformMatch[0].slice(1) : "Multiple platforms";
+    
+    // Add task context based on bot type
+    let actionDescription = "";
+    switch (bot.type) {
+      case "content":
+        actionDescription = `Started content creation for ${platform}`;
+        break;
+      case "interaction":
+        actionDescription = `Began engagement tasks on ${platform}`;
+        break;
+      case "click":
+        actionDescription = `Started driving traffic/views on ${platform}`;
+        break;
+      case "parser":
+        actionDescription = `Initiated data analysis for ${platform}`;
+        break;
+    }
+    
+    // Add email account context if accounts are linked
+    if (bot.emailAccounts && bot.emailAccounts.length > 0) {
+      const emailAccounts = this.getBotEmailAccounts(id);
+      if (emailAccounts.length > 0) {
+        actionDescription += ` using ${emailAccounts.length} account${emailAccounts.length > 1 ? 's' : ''}`;
+      }
+    }
+    
+    this.addLog(id, actionDescription);
+    
+    // Set the initial activity
+    this.updateBotActivity(id, {
+      type: this.getInitialActivityType(bot.type),
+      details: "Initializing tasks...",
+      timestamp: new Date().toISOString(),
+      platform: platform.toLowerCase()
+    });
+    
     this.bots.set(id, bot);
     
     // Set up activity timer based on bot type
@@ -312,9 +363,164 @@ class BotService {
     
     this.activeBotTimers.set(id, timer);
     
+    // Set up more frequent activity updates (visual feedback to user)
+    const updateInterval = Math.min(Math.floor(activityInterval / 3), 10000);
+    const activityUpdateTimer = setInterval(() => {
+      this.updateBotActivityDetails(id);
+    }, updateInterval);
+    
+    this.activityUpdateTimers.set(id, activityUpdateTimer);
+    
     // Emit event for UI to update
     this.emitBotUpdatedEvent();
     return true;
+  }
+  
+  /**
+   * Get initial activity type based on bot type
+   */
+  private getInitialActivityType(botType: BotType): BotActivity['type'] {
+    switch (botType) {
+      case 'content':
+        return 'content_creation';
+      case 'interaction':
+        return 'engagement';
+      case 'click':
+        return 'browsing';
+      case 'parser':
+        return 'data_collection';
+      default:
+        return 'browsing';
+    }
+  }
+  
+  /**
+   * Update bot activity state
+   */
+  public updateBotActivity(id: string, activity: BotActivity): void {
+    const bot = this.bots.get(id);
+    if (!bot) return;
+    
+    bot.currentActivity = activity;
+    this.bots.set(id, bot);
+    
+    // Log significant activities
+    if (activity.type !== 'browsing') {
+      this.addLog(id, activity.details);
+    }
+    
+    // Emit event for UI to update
+    this.emitBotUpdatedEvent();
+  }
+  
+  /**
+   * Update bot activity details to show progress
+   */
+  private updateBotActivityDetails(id: string): void {
+    const bot = this.bots.get(id);
+    if (!bot || !bot.currentActivity || bot.status !== 'active') return;
+    
+    const activity = bot.currentActivity;
+    
+    // Generate realistic progress updates based on activity type
+    switch (activity.type) {
+      case 'browsing':
+        activity.details = this.getRandomBrowsingActivity(bot.type, activity.platform);
+        break;
+      case 'content_creation':
+        activity.details = this.getRandomContentCreationActivity(activity.platform);
+        break;
+      case 'engagement':
+        activity.details = this.getRandomEngagementActivity(activity.platform);
+        break;
+      case 'account_interaction':
+        activity.details = this.getRandomAccountActivity(activity.platform);
+        break;
+      case 'data_collection':
+        activity.details = this.getRandomDataActivity(activity.platform);
+        break;
+    }
+    
+    activity.timestamp = new Date().toISOString();
+    bot.currentActivity = activity;
+    this.bots.set(id, bot);
+    
+    // Emit event for UI to update
+    this.emitBotUpdatedEvent();
+  }
+  
+  /**
+   * Generate random browsing activity based on platform and bot type
+   */
+  private getRandomBrowsingActivity(botType: BotType, platform?: string): string {
+    const activities = [
+      `Scrolling through ${platform || 'social media'} feed`,
+      `Viewing trending content on ${platform || 'the platform'}`,
+      `Browsing ${platform || 'user'} recommendations`,
+      `Looking at popular ${botType === 'content' ? 'content creators' : 'posts'} on ${platform || 'the platform'}`
+    ];
+    
+    return activities[Math.floor(Math.random() * activities.length)];
+  }
+  
+  /**
+   * Generate random content creation activity for the specified platform
+   */
+  private getRandomContentCreationActivity(platform?: string): string {
+    const activities = [
+      `Generating new post for ${platform || 'social media'}`,
+      `Creating engaging ${platform || 'content'} copy`,
+      `Drafting multimedia content for ${platform || 'social media'}`,
+      `Preparing ${platform || 'trending'} hashtags for content`,
+      `Analyzing trending topics on ${platform || 'the platform'} for content creation`
+    ];
+    
+    return activities[Math.floor(Math.random() * activities.length)];
+  }
+  
+  /**
+   * Generate random engagement activity for the specified platform
+   */
+  private getRandomEngagementActivity(platform?: string): string {
+    const activities = [
+      `Liking posts on ${platform || 'social media'}`,
+      `Commenting on trending ${platform || 'content'}`,
+      `Sharing ${platform || 'user'} content`,
+      `Engaging with followers on ${platform || 'the platform'}`,
+      `Reacting to ${platform || 'platform'} stories`
+    ];
+    
+    return activities[Math.floor(Math.random() * activities.length)];
+  }
+  
+  /**
+   * Generate random account activity for the specified platform
+   */
+  private getRandomAccountActivity(platform?: string): string {
+    const activities = [
+      `Logging into ${platform || 'platform'} account`,
+      `Updating ${platform || 'social media'} profile information`,
+      `Verifying account security on ${platform || 'the platform'}`,
+      `Managing account connections on ${platform || 'social media'}`,
+      `Rotating account usage on ${platform || 'the platform'}`
+    ];
+    
+    return activities[Math.floor(Math.random() * activities.length)];
+  }
+  
+  /**
+   * Generate random data collection activity for the specified platform
+   */
+  private getRandomDataActivity(platform?: string): string {
+    const activities = [
+      `Collecting analytics from ${platform || 'social media'}`,
+      `Parsing ${platform || 'content'} performance data`,
+      `Analyzing engagement metrics on ${platform || 'the platform'}`,
+      `Gathering trend information from ${platform || 'social media'}`,
+      `Extracting insights from ${platform || 'the platform'} data`
+    ];
+    
+    return activities[Math.floor(Math.random() * activities.length)];
   }
   
   /**
@@ -327,26 +533,124 @@ class BotService {
       return;
     }
     
-    // Perform activity based on bot type
+    // Determine platform from bot name
+    const platformMatch = bot.name.toLowerCase().match(/youtube|twitter|instagram|tiktok|facebook|linkedin|spotify/);
+    const platform = platformMatch ? platformMatch[0].toLowerCase() : undefined;
+    
+    // Perform activity based on bot type with more specific details
+    let activityType: BotActivity['type'];
+    let activityDetails = '';
+    
+    // Occasionally change activity type for realism (20% chance)
+    const shouldChangeActivityType = Math.random() < 0.2;
+    
     switch (bot.type) {
       case 'content':
-        this.addLog(id, `Generated new content piece at ${new Date().toLocaleTimeString()}`);
+        if (shouldChangeActivityType) {
+          // Sometimes switch between research, creation and publishing
+          const contentActivities: BotActivity['type'][] = ['browsing', 'content_creation', 'engagement'];
+          activityType = contentActivities[Math.floor(Math.random() * contentActivities.length)];
+        } else {
+          activityType = 'content_creation';
+        }
+        activityDetails = this.getRandomContentCreationActivity(platform);
         break;
+        
       case 'interaction':
-        this.addLog(id, `Performed social interaction at ${new Date().toLocaleTimeString()}`);
+        if (shouldChangeActivityType) {
+          // Sometimes switch between browsing and engagement
+          activityType = Math.random() < 0.5 ? 'browsing' : 'engagement';
+        } else {
+          activityType = 'engagement';
+        }
+        activityDetails = this.getRandomEngagementActivity(platform);
         break;
+        
       case 'click':
-        this.addLog(id, `Registered view/click at ${new Date().toLocaleTimeString()}`);
+        if (shouldChangeActivityType) {
+          // Sometimes perform account-related operations
+          activityType = Math.random() < 0.7 ? 'browsing' : 'account_interaction';
+        } else {
+          activityType = 'browsing';
+        }
+        activityDetails = this.getRandomBrowsingActivity(bot.type, platform);
         break;
+        
       case 'parser':
-        this.addLog(id, `Parsed data at ${new Date().toLocaleTimeString()}`);
+        if (shouldChangeActivityType) {
+          // Sometimes browse to find data sources
+          activityType = Math.random() < 0.7 ? 'data_collection' : 'browsing';
+        } else {
+          activityType = 'data_collection';
+        }
+        activityDetails = this.getRandomDataActivity(platform);
         break;
+        
+      default:
+        activityType = 'browsing';
+        activityDetails = 'Performing default activity';
     }
+    
+    // Update the bot's current activity
+    this.updateBotActivity(id, {
+      type: activityType,
+      details: activityDetails,
+      timestamp: new Date().toISOString(),
+      platform: platform,
+      target: this.getRandomTarget(activityType, platform)
+    });
+    
+    // Log significant activities
+    this.addLog(id, activityDetails);
     
     // Randomly rotate IP based on config
     if (bot.proxy.useRotation && Math.random() < 0.2) { // 20% chance per activity
       this.rotateIp(id);
     }
+  }
+  
+  /**
+   * Get a random target for the activity (like a URL or content ID)
+   */
+  private getRandomTarget(activityType: BotActivity['type'], platform?: string): string {
+    if (!platform) return '';
+    
+    // Generate faux URLs or content IDs based on platform and activity
+    switch (platform) {
+      case 'youtube':
+        return `youtube.com/watch?v=${this.generateRandomId(11)}`;
+      case 'twitter':
+        return `twitter.com/${this.generateRandomHandle()}/status/${this.generateRandomId(19)}`;
+      case 'instagram':
+        return `instagram.com/p/${this.generateRandomId(11)}`;
+      case 'tiktok':
+        return `tiktok.com/@${this.generateRandomHandle()}/video/${this.generateRandomId(19)}`;
+      case 'facebook':
+        return `facebook.com/${this.generateRandomId(15)}`;
+      default:
+        return '';
+    }
+  }
+  
+  /**
+   * Generate a random ID string
+   */
+  private generateRandomId(length: number): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+  
+  /**
+   * Generate a random social media handle
+   */
+  private generateRandomHandle(): string {
+    const prefixes = ['user', 'social', 'digital', 'tech', 'creator', 'influencer', 'media', 'content', 'trend'];
+    const suffix = Math.floor(Math.random() * 10000);
+    return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffix}`;
   }
   
   /**
@@ -357,6 +661,12 @@ class BotService {
     if (timer) {
       clearInterval(timer);
       this.activeBotTimers.delete(id);
+    }
+    
+    const activityTimer = this.activityUpdateTimers.get(id);
+    if (activityTimer) {
+      clearInterval(activityTimer);
+      this.activityUpdateTimers.delete(id);
     }
   }
   
@@ -373,6 +683,7 @@ class BotService {
     // Update bot status
     bot.status = 'idle';
     this.addLog(id, "Bot stopped");
+    bot.currentActivity = undefined; // Clear current activity
     this.bots.set(id, bot);
     
     // Emit event for UI to update
@@ -472,6 +783,9 @@ class BotService {
     if (bot.logs.length > 100) {
       bot.logs = bot.logs.slice(0, 100);
     }
+    
+    // Log to central logging service too
+    logger.info(message, { botId: id, botName: bot.name }, 'BotService');
     
     this.bots.set(id, bot);
     // Minor log updates don't trigger the full event
