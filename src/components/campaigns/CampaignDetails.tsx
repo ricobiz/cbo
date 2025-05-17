@@ -14,12 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getPlatformById } from "@/constants/platforms";
 
 interface CampaignDetailsProps {
   id: string;
   name: string;
   description: string;
   platform: string;
+  platformName?: string;
   progress: number;
   status: "active" | "paused" | "completed" | "scheduled" | string;
   startDate: string;
@@ -43,6 +45,7 @@ export function CampaignDetails({
   name,
   description,
   platform,
+  platformName,
   progress,
   status,
   startDate,
@@ -54,17 +57,19 @@ export function CampaignDetails({
   onOpenChange
 }: CampaignDetailsProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const platformData = getPlatformById(platform);
+  const PlatformIcon = platformData?.icon;
   
   const getStatusBadge = () => {
     switch (status) {
       case "active":
-        return <Badge variant="default" className="bg-green-500">Active</Badge>;
+        return <Badge variant="default" className="bg-green-500">Активна</Badge>;
       case "paused":
-        return <Badge variant="outline" className="border-amber-500 text-amber-500">Paused</Badge>;
+        return <Badge variant="outline" className="border-amber-500 text-amber-500">Приостановлена</Badge>;
       case "completed":
-        return <Badge variant="secondary">Completed</Badge>;
+        return <Badge variant="secondary">Завершена</Badge>;
       case "scheduled":
-        return <Badge variant="outline">Scheduled</Badge>;
+        return <Badge variant="outline">Запланирована</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -87,7 +92,10 @@ export function CampaignDetails({
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
           <div className="flex gap-2 mt-2">
-            <Badge variant="outline">{platform}</Badge>
+            <Badge variant="outline" className="flex items-center gap-1">
+              {PlatformIcon && <PlatformIcon className="h-3.5 w-3.5" />}
+              <span>{platformName || platform}</span>
+            </Badge>
             {getStatusBadge()}
             {isDemo && (
               <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50">
@@ -108,15 +116,15 @@ export function CampaignDetails({
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="overview">Обзор</TabsTrigger>
+            <TabsTrigger value="performance">Эффективность</TabsTrigger>
+            <TabsTrigger value="settings">Настройки</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
-                <span className="font-medium">Campaign Progress</span>
+                <span className="font-medium">Прогресс кампании</span>
                 <span className="font-medium">{progress}%</span>
               </div>
               <Progress value={progress} className={`h-2 ${getProgressColor()}`} />
@@ -126,21 +134,21 @@ export function CampaignDetails({
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  Start Date
+                  Дата начала
                 </div>
                 <div className="text-sm">{startDate}</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  End Date
+                  Дата окончания
                 </div>
                 <div className="text-sm">{endDate}</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Target className="h-4 w-4 text-primary" />
-                  Target
+                  Цель кампании
                 </div>
                 <div className="text-sm">{target.value} {target.type}</div>
               </div>
@@ -148,23 +156,23 @@ export function CampaignDetails({
             
             {stats && (
               <div className="rounded-md border p-4">
-                <h3 className="text-sm font-medium mb-3">Campaign Statistics</h3>
+                <h3 className="text-sm font-medium mb-3">Статистика кампании</h3>
                 <div className="grid grid-cols-3 gap-4">
                   {stats.views !== undefined && (
                     <div className="bg-muted/30 p-3 rounded-md text-center">
-                      <div className="text-sm text-muted-foreground">Views</div>
+                      <div className="text-sm text-muted-foreground">Просмотры</div>
                       <div className="text-lg font-semibold">{stats.views.toLocaleString()}</div>
                     </div>
                   )}
                   {stats.engagements !== undefined && (
                     <div className="bg-muted/30 p-3 rounded-md text-center">
-                      <div className="text-sm text-muted-foreground">Engagements</div>
+                      <div className="text-sm text-muted-foreground">Взаимодействия</div>
                       <div className="text-lg font-semibold">{stats.engagements.toLocaleString()}</div>
                     </div>
                   )}
                   {stats.clicks !== undefined && (
                     <div className="bg-muted/30 p-3 rounded-md text-center">
-                      <div className="text-sm text-muted-foreground">Clicks</div>
+                      <div className="text-sm text-muted-foreground">Клики</div>
                       <div className="text-lg font-semibold">{stats.clicks.toLocaleString()}</div>
                     </div>
                   )}
@@ -175,21 +183,21 @@ export function CampaignDetails({
           
           <TabsContent value="performance" className="space-y-4">
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Performance Metrics</h3>
+              <h3 className="text-sm font-medium">Метрики эффективности</h3>
               <div className="h-[200px] border rounded-md p-4 flex items-center justify-center">
                 <div className="text-muted-foreground text-center">
                   <LineChart className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>Detailed performance charts will appear here</p>
+                  <p>Детальные графики эффективности будут доступны здесь</p>
                 </div>
               </div>
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Engagement Breakdown</h3>
+              <h3 className="text-sm font-medium">Анализ взаимодействий</h3>
               <div className="h-[200px] border rounded-md p-4 flex items-center justify-center">
                 <div className="text-muted-foreground text-center">
                   <BarChart className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>Engagement analytics will appear here</p>
+                  <p>Аналитика взаимодействий будет доступна здесь</p>
                 </div>
               </div>
             </div>
@@ -198,24 +206,24 @@ export function CampaignDetails({
           <TabsContent value="settings" className="space-y-4">
             <div className="rounded-md border p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-sm font-medium">Campaign ID</div>
+                <div className="text-sm font-medium">ID кампании</div>
                 <div className="text-sm font-mono">{id}</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-sm font-medium">Platform Settings</div>
-                <div className="text-sm">Integration: {platform}</div>
+                <div className="text-sm font-medium">Настройки платформы</div>
+                <div className="text-sm">Интеграция: {platformName || platform}</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-sm font-medium">Content Strategy</div>
-                <div className="text-sm">Balanced Engagement</div>
+                <div className="text-sm font-medium">Стратегия контента</div>
+                <div className="text-sm">Сбалансированное взаимодействие</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-sm font-medium">Budget Allocation</div>
-                <div className="text-sm">Auto-optimized</div>
+                <div className="text-sm font-medium">Распределение бюджета</div>
+                <div className="text-sm">Авто-оптимизация</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-sm font-medium">AI Assistance</div>
-                <div className="text-sm">Enabled (Content & Targeting)</div>
+                <div className="text-sm font-medium">ИИ ассистент</div>
+                <div className="text-sm">Включен (Контент и Таргетинг)</div>
               </div>
             </div>
           </TabsContent>
@@ -223,16 +231,16 @@ export function CampaignDetails({
         
         <DialogFooter className="flex justify-between items-center">
           <Button variant="outline">
-            <Users className="mr-2 h-4 w-4" /> View Audience
+            <Users className="mr-2 h-4 w-4" /> Аудитория
           </Button>
           
           {status === "active" ? (
             <Button variant="outline">
-              <Zap className="mr-2 h-4 w-4" /> Pause Campaign
+              <Zap className="mr-2 h-4 w-4" /> Приостановить
             </Button>
           ) : status === "paused" ? (
             <Button>
-              <Rocket className="mr-2 h-4 w-4" /> Resume Campaign
+              <Rocket className="mr-2 h-4 w-4" /> Возобновить
             </Button>
           ) : null}
         </DialogFooter>

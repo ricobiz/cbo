@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CampaignProgressIndicator } from "./CampaignProgressIndicator";
 import { CampaignDetails } from "./CampaignDetails";
 import { useToast } from "@/components/ui/use-toast";
+import { getPlatformById } from "@/constants/platforms";
 
 export interface CampaignCardProps {
   campaign: {
@@ -31,6 +32,8 @@ export interface CampaignCardProps {
 export function CampaignCard({ campaign, onStatusChange }: CampaignCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const { toast } = useToast();
+  const platform = getPlatformById(campaign.platform);
+  const PlatformIcon = platform?.icon;
   
   const getStatusBadge = () => {
     switch (campaign.status) {
@@ -92,12 +95,15 @@ export function CampaignCard({ campaign, onStatusChange }: CampaignCardProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <div className="flex items-center">
-              <Badge variant="outline">{campaign.platform}</Badge>
+            <div className="flex items-center gap-1">
+              <Badge variant="outline" className="flex items-center gap-1 py-1">
+                {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
+                <span>{platform?.name || campaign.platform}</span>
+              </Badge>
             </div>
             <div className="flex items-center">
               <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
-              <span className="text-muted-foreground">{campaign.startDate} - {campaign.endDate}</span>
+              <span className="text-muted-foreground">{campaign.startDate.split('T')[0]} - {campaign.endDate.split('T')[0]}</span>
             </div>
             <div className="flex items-center">
               <Zap className="h-3 w-3 mr-1 text-primary" />
@@ -170,10 +176,11 @@ export function CampaignCard({ campaign, onStatusChange }: CampaignCardProps) {
         name={campaign.title}
         description={`${campaign.isDemo ? "Демонстрационная " : ""}${campaign.type === "promotion" ? "Кампания продвижения" : "Кампания роста"}`}
         platform={campaign.platform}
+        platformName={platform?.name || campaign.platform}
         progress={campaign.progress}
         status={campaign.status}
-        startDate={campaign.startDate}
-        endDate={campaign.endDate}
+        startDate={campaign.startDate.split('T')[0]}
+        endDate={campaign.endDate.split('T')[0]}
         isDemo={campaign.isDemo}
         target={{
           type: campaign.type === "promotion" ? "просмотры" : "подписчики",

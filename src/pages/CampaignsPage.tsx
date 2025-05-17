@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { SetupGuideHints } from "@/components/bots/SetupGuideHints";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SUPPORTED_PLATFORMS, getActivePlatforms } from "@/constants/platforms";
 
 // Define campaign interface
 interface Campaign {
@@ -40,8 +41,8 @@ const demoCampaigns: Campaign[] = [
     platform: "youtube",
     status: "active",
     progress: 45,
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString().split('T')[0],
     type: "promotion",
     isDemo: true,
     metrics: {
@@ -56,8 +57,8 @@ const demoCampaigns: Campaign[] = [
     platform: "instagram",
     status: "draft",
     progress: 0,
-    startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
-    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
+    startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString().split('T')[0],
     type: "test",
     isDemo: true,
     metrics: {
@@ -82,6 +83,9 @@ const CampaignsPage = () => {
   const [showSetupGuide, setShowSetupGuide] = useState(true);
   const [hideDemoAlert, setHideDemoAlert] = useState(false);
   const { toast } = useToast();
+  
+  // Получаем список активных платформ
+  const activePlatforms = getActivePlatforms();
   
   // Check if we have any campaigns stored in localStorage
   const getSavedCampaigns = (): Campaign[] => {
@@ -427,10 +431,14 @@ const CampaignsPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все платформы</SelectItem>
-              <SelectItem value="youtube">YouTube</SelectItem>
-              <SelectItem value="spotify">Spotify</SelectItem>
-              <SelectItem value="instagram">Instagram</SelectItem>
-              <SelectItem value="tiktok">TikTok</SelectItem>
+              {activePlatforms.map(platform => (
+                <SelectItem key={platform.id} value={platform.id} className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <platform.icon className="h-4 w-4" />
+                    <span>{platform.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

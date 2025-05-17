@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -11,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
+import { getActivePlatforms } from "@/constants/platforms";
 
 // Схема валидации для формы создания кампании
 const campaignSchema = z.object({
@@ -36,6 +36,7 @@ export function CreateCampaignDialog({
   onCreateCampaign
 }: CreateCampaignDialogProps) {
   const { toast } = useToast();
+  const activePlatforms = getActivePlatforms();
   
   // Настройка формы с использованием react-hook-form и zod для валидации
   const form = useForm<CampaignFormValues>({
@@ -100,10 +101,14 @@ export function CreateCampaignDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="youtube">YouTube</SelectItem>
-                        <SelectItem value="spotify">Spotify</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="tiktok">TikTok</SelectItem>
+                        {activePlatforms.map(platform => (
+                          <SelectItem key={platform.id} value={platform.id}>
+                            <div className="flex items-center gap-2">
+                              <platform.icon className="h-4 w-4" />
+                              <span>{platform.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
