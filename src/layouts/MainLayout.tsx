@@ -56,7 +56,7 @@ const MainLayout = () => {
             : 'ml-0 md:ml-[240px]'
         }`}
       >
-        <Header toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
+        <Header />
         <main className="flex-1 p-4 md:p-6 overflow-auto bg-background">
           <Outlet />
         </main>

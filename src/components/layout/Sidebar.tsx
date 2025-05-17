@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { SidebarTrigger } from "@/components/layout/SidebarTrigger";
-import { useSidebar } from "@/store/SidebarStore";
+import { useSidebarStore } from "@/store/SidebarStore";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -17,7 +18,7 @@ import {
 import { useTranslation } from "@/store/LanguageStore";
 
 export function Sidebar() {
-  const { isOpen, toggleSidebar } = useSidebar();
+  const { isOpen, toggle } = useSidebarStore();
   const { t } = useTranslation();
   
   return (
@@ -150,7 +151,7 @@ export function Sidebar() {
       </nav>
       <div className="border-t p-2">
         <button
-          onClick={toggleSidebar}
+          onClick={toggle}
           className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent md:hidden"
         >
           <PanelLeftClose className="h-4 w-4" />

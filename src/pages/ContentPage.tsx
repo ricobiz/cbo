@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,11 +8,59 @@ import { ContentGenerator } from "@/components/ContentGenerator";
 import { ImageGenerator } from "@/components/content/ImageGenerator";
 import { AudioGenerator } from "@/components/content/AudioGenerator";
 import { TextGenerator } from "@/components/content/TextGenerator";
-import { Sparkles, Image, MessageSquareText, Music, Upload, FileText, Search } from "lucide-react";
+import { 
+  Sparkles, 
+  Image, 
+  MessageSquareText, 
+  Music, 
+  Upload, 
+  FileText, 
+  Search,
+  Globe,
+  Calendar,
+  Video,
+  Users,
+  RefreshCw
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import externalAPIService from "@/services/external-api";
+
+// Interactive hint component
+const InteractiveHint = ({ 
+  title,
+  description,
+  children,
+  className = "",
+  highlightLevel = "low"
+}) => {
+  return (
+    <Card className={`border-2 ${
+      highlightLevel === "high" ? "border-primary" : 
+      highlightLevel === "medium" ? "border-secondary" : "border-muted"
+    } ${className}`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+};
+
+// Helper function to get active platforms
+const getActivePlatforms = () => {
+  return [
+    { id: "instagram", name: "Instagram", icon: Image },
+    { id: "youtube", name: "YouTube", icon: Video },
+    { id: "twitter", name: "Twitter", icon: MessageSquareText },
+    { id: "spotify", name: "Spotify", icon: Music }
+  ];
+};
 
 // Типы для генерации изображений
 type ImageGenerationSize = "512x512" | "1024x1024" | "1024x1792" | "1792x1024";
@@ -191,7 +240,7 @@ const ContentPage = () => {
             } для вашей следующей кампании.`
           });
         }}>
-          <Wand className="h-4 w-4 mr-2" />
+          <Sparkles className="h-4 w-4 mr-2" />
           ИИ рекомендация
         </Button>
       </div>

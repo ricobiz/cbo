@@ -184,7 +184,6 @@ export default function CampaignsPage() {
       
       {selectedCampaign ? (
         <CampaignDetails 
-          campaignId={selectedCampaign} 
           campaign={campaigns.find(c => c.id === selectedCampaign)} 
           onBack={handleBackToList} 
         />
@@ -345,7 +344,7 @@ export default function CampaignsPage() {
       )}
       
       <CreateCampaignDialog 
-        isOpen={isCreateDialogOpen} 
+        open={isCreateDialogOpen} 
         onClose={() => setIsCreateDialogOpen(false)}
         onSubmit={handleCreateCampaign}
       />

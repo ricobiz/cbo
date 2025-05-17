@@ -1,189 +1,161 @@
 
-import { useState } from "react";
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useToast } from "@/components/ui/use-toast";
-import { getActivePlatforms } from "@/constants/platforms";
+import { Textarea } from "@/components/ui/textarea";
 
-// Схема валидации для формы создания кампании
-const campaignSchema = z.object({
-  title: z.string().min(3, { message: "Название должно содержать минимум 3 символа" }),
-  platform: z.string({ required_error: "Выберите платформу" }),
-  type: z.string({ required_error: "Выберите тип кампании" }),
-  startDate: z.string({ required_error: "Выберите дату начала" }),
-  endDate: z.string({ required_error: "Выберите дату окончания" }),
-});
-
-// Типы для формы создания кампании
-type CampaignFormValues = z.infer<typeof campaignSchema>;
-
-interface CreateCampaignDialogProps {
+export interface CreateCampaignDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCreateCampaign: (campaign: CampaignFormValues) => void;
+  onClose: () => void;
+  onSubmit: (campaignData: any) => void;
 }
 
-export function CreateCampaignDialog({
-  open,
-  onOpenChange,
-  onCreateCampaign
-}: CreateCampaignDialogProps) {
-  const { toast } = useToast();
-  const activePlatforms = getActivePlatforms();
+export const CreateCampaignDialog = ({ open, onClose, onSubmit }: CreateCampaignDialogProps) => {
+  const [name, setName] = useState('');
+  const [platform, setPlatform] = useState('');
+  const [description, setDescription] = useState('');
+  const [budget, setBudget] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [targetAudience, setTargetAudience] = useState('');
   
-  // Настройка формы с использованием react-hook-form и zod для валидации
-  const form = useForm<CampaignFormValues>({
-    resolver: zodResolver(campaignSchema),
-    defaultValues: {
-      title: "",
-      platform: "",
-      type: "",
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
-    },
-  });
-
-  // Обработчик отправки формы
-  const onSubmit = (data: CampaignFormValues) => {
-    onCreateCampaign(data);
-    form.reset();
-    onOpenChange(false);
-    toast({
-      title: "Кампания создана",
-      description: `Кампания "${data.title}" успешно создана.`,
-    });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const campaignData = {
+      name,
+      platform,
+      description,
+      budget: parseFloat(budget),
+      startDate,
+      endDate,
+      targetAudience,
+      status: 'draft',
+      progress: 0
+    };
+    
+    onSubmit(campaignData);
+    resetForm();
   };
-
+  
+  const resetForm = () => {
+    setName('');
+    setPlatform('');
+    setDescription('');
+    setBudget('');
+    setStartDate('');
+    setEndDate('');
+    setTargetAudience('');
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Создание новой кампании</DialogTitle>
+          <DialogTitle>Create New Campaign</DialogTitle>
           <DialogDescription>
-            Заполните информацию о новой кампании. Все поля обязательны для заполнения.
+            Fill out the details to create a new marketing campaign.
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Название кампании</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Введите название кампании" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="platform"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Платформа</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Выберите платформу" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {activePlatforms.map(platform => (
-                          <SelectItem key={platform.id} value={platform.id}>
-                            <div className="flex items-center gap-2">
-                              <platform.icon className="h-4 w-4" />
-                              <span>{platform.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Campaign Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter campaign name"
+                required
               />
-              
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Тип кампании</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Выберите тип" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="promotion">Продвижение</SelectItem>
-                        <SelectItem value="growth">Рост аудитории</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="platform">Platform</Label>
+              <Select value={platform} onValueChange={setPlatform} required>
+                <SelectTrigger id="platform">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="youtube">YouTube</SelectItem>
+                  <SelectItem value="twitter">Twitter</SelectItem>
+                  <SelectItem value="spotify">Spotify</SelectItem>
+                  <SelectItem value="tiktok">TikTok</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the campaign"
+                rows={3}
+                required
               />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Дата начала</FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
               
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Дата окончания</FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="budget">Budget ($)</Label>
+              <Input
+                id="budget"
+                type="number"
+                min="0"
+                step="100"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                placeholder="Enter campaign budget"
               />
             </div>
             
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Отмена
-              </Button>
-              <Button type="submit">Создать кампанию</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="space-y-2">
+              <Label htmlFor="targetAudience">Target Audience</Label>
+              <Input
+                id="targetAudience"
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+                placeholder="Describe your target audience"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Create Campaign</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
-}
+};
