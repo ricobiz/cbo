@@ -10,7 +10,7 @@ import {
   Command,
   Sparkles
 } from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,7 +21,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed = false }: SidebarProps) {
-  const { isMobile } = useMobile();
+  const isMobile = useIsMobile();
   const { pathname } = useLocation();
   
   // Define menu items
