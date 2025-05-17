@@ -26,7 +26,7 @@ export interface BrowserUseResponse {
   sessionId?: string;
   screenshot?: string;
   error?: string;
-  action?: string; // Added missing property
+  action?: string;
   data?: any;
   result?: {
     status: string;
@@ -43,7 +43,7 @@ export interface ActionVerification {
   timestamp: string;
   verified: boolean;
   metricValue?: number;
-  metrics?: { // Added missing property
+  metrics?: {
     before: number;
     after: number;
   };
@@ -60,4 +60,30 @@ export interface CommandAnalysisResult {
 
 export interface PlatformUrlMap {
   [platform: string]: string;
+}
+
+// Types for Content Generation
+export interface ImageGenerationParams {
+  prompt: string;
+  style?: string;
+  size?: string;
+  negativePrompt?: string;
+}
+
+export interface ImageGenerationResult {
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface AudioGenerationParams {
+  text: string;
+  voice?: string;
+  speed?: number;
+  format?: string;
+}
+
+export interface AudioGenerationResult {
+  url: string;
+  duration: number;
 }

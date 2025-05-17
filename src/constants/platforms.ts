@@ -1,5 +1,5 @@
 
-import { Facebook, Instagram, Spotify, Telegram, Twitter, Youtube } from "lucide-react";
+import { Music, Radio, Video, MessageSquare } from "lucide-react";
 
 export interface Platform {
   id: string;
@@ -10,13 +10,13 @@ export interface Platform {
 
 // Единый список всех поддерживаемых платформ
 export const SUPPORTED_PLATFORMS: Platform[] = [
-  { id: "youtube", name: "YouTube", icon: Youtube, available: true },
-  { id: "spotify", name: "Spotify", icon: Spotify, available: true },
-  { id: "instagram", name: "Instagram", icon: Instagram, available: true },
-  { id: "tiktok", name: "TikTok", icon: Youtube, available: true }, // Lucide не имеет TikTok иконку, используем YouTube как временную замену
-  { id: "facebook", name: "Facebook", icon: Facebook, available: false }, // Не активна
-  { id: "twitter", name: "Twitter", icon: Twitter, available: false }, // Не активна
-  { id: "telegram", name: "Telegram", icon: Telegram, available: false }, // Не активна
+  { id: "youtube", name: "YouTube", icon: Video, available: true },
+  { id: "spotify", name: "Spotify", icon: Music, available: true },
+  { id: "instagram", name: "Instagram", icon: MessageSquare, available: true },
+  { id: "tiktok", name: "TikTok", icon: Video, available: true },
+  { id: "facebook", name: "Facebook", icon: MessageSquare, available: false }, // Не активна
+  { id: "twitter", name: "Twitter", icon: MessageSquare, available: false }, // Не активна
+  { id: "telegram", name: "Telegram", icon: Radio, available: false }, // Не активна
 ];
 
 // Получение только активных платформ
