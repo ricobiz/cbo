@@ -1,5 +1,5 @@
-
 import type { ActionVerification, BrowserUseResponse } from './types';
+import { BrowserUseService } from './BrowserUseService';
 
 /**
  * Service for verifying actions on different platforms

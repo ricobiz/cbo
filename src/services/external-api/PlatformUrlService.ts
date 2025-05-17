@@ -1,29 +1,48 @@
-
-import { SUPPORTED_PLATFORMS } from "@/constants/platforms";
 import type { PlatformUrlMap } from './types';
 
 /**
- * Service for handling platform-specific URLs
+ * Service for managing platform URLs
  */
 export class PlatformUrlService {
-  private static platforms: PlatformUrlMap = Object.fromEntries(
-    SUPPORTED_PLATFORMS.map(platform => [
-      platform.id,
-      platform.id === 'youtube' ? 'https://www.youtube.com' :
-      platform.id === 'spotify' ? 'https://www.spotify.com/signup' :
-      platform.id === 'instagram' ? 'https://www.instagram.com/accounts/emailsignup/' :
-      platform.id === 'tiktok' ? 'https://www.tiktok.com/signup' :
-      platform.id === 'facebook' ? 'https://www.facebook.com/r.php' :
-      platform.id === 'twitter' ? 'https://twitter.com/i/flow/signup' :
-      platform.id === 'telegram' ? 'https://my.telegram.org/auth' :
-      `https://www.${platform.id}.com`
-    ])
-  );
+  private static platformUrls: PlatformUrlMap = {
+    'youtube': 'https://www.youtube.com',
+    'spotify': 'https://www.spotify.com',
+    'instagram': 'https://www.instagram.com',
+    'facebook': 'https://www.facebook.com',
+    'twitter': 'https://twitter.com',
+    'tiktok': 'https://www.tiktok.com',
+    'telegram': 'https://telegram.org',
+    'reddit': 'https://www.reddit.com'
+  };
 
   /**
-   * Get the URL for a specific platform
+   * Get the URL for a given platform
+   * @param platform The platform to get the URL for
+   * @returns The URL for the platform
    */
   static getPlatformUrl(platform: string): string {
-    return this.platforms[platform.toLowerCase()] || platform;
+    const url = PlatformUrlService.platformUrls[platform.toLowerCase()];
+    if (!url) {
+      console.warn(`No URL found for platform: ${platform}`);
+      return 'https://www.google.com'; // Default URL
+    }
+    return url;
+  }
+
+  /**
+   * Add or update a platform URL
+   * @param platform The platform to add or update
+   * @param url The URL for the platform
+   */
+  static setPlatformUrl(platform: string, url: string): void {
+    PlatformUrlService.platformUrls[platform.toLowerCase()] = url;
+  }
+
+  /**
+   * Remove a platform URL
+   * @param platform The platform to remove
+   */
+  static removePlatformUrl(platform: string): void {
+    delete PlatformUrlService.platformUrls[platform.toLowerCase()];
   }
 }

@@ -1,4 +1,3 @@
-
 import { OpenRouterService } from './OpenRouterService';
 import { BrowserUseService } from './BrowserUseService';
 import { VerificationService } from './VerificationService';
@@ -8,7 +7,9 @@ import type {
   BrowserUseAction,
   BrowserUseResponse,
   CommandAnalysisResult,
-  OpenRouterResponse
+  OpenRouterResponse,
+  AudioGenerationParams,
+  AudioGenerationResult
 } from './types';
 
 /**
@@ -274,7 +275,7 @@ export class ExternalAPIService {
   /**
    * Generate audio based on the provided parameters
    */
-  async generateAudio(params: AudioGenerationParams): Promise<{ url: string }> {
+  async generateAudio(params: AudioGenerationParams): Promise<AudioGenerationResult> {
     try {
       // In a real implementation, we would call an actual text-to-speech API
       console.log("Generating audio with params:", params);
@@ -299,7 +300,6 @@ export class ExternalAPIService {
       throw new Error("Failed to generate audio");
     }
   }
-
 }
 
 // Create a singleton instance
@@ -313,5 +313,7 @@ export type {
   BrowserUseAction, 
   BrowserUseResponse, 
   ActionVerification, 
-  CommandAnalysisResult 
+  CommandAnalysisResult, 
+  AudioGenerationParams, 
+  AudioGenerationResult 
 };

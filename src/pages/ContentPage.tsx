@@ -1,4 +1,4 @@
-
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,14 +20,15 @@ import {
   Calendar,
   Video,
   Users,
-  RefreshCw
+  RefreshCw,
+  Wand
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+// Import the necessary components
+import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import externalAPIService from "@/services/external-api";
 
 // Interactive hint component
@@ -223,7 +224,7 @@ const ContentPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Генератор ��онтента</h1>
+        <h1 className="text-3xl font-bold">Генератор контента</h1>
         
         <Button variant="outline" onClick={() => {
           const randomTab = ["text", "image", "audio", "video", "schedule"][
@@ -570,7 +571,7 @@ const ContentPage = () => {
                   </p>
                 </div>
                 <Button variant="outline" disabled>
-                  <Wand className="h-4 w-4 mr-2" />
+                  <Video className="h-4 w-4 mr-2" />
                   Создать видео
                 </Button>
               </div>

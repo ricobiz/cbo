@@ -11,7 +11,9 @@ export type {
   ImageGenerationResult,
   AudioGenerationParams,
   AudioGenerationResult,
-  CommandAnalysisResult
+  CommandAnalysisResult,
+  PlatformUrlMap,
+  ApiResponse
 } from "./types";
 
 export default externalAPIService;

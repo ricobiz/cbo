@@ -1,4 +1,5 @@
-import { OpenRouterResponse } from './external-api/types';
+
+import { OpenRouterResponse, CommandAnalysisResult } from './external-api/types';
 import externalAPIService from "./external-api";
 
 interface AICommandResult {
