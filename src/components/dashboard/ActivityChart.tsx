@@ -4,30 +4,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-// More realistic data for the chart
-const dailyData = [
-  { name: "Mon", clicks: 34, engagements: 23, views: 67 },
-  { name: "Tue", clicks: 42, engagements: 31, views: 89 },
-  { name: "Wed", clicks: 38, engagements: 26, views: 72 },
-  { name: "Thu", clicks: 51, engagements: 37, views: 102 },
-  { name: "Fri", clicks: 63, engagements: 45, views: 128 },
-  { name: "Sat", clicks: 47, engagements: 28, views: 91 },
-  { name: "Sun", clicks: 36, engagements: 21, views: 74 },
+// Empty data for various time periods
+const emptyDailyData = [
+  { name: "Mon", clicks: 0, engagements: 0, views: 0 },
+  { name: "Tue", clicks: 0, engagements: 0, views: 0 },
+  { name: "Wed", clicks: 0, engagements: 0, views: 0 },
+  { name: "Thu", clicks: 0, engagements: 0, views: 0 },
+  { name: "Fri", clicks: 0, engagements: 0, views: 0 },
+  { name: "Sat", clicks: 0, engagements: 0, views: 0 },
+  { name: "Sun", clicks: 0, engagements: 0, views: 0 },
 ];
 
-const weeklyData = [
-  { name: "Week 1", clicks: 263, engagements: 187, views: 512 },
-  { name: "Week 2", clicks: 321, engagements: 215, views: 624 },
-  { name: "Week 3", clicks: 287, engagements: 194, views: 578 },
-  { name: "Week 4", clicks: 345, engagements: 231, views: 692 },
+const emptyWeeklyData = [
+  { name: "Week 1", clicks: 0, engagements: 0, views: 0 },
+  { name: "Week 2", clicks: 0, engagements: 0, views: 0 },
+  { name: "Week 3", clicks: 0, engagements: 0, views: 0 },
+  { name: "Week 4", clicks: 0, engagements: 0, views: 0 },
 ];
 
-const monthlyData = [
-  { name: "Jan", clicks: 1145, engagements: 763, views: 2290 },
-  { name: "Feb", clicks: 1253, engagements: 812, views: 2465 },
-  { name: "Mar", clicks: 1492, engagements: 973, views: 3015 },
-  { name: "Apr", clicks: 1357, engagements: 884, views: 2715 },
-  { name: "May", clicks: 1623, engagements: 1047, views: 3246 },
+const emptyMonthlyData = [
+  { name: "Jan", clicks: 0, engagements: 0, views: 0 },
+  { name: "Feb", clicks: 0, engagements: 0, views: 0 },
+  { name: "Mar", clicks: 0, engagements: 0, views: 0 },
+  { name: "Apr", clicks: 0, engagements: 0, views: 0 },
+  { name: "May", clicks: 0, engagements: 0, views: 0 },
 ];
 
 export function ActivityChart() {
@@ -37,16 +37,15 @@ export function ActivityChart() {
   const getChartData = () => {
     switch(timeRange) {
       case "24h":
-        // For 24h we'll just use the daily data but with fewer points
-        return dailyData.slice(2);
+        return emptyDailyData.slice(5); // Just show 2 days for 24h
       case "7d":
-        return dailyData;
+        return emptyDailyData;
       case "30d":
-        return weeklyData;
+        return emptyWeeklyData;
       case "90d":
-        return monthlyData;
+        return emptyMonthlyData;
       default:
-        return dailyData;
+        return emptyDailyData;
     }
   };
   
@@ -55,7 +54,7 @@ export function ActivityChart() {
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div className="space-y-0.5">
           <CardTitle>Campaign Activity</CardTitle>
-          <CardDescription>Activity across all platforms</CardDescription>
+          <CardDescription>No activity recorded yet</CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-32">

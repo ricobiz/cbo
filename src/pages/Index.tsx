@@ -9,67 +9,11 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-// Updated with more realistic data
-const activeCampaigns = [
-  {
-    name: "Spotify Summer Promotion",
-    target: "10,000 plays",
-    progress: 62,
-    platform: "Spotify",
-    endDate: "Jun 30, 2025"
-  },
-  {
-    name: "YouTube Product Launch",
-    target: "25,000 views",
-    progress: 34,
-    platform: "YouTube",
-    endDate: "Jul 15, 2025"
-  },
-  {
-    name: "TikTok Viral Challenge",
-    target: "50,000 views",
-    progress: 18,
-    platform: "TikTok",
-    endDate: "Jun 25, 2025"
-  }
-];
+// Empty initial data
+const activeCampaigns = [];
 
-// More realistic content entries
-const recentContent = [
-  {
-    id: "1",
-    title: "Product Demo: New Features Overview",
-    platform: "YouTube",
-    status: "approved" as const,
-    timestamp: "2 hours ago",
-    stats: {
-      likes: 245,
-      comments: 56
-    }
-  },
-  {
-    id: "2",
-    title: "Check out our latest update - now with AI integration",
-    platform: "Twitter",
-    status: "pending" as const,
-    timestamp: "4 hours ago",
-    stats: {
-      likes: 158,
-      comments: 21
-    }
-  },
-  {
-    id: "3",
-    title: "Behind the scenes: How we built our platform",
-    platform: "Instagram",
-    status: "approved" as const,
-    timestamp: "Yesterday",
-    stats: {
-      likes: 372,
-      comments: 47
-    }
-  }
-];
+// Empty content entries
+const recentContent = [];
 
 const Dashboard = () => {
   const [statsData, setStatsData] = useState({
@@ -89,12 +33,12 @@ const Dashboard = () => {
         // In a real app, this would be an API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Set realistic values
+        // Set values to 0 to reflect the empty state
         setStatsData({
-          campaigns: { value: "7", trend: 5 },
-          bots: { value: "12", trend: 3 },
-          content: { value: "43", trend: -2 },
-          views: { value: "12.5k", trend: 8 },
+          campaigns: { value: "0", trend: 0 },
+          bots: { value: "0", trend: 0 },
+          content: { value: "0", trend: 0 },
+          views: { value: "0", trend: 0 },
         });
       } catch (error) {
         toast.error("Failed to load dashboard data");
@@ -149,13 +93,31 @@ const Dashboard = () => {
         <ActivityChart />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <CampaignProgress campaigns={activeCampaigns} />
-        <PlatformDistribution />
-      </div>
+      {activeCampaigns.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <CampaignProgress campaigns={activeCampaigns} />
+          <PlatformDistribution />
+        </div>
+      ) : (
+        <div className="bg-muted p-8 rounded-lg text-center">
+          <h3 className="text-lg font-medium mb-2">No Active Campaigns</h3>
+          <p className="text-muted-foreground mb-4">
+            Create your first campaign to start tracking progress
+          </p>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <RecentContent items={recentContent} />
+        {recentContent.length > 0 ? (
+          <RecentContent items={recentContent} />
+        ) : (
+          <div className="bg-muted p-8 rounded-lg">
+            <h3 className="text-lg font-medium mb-2">No Recent Content</h3>
+            <p className="text-muted-foreground">
+              Generated content will appear here
+            </p>
+          </div>
+        )}
         <div className="lg:col-span-2">
           <QuickActions />
         </div>
