@@ -27,7 +27,6 @@ const SettingsPage = () => {
 
   // В реальном приложении здесь были бы проверка прав администратора
   // const { user, isAdmin } = useAuth();
-  // const isAdmin = true; // Временно для демо
   const isAdmin = true; // Для демонстрации функциональности
 
   // Update URL when tab changes

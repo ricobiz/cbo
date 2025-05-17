@@ -13,6 +13,7 @@ import {
   Settings,
   PanelLeftClose,
   Terminal,
+  Shield,
 } from "lucide-react";
 import { useTranslation } from "@/store/LanguageStore";
 import { useLocation } from "react-router-dom";
@@ -30,7 +31,8 @@ export function Sidebar() {
     { path: "/scenarios", icon: GitBranch, label: "scenarios" },
     { path: "/analytics", icon: LineChart, label: "analytics" },
     { path: "/command", icon: Terminal, label: "command" },
-    { path: "/settings", icon: Settings, label: "settings" }
+    { path: "/settings", icon: Settings, label: "settings" },
+    { path: "/admin", icon: Shield, label: "admin" } // Добавляем пункт для админ-панели
   ];
   
   return (
