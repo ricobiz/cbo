@@ -119,7 +119,9 @@ export function BotMonitoring() {
   // Calculate metrics
   const activeBots = bots.filter(bot => bot.status === "active").length;
   const totalBots = bots.length;
-  const botHealth = totalBots > 0 ? botService.getBotHealth() : 100;
+  
+  // Only calculate bot health if there are bots, otherwise show N/A
+  const botHealth = totalBots > 0 ? botService.getBotHealth() : "N/A";
   
   // Count active sessions by platform
   const sessionsByPlatform = bots.reduce((acc, bot) => {
@@ -274,9 +276,14 @@ export function BotMonitoring() {
           
           <div className="p-4 border rounded-lg">
             <div className="text-sm text-muted-foreground mb-1">Bot Health</div>
-            <div className="text-2xl font-bold">{botHealth}%</div>
+            <div className="text-2xl font-bold">
+              {typeof botHealth === "number" ? `${botHealth}%` : botHealth}
+            </div>
             <div className="mt-2">
-              <Progress value={botHealth} className="h-1" />
+              <Progress 
+                value={typeof botHealth === "number" ? botHealth : 0} 
+                className={`h-1 ${totalBots === 0 ? "bg-gray-200" : ""}`} 
+              />
             </div>
           </div>
           
