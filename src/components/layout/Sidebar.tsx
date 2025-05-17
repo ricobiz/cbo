@@ -14,7 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -151,12 +151,14 @@ function NavItem({
   
   if (isCollapsed) {
     return (
-      <Tooltip delayDuration={0}>
-        <TooltipTrigger asChild>
-          <Link to={href}>{linkContent}</Link>
-        </TooltipTrigger>
-        <TooltipContent side="right">{title}</TooltipContent>
-      </Tooltip>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link to={href}>{linkContent}</Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">{title}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
   

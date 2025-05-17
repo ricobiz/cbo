@@ -15,7 +15,6 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    errorElement: <NotFound />,
     children: [
       {
         index: true,
@@ -50,6 +49,10 @@ const router = createBrowserRouter([
         element: <CommandPage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
