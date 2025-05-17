@@ -12,18 +12,35 @@ import { Globe, Server, CloudOff, RotateCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { apiConnectionService, useConnectionStore } from "@/services/api/ApiConnectionService";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function ApiConnectionSettings() {
   const [apiUrl, setApiUrl] = useState(API_CONFIG.BASE_URL);
   const [offlineMode, setOfflineMode] = useState(DEFAULT_OFFLINE_MODE);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [hasErrors, setHasErrors] = useState(false);
   const { isConnected, lastChecked, serverVersion, serverStatus } = useConnectionStore();
 
   useEffect(() => {
     // При загрузке компонента проверяем текущие настройки
-    setOfflineMode(apiService.isOfflineMode());
-    if (!apiService.isOfflineMode()) {
-      apiConnectionService.testConnection();
+    const storedOfflineMode = localStorage.getItem('offlineMode') === 'true';
+    const storedApiUrl = localStorage.getItem('apiBaseUrl');
+    
+    // Применяем сохраненные настройки
+    if (storedApiUrl) {
+      setApiUrl(storedApiUrl);
+    }
+    
+    setOfflineMode(storedOfflineMode || apiService.isOfflineMode());
+    
+    // Проверяем наличие ошибок при загрузке страницы
+    const connectionErrors = localStorage.getItem('connectionErrors');
+    if (connectionErrors && parseInt(connectionErrors) > 0) {
+      setHasErrors(true);
+    }
+    
+    if (!offlineMode) {
+      checkConnection();
     }
   }, []);
 
@@ -31,13 +48,33 @@ export function ApiConnectionSettings() {
     if (offlineMode) return;
     
     setIsConnecting(true);
-    await apiConnectionService.testConnection();
-    setIsConnecting(false);
+    try {
+      await apiConnectionService.testConnection();
+      setHasErrors(false);
+      localStorage.setItem('connectionErrors', '0');
+    } catch (error) {
+      console.error("Connection check failed:", error);
+      setHasErrors(true);
+      
+      // Увеличиваем счетчик ошибок
+      const errors = parseInt(localStorage.getItem('connectionErrors') || '0') + 1;
+      localStorage.setItem('connectionErrors', String(errors));
+      
+      // Если много ошибок подряд, предлагаем включить оффлайн-режим
+      if (errors >= 3) {
+        toast.warning("Проблемы с подключением к API", {
+          description: "Рекомендуется включить оффлайн режим до восстановления работы сервера"
+        });
+      }
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
   const handleToggleOfflineMode = (checked: boolean) => {
     setOfflineMode(checked);
     apiService.setOfflineMode(checked);
+    localStorage.setItem('offlineMode', String(checked));
     
     if (!checked) {
       checkConnection();
@@ -85,6 +122,15 @@ export function ApiConnectionSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {hasErrors && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Проблема с подключением к API</AlertTitle>
+            <AlertDescription>
+              Сервер возвращает ошибки или недоступен. Рекомендуется включить оффлайн режим до восстановления работы сервера.
+            </AlertDescription>
+          </Alert>
+        )}
+      
         <div className="flex items-center space-x-4 rounded-md border p-4">
           <div className="flex-1">
             <h3 className="text-base font-medium">Оффлайн режим</h3>

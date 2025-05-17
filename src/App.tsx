@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MainLayout from './layouts/MainLayout';
 import Index from './pages/Index';
 import ContentPage from './pages/ContentPage';
@@ -20,9 +21,23 @@ import BillingPage from "./pages/BillingPage";
 import AdminPage from "./pages/AdminPage";
 import { Toaster } from "sonner";
 
+// Создаем экземпляр QueryClient с настройками
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1, // Уменьшаем количество повторных запросов при ошибке
+      retryDelay: 1000, // Задержка между повторами (1 секунда)
+      staleTime: 60000, // Данные считаются актуальными в течение 1 минуты
+      refetchOnWindowFocus: false, // Отключаем автоматический рефетч при фокусе окна
+      refetchOnMount: true, // Включаем рефетч при монтировании компонента
+      refetchOnReconnect: true, // Включаем рефетч при восстановлении соединения
+    },
+  },
+});
+
 function App() {
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Toaster position="top-right" richColors />
       <Router>
         <Routes>
@@ -45,7 +60,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
-    </>
+    </QueryClientProvider>
   );
 }
 
