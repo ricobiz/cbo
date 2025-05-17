@@ -1,73 +1,67 @@
-# Welcome to your Lovable project
 
-## Project info
+# AI Influence as a Service
 
-**URL**: https://lovable.dev/projects/27a48bd0-85ec-4e60-b41d-0447a6e9fd94
+## Overview
+AI Influence as a Service (AI-IaaS) is an intelligent, automated platform for launching, optimizing, and scaling influence campaigns across YouTube, Spotify, Google, marketplaces, and social platforms. It provides fully orchestrated bots, AI-generated content, analytics dashboards, and scenario pipelines to help individuals, brands, and agencies achieve rapid results and organic growth—with minimal human involvement.
 
-## How can I edit this code?
+## Use Cases & Niche
+- **Promotion to Top**: Drive content/products to trending/top positions (YouTube, Spotify, marketplaces).
+- **Fast Trend Launch**: Quickly spin viral trends for new tracks, campaigns, or brands.
+- **Brand/Persona Building**: Sustain engagement for personal or company brands.
+- **Automated Influencer Ops**: End-to-end orchestration for influencer and marketing agencies.
 
-There are several ways of editing your application.
+## Target Client Profile
+- Agencies/labels seeking growth hacks
+- Solo creators/influencers/brands
+- Marketing teams for e-commerce, entertainment, SaaS
+- Growth leads, SMM teams, PR specialists
 
-**Use Lovable**
+## Features Implemented
+- **Dashboard**: Overview of campaigns, bots, and platform metrics
+- **Content Generator**: AI-powered content creation for different platforms
+- **Campaign Management**: Track and manage campaigns across platforms
+- **Bot Management**: Configure and control various bot types
+- **Scenario Builder**: Create and execute complex marketing scenarios
+- **Analytics**: Track performance with detailed visualizations
+- **Settings**: Configure API keys, bot behavior, and account preferences
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/27a48bd0-85ec-4e60-b41d-0447a6e9fd94) and start prompting.
+## Architecture
+- **Orchestration**: Python FastAPI server, agent dispatch
+- **Bots**: Content Generator (GPT), Social Interaction Simulator, Click/View Bot, Parser Bot
+- **LLM Modules**: GPT-4, Claude, Suno, Midjourney—selected per content/task
+- **Scenario Pipelines**: Automated campaign scripts (trend gen, mass action, monitoring)
+- **Analytics**: Grafana & FastAPI dashboards; metrics, alerts
 
-Changes made via Lovable will be committed automatically to this repo.
+## Technologies Used
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui component library
+- React Router
+- React Query
+- Recharts for data visualization
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. Clone the repository:
+```bash
+git clone https://github.com/ricobiz/ai-influence-as-a-service
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. Install dependencies:
+```bash
+npm install
+```
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/27a48bd0-85ec-4e60-b41d-0447a6e9fd94) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Contact
+For questions or support, please contact the repository owner via GitHub.
