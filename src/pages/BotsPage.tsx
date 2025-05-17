@@ -70,7 +70,7 @@ const BotsPage = () => {
 
   // Initialize default values for config, schedule, proxy, and logs if they don't exist
   const defaultConfig = {
-    actionDelay: [1000, 3000],
+    actionDelay: [1000, 3000] as [number, number], // Fixed typing issue
     mouseMovement: 'natural' as const,
     scrollPattern: 'variable' as const,
     randomnessFactor: 0.5,

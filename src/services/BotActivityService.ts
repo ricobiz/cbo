@@ -1,5 +1,5 @@
 
-import { botService, BotActivity } from './BotService';
+import { botService, BotActivity, Bot } from './BotService';
 
 /**
  * Service to handle bot activities specifically

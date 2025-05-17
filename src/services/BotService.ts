@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 
 export type BotStatus = 'active' | 'idle' | 'error' | 'paused';
@@ -12,6 +11,7 @@ export interface BotConfig {
   scrollPattern: 'variable' | 'constant' | 'jump';
   randomnessFactor: number;
   behaviorProfile: string;
+  sessionVariability?: number; // Add optional property used in AICommandService
 }
 
 export interface BotSchedule {
@@ -35,6 +35,8 @@ export interface EmailAccount {
   password?: string;
   isInUse: boolean;
   assignedBots?: string[];
+  status?: string; // Add missing property
+  lastUsed?: string; // Add missing property
 }
 
 export interface Bot {
@@ -52,6 +54,7 @@ export interface Bot {
   config?: BotConfig;
   proxy?: BotProxy;
   logs?: Array<{time: string, message: string}>;
+  currentActivity?: BotActivity; // Add missing property
 }
 
 export interface BotActivity {
@@ -68,19 +71,25 @@ let mockEmailAccounts: EmailAccount[] = [
     id: 'email1',
     email: 'bot1@example.com',
     password: 'password123',
-    isInUse: false
+    isInUse: false,
+    status: 'active',
+    lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
   },
   {
     id: 'email2',
     email: 'bot2@example.com',
     password: 'password123',
-    isInUse: false
+    isInUse: false,
+    status: 'active',
+    lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString()
   },
   {
     id: 'email3',
     email: 'bot3@example.com',
     password: 'password123',
-    isInUse: false
+    isInUse: false,
+    status: 'active',
+    lastUsed: null
   }
 ];
 
@@ -480,7 +489,35 @@ class BotService {
     
     return false;
   }
+
+  // Add missing method for deleting email accounts
+  deleteEmailAccount(id: string): boolean {
+    // Check if email is in use
+    const account = mockEmailAccounts.find(email => email.id === id);
+    if (!account || account.isInUse) return false;
+    
+    // Remove email account
+    mockEmailAccounts = mockEmailAccounts.filter(email => email.id !== id);
+    return true;
+  }
+  
+  // Add log method for AICommandService
+  addLog(botId: string, message: string): boolean {
+    const botIndex = mockBots.findIndex(bot => bot.id === botId);
+    if (botIndex >= 0) {
+      if (!mockBots[botIndex].logs) {
+        mockBots[botIndex].logs = [];
+      }
+      
+      mockBots[botIndex].logs.push({
+        time: new Date().toISOString(),
+        message: message
+      });
+      
+      return true;
+    }
+    return false;
+  }
 }
 
 export const botService = new BotService();
-
