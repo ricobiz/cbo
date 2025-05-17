@@ -23,9 +23,11 @@ import { CostBreakdown } from "@/components/billing/CostBreakdown";
 import { QuotaSettings } from "@/components/billing/QuotaSettings";
 import { useToast } from "@/components/ui/use-toast";
 
+type PeriodType = "day" | "week" | "month" | "quarter";
+
 const BillingPage = () => {
   const { toast } = useToast();
-  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("month");
   const [alertThreshold, setAlertThreshold] = useState("80");
   const [emailAlerts, setEmailAlerts] = useState(true);
   
@@ -41,7 +43,7 @@ const BillingPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Billing & Usage</h1>
         <div className="flex gap-2">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <Select value={selectedPeriod} onValueChange={(value: PeriodType) => setSelectedPeriod(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>

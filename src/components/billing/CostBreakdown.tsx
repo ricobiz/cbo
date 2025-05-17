@@ -91,7 +91,7 @@ export function CostBreakdown({ period = "month" }: CostBreakdownProps) {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -142,7 +142,7 @@ export function CostBreakdown({ period = "month" }: CostBreakdownProps) {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -171,7 +171,7 @@ export function CostBreakdown({ period = "month" }: CostBreakdownProps) {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
