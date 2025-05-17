@@ -14,6 +14,7 @@ import ScenariosPage from "./pages/ScenariosPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeToggle } from "./components/theme/ThemeToggle";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,28 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Add theme initialization script
+const initializeTheme = () => {
+  const theme = localStorage.getItem('theme') || 'system';
+  const root = window.document.documentElement;
+  
+  if (theme === 'system') {
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+    root.classList.add(systemTheme);
+  } else {
+    root.classList.add(theme);
+  }
+};
+
+// Add the script as an inline script in the document head
+if (typeof document !== 'undefined') {
+  const script = document.createElement('script');
+  script.textContent = `(${initializeTheme.toString()})();`;
+  document.head.appendChild(script);
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

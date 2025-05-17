@@ -7,12 +7,14 @@ interface BotHealthIndicatorProps {
   healthPercentage: number;
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
+  animate?: boolean;
 }
 
 export const BotHealthIndicator = ({ 
   healthPercentage, 
   size = 'md', 
-  showIcon = true 
+  showIcon = true,
+  animate = false
 }: BotHealthIndicatorProps) => {
   // Determine color based on health
   const getColorClass = () => {
@@ -41,6 +43,37 @@ export const BotHealthIndicator = ({
     }
   };
   
+  const getHealthMessage = () => {
+    if (healthPercentage >= 90) return "Healthy - All systems operational";
+    if (healthPercentage >= 70) return "Warning - Some issues detected";
+    return "Critical - Immediate attention required";
+  };
+  
+  const getHealthDetails = () => {
+    if (healthPercentage >= 90) {
+      return [
+        "CPU usage: Normal",
+        "Memory: Optimal",
+        "Network: Stable",
+        "Last error: None"
+      ];
+    }
+    if (healthPercentage >= 70) {
+      return [
+        "CPU usage: Elevated",
+        "Memory: Normal",
+        "Network: Minor instability",
+        "Last error: 4h ago (recovered)"
+      ];
+    }
+    return [
+      "CPU usage: High",
+      "Memory: Leaking",
+      "Network: Unstable",
+      "Last error: Recent failures"
+    ];
+  };
+  
   return (
     <TooltipProvider>
       <Tooltip>
@@ -55,18 +88,20 @@ export const BotHealthIndicator = ({
               </div>
               <Progress 
                 value={healthPercentage} 
-                className={`h-1.5 ${healthPercentage < 70 ? "bg-gray-200" : ""} ${getProgressColor()}`}
+                className={`h-1.5 ${healthPercentage < 70 ? "bg-gray-200" : ""} ${getProgressColor()} ${animate ? "transition-all duration-500" : ""}`}
               />
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent>
-          <p>Bot health indicator</p>
-          <p className="text-xs text-muted-foreground">
-            {healthPercentage >= 90 ? "Healthy - All systems operational" : 
-             healthPercentage >= 70 ? "Warning - Some issues detected" :
-             "Critical - Immediate attention required"}
-          </p>
+        <TooltipContent className="w-60">
+          <div className="space-y-2">
+            <p className="font-medium">{getHealthMessage()}</p>
+            <div className="space-y-1 text-xs text-muted-foreground">
+              {getHealthDetails().map((detail, index) => (
+                <p key={index}>{detail}</p>
+              ))}
+            </div>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
