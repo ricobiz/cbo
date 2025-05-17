@@ -1,4 +1,3 @@
-
 import { Bot } from "@/services/types/bot";
 import { Campaign } from "@/services/types/campaign";
 import { v4 as uuidv4 } from 'uuid';
@@ -65,7 +64,7 @@ export class MockDataService {
       type: "view",
       platform: "facebook",
       health: "critical",
-      proxyStatus: "error",
+      proxyStatus: "expired",
       createdAt: "2023-07-05T16:20:00Z",
       updatedAt: "2023-07-10T11:30:00Z",
       consumption: {
@@ -79,7 +78,7 @@ export class MockDataService {
       config: {
         maxActions: 150,
         proxy: {
-          type: "https",
+          type: "http",
           url: "proxy3.example.com:8443"
         }
       }
