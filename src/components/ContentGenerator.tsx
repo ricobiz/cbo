@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -7,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Label } from "./ui/label";
 import { Sparkles, RefreshCw, Wand } from "lucide-react";
 import { useToast } from "./ui/use-toast";
-import { externalAPIService } from "@/services/external-api";
+import externalAPIService from "@/services/external-api";
 import { getActivePlatforms } from "@/constants/platforms";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";

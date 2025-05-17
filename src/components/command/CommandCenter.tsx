@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { Bot, Send, Sparkles, X, Clock, Monitor, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { processAICommand } from "@/services/AICommandService";
 import { CommandListener } from "./CommandListener";
-import { externalAPIService } from "@/services/external-api";
+import externalAPIService from "@/services/external-api";
 import { useNavigate } from "react-router-dom";
 import { useBotStore } from "@/store/BotStore";
 

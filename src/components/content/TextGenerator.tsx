@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Label } from "@/components/ui/label";
 import { Sparkles, RefreshCw, Wand, Share } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { externalAPIService } from "@/services/external-api";
+import externalAPIService from "@/services/external-api";
 import { getActivePlatforms } from "@/constants/platforms";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

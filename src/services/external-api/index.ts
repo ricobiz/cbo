@@ -1,4 +1,16 @@
 
 import { externalAPIService } from "./ExternalAPIService";
-export { ActionVerification, BrowserUseAction, BrowserUseResponse, OpenRouterResponse, ImageGenerationParams, ImageGenerationResult, AudioGenerationParams, AudioGenerationResult } from "./types";
+
+// Re-export types correctly using 'export type'
+export type { 
+  ActionVerification, 
+  BrowserUseAction, 
+  BrowserUseResponse, 
+  OpenRouterResponse, 
+  ImageGenerationParams, 
+  ImageGenerationResult,
+  AudioGenerationParams,
+  AudioGenerationResult
+} from "./types";
+
 export default externalAPIService;

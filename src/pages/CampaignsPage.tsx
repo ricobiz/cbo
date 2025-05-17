@@ -1,457 +1,354 @@
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CreateCampaignDialog } from '@/components/campaigns/CreateCampaignDialog';
+import { CampaignCard } from '@/components/campaigns/CampaignCard';
+import { CampaignDetails } from '@/components/campaigns/CampaignDetails';
+import { Plus, Filter, SortAsc } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import externalAPIService from "@/services/external-api";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, ClipboardList, Calendar, Search, ExternalLink, Info } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CampaignCard } from "@/components/campaigns/CampaignCard";
-import { CreateCampaignDialog } from "@/components/campaigns/CreateCampaignDialog";
-import { externalAPIService } from "@/services/external-api";
-import { useToast } from "@/components/ui/use-toast";
-import { useSearchParams } from "react-router-dom";
-import { SetupGuideHints } from "@/components/bots/SetupGuideHints";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { SUPPORTED_PLATFORMS, getActivePlatforms } from "@/constants/platforms";
-
-// Define campaign interface
-interface Campaign {
-  id: string;
-  title: string;
-  platform: string;
-  status: string;
-  progress: number;
-  startDate: string;
-  endDate: string;
-  type: string;
-  isDemo?: boolean;
-  metrics: {
-    views: number;
-    engagement: number;
-    conversions: number;
-  }
-}
-
-// Demo campaigns for first-time users
-const demoCampaigns: Campaign[] = [
-  {
-    id: "demo-1",
-    title: "Демо: Промо YouTube видео",
-    platform: "youtube",
-    status: "active",
-    progress: 45,
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString().split('T')[0],
-    type: "promotion",
-    isDemo: true,
-    metrics: {
-      views: 2450,
-      engagement: 148,
-      conversions: 37
-    }
-  },
-  {
-    id: "demo-2",
-    title: "Демо: Тест рекламных креативов",
-    platform: "instagram",
-    status: "draft",
-    progress: 0,
-    startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString().split('T')[0],
-    type: "test",
-    isDemo: true,
-    metrics: {
-      views: 0,
-      engagement: 0,
-      conversions: 0
-    }
-  }
-];
-
-const CampaignsPage = () => {
-  useEffect(() => {
-    document.title = "Управление кампаниями";
-  }, []);
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isOfflineMode, setIsOfflineMode] = useState(true);
-  const [currentTab, setCurrentTab] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterPlatform, setFilterPlatform] = useState("all");
+export default function CampaignsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [showSetupGuide, setShowSetupGuide] = useState(true);
-  const [hideDemoAlert, setHideDemoAlert] = useState(false);
-  const { toast } = useToast();
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [campaigns, setCampaigns] = useState<any[]>([]);
   
-  // Получаем список активных платформ
-  const activePlatforms = getActivePlatforms();
+  // Fetch campaigns on component mount
+  useEffect(() => {
+    // In a real app, this would fetch from an API
+    // For now, we'll use mock data
+    const mockCampaigns = [
+      {
+        id: "1",
+        name: "Spotify Summer Track",
+        platform: "spotify",
+        status: "active",
+        progress: 65,
+        metrics: {
+          plays: 3240,
+          likes: 156,
+          comments: 42
+        },
+        startDate: "2023-05-15",
+        endDate: "2023-06-15",
+        description: "Campaign to promote summer playlist and increase plays on featured tracks.",
+        contentIds: ["track123", "playlist456"],
+        targetAudience: "18-24 year olds interested in pop music",
+        budget: 500,
+        spent: 325
+      },
+      {
+        id: "2",
+        name: "YouTube Product Review",
+        platform: "youtube",
+        status: "active",
+        progress: 42,
+        metrics: {
+          views: 12540,
+          likes: 876,
+          comments: 234,
+          shares: 56
+        },
+        startDate: "2023-05-10",
+        endDate: "2023-06-10",
+        description: "Product review campaign for new tech gadget launch.",
+        contentIds: ["video789"],
+        targetAudience: "Tech enthusiasts and early adopters",
+        budget: 1200,
+        spent: 504
+      },
+      {
+        id: "3",
+        name: "Instagram Fashion Collection",
+        platform: "instagram",
+        status: "paused",
+        progress: 28,
+        metrics: {
+          views: 8760,
+          likes: 1243,
+          comments: 89,
+          saves: 156
+        },
+        startDate: "2023-05-05",
+        endDate: "2023-06-05",
+        description: "Campaign to showcase new summer fashion collection.",
+        contentIds: ["post123", "post456"],
+        targetAudience: "Fashion enthusiasts aged 18-35",
+        budget: 800,
+        spent: 224
+      },
+      {
+        id: "4",
+        name: "TikTok Dance Challenge",
+        platform: "tiktok",
+        status: "completed",
+        progress: 100,
+        metrics: {
+          views: 45600,
+          likes: 8900,
+          shares: 1200,
+          comments: 560
+        },
+        startDate: "2023-04-01",
+        endDate: "2023-05-01",
+        description: "Viral dance challenge campaign for brand awareness.",
+        contentIds: ["video123", "video456"],
+        targetAudience: "Gen Z users interested in dance and music",
+        budget: 1500,
+        spent: 1500
+      },
+      {
+        id: "5",
+        name: "Twitter Product Launch",
+        platform: "twitter",
+        status: "draft",
+        progress: 0,
+        metrics: {
+          impressions: 0,
+          likes: 0,
+          retweets: 0,
+          replies: 0
+        },
+        startDate: "",
+        endDate: "",
+        description: "Upcoming product launch campaign on Twitter.",
+        contentIds: [],
+        targetAudience: "Tech professionals and industry influencers",
+        budget: 1000,
+        spent: 0
+      }
+    ];
+    
+    setCampaigns(mockCampaigns);
+  }, []);
   
-  // Check if we have any campaigns stored in localStorage
-  const getSavedCampaigns = (): Campaign[] => {
-    try {
-      const saved = localStorage.getItem('userCampaigns');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      console.error("Error loading saved campaigns:", e);
-      return [];
-    }
-  };
-  
-  // Initialize with user campaigns if available, otherwise use demo campaigns
-  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
-    const savedCampaigns = getSavedCampaigns();
-    return savedCampaigns.length > 0 ? savedCampaigns : demoCampaigns;
+  // Filter campaigns based on search query and active tab
+  const filteredCampaigns = campaigns.filter(campaign => {
+    const matchesSearch = campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         campaign.platform.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (activeTab === "all") return matchesSearch;
+    if (activeTab === "active") return matchesSearch && campaign.status === "active";
+    if (activeTab === "paused") return matchesSearch && campaign.status === "paused";
+    if (activeTab === "completed") return matchesSearch && campaign.status === "completed";
+    if (activeTab === "draft") return matchesSearch && campaign.status === "draft";
+    
+    return matchesSearch;
   });
   
-  // Save campaigns to localStorage whenever they change
-  useEffect(() => {
-    // Only save non-demo campaigns
-    const userCampaigns = campaigns.filter(campaign => !campaign.isDemo);
-    if (userCampaigns.length > 0) {
-      localStorage.setItem('userCampaigns', JSON.stringify(userCampaigns));
-    }
-  }, [campaigns]);
-
-  // Check URL parameters for auto-opening the create dialog
-  useEffect(() => {
-    const createParam = searchParams.get("create");
-    if (createParam === "true") {
-      setIsCreateDialogOpen(true);
-      // Remove the parameter after handling it
-      searchParams.delete("create");
-      setSearchParams(searchParams);
-    }
-  }, [searchParams, setSearchParams]);
-
-  // Handle campaign status changes
-  const handleCampaignStatusChange = (campaignId: string, newStatus: string) => {
-    setCampaigns(prevCampaigns => 
-      prevCampaigns.map(campaign => 
-        campaign.id === campaignId 
-          ? { ...campaign, status: newStatus } 
-          : campaign
-      )
-    );
+  const handleCreateCampaign = (campaignData: any) => {
+    // In a real app, this would send data to an API
+    console.log("Creating campaign:", campaignData);
     
-    toast({
-      title: newStatus === "active" ? "Кампания активирована" : "Кампания приостановлена",
-      description: `Статус кампании успешно изменен на ${newStatus === "active" ? "активна" : "приостановлена"}.`,
-    });
-  };
-
-  // Обработчик создания новой кампании
-  const handleCreateCampaign = (formData: any) => {
-    // Генерируем уникальный ID для новой кампании
-    const newId = `user-${Date.now()}`;
-    
-    // Создаем объект новой кампании
-    const newCampaign: Campaign = {
-      id: newId,
-      title: formData.title,
-      platform: formData.platform,
-      status: "draft", // По умолчанию создается как черновик
-      progress: 0, // Начальный прогресс 0%
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      type: formData.type,
-      isDemo: false, // Это НЕ демо-кампания
+    // Add the new campaign to the list with a mock ID
+    const newCampaign = {
+      id: `new-${Date.now()}`,
+      ...campaignData,
+      status: "draft",
+      progress: 0,
       metrics: {
         views: 0,
-        engagement: 0,
-        conversions: 0
+        likes: 0,
+        comments: 0
       }
     };
     
-    // Если это первая пользовательская кампания, удалим демо-кампании
-    if (!campaigns.some(c => !c.isDemo)) {
-      setCampaigns([newCampaign]); // Заменяем демо-кампании на новую
-    } else {
-      // Иначе добавляем к существующим пользовательским кампаниям
-      setCampaigns(prevCampaigns => [
-        newCampaign, 
-        ...prevCampaigns.filter(c => !c.isDemo)
-      ]);
-    }
-    
-    // Hide setup guide after creating first campaign
-    setShowSetupGuide(false);
-    // Also hide demo alert after creating a real campaign
-    setHideDemoAlert(true);
-
-    toast({
-      title: "Кампания создана",
-      description: `Кампания "${formData.title}" успешно создана и добавлена в список.`,
-    });
+    setCampaigns([...campaigns, newCampaign]);
+    setIsCreateDialogOpen(false);
   };
-
-  // Проверка текущего режима при загрузке
-  useEffect(() => {
-    setIsOfflineMode(externalAPIService.isOfflineMode());
-  }, []);
   
-  // Скрыть уведомление о демо данных в localStorage 
-  useEffect(() => {
-    const hideDemoAlertSaved = localStorage.getItem('hideDemoAlert') === 'true';
-    setHideDemoAlert(hideDemoAlertSaved);
-  }, []);
+  const handleCampaignSelect = (id: string) => {
+    setSelectedCampaign(id);
+  };
   
-  useEffect(() => {
-    localStorage.setItem('hideDemoAlert', hideDemoAlert.toString());
-  }, [hideDemoAlert]);
-
-  // Фильтрация кампаний
-  const filteredCampaigns = campaigns.filter(campaign => {
-    // Фильтрация по поиску
-    const matchesSearch = searchQuery === "" || 
-      campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Фильтрация по платформе
-    const matchesPlatform = filterPlatform === "all" || 
-      campaign.platform === filterPlatform;
-    
-    // Фильтрация по вкладке (статусу)
-    const matchesTab = currentTab === "all" || 
-      (currentTab === "active" && campaign.status === "active") ||
-      (currentTab === "draft" && campaign.status === "draft") ||
-      (currentTab === "completed" && campaign.status === "completed");
-    
-    return matchesSearch && matchesPlatform && matchesTab;
-  });
-
-  // Проверяем, есть ли среди отфильтрованных кампаний хотя бы одна демо-кампания
-  const hasFilteredDemoCampaigns = filteredCampaigns.some(campaign => campaign.isDemo);
+  const handleBackToList = () => {
+    setSelectedCampaign(null);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <ClipboardList className="h-7 w-7" /> 
-          Управление кампаниями
-        </h1>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Campaigns</h1>
+          <p className="text-muted-foreground">
+            Create and manage your marketing campaigns across platforms
+          </p>
+        </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Создать кампанию
+          <Plus className="mr-2 h-4 w-4" /> Create Campaign
         </Button>
       </div>
-
-      {showSetupGuide && <SetupGuideHints />}
       
-      {/* Информационное сообщение о демо-данных */}
-      {hasFilteredDemoCampaigns && !hideDemoAlert && (
-        <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Демонстрационные данные</AlertTitle>
-          <AlertDescription className="flex items-center justify-between">
-            <span>
-              Вы видите примеры демонстрационных кампаний. Создайте свою собственную кампанию, и эти примеры исчезнут.
-            </span>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-blue-300 hover:bg-blue-100"
-              onClick={() => setHideDemoAlert(true)}
-            >
-              Скрыть
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {isOfflineMode && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-yellow-800">Автономный режим активен</CardTitle>
-            <CardDescription className="text-yellow-700">
-              В автономном режиме доступны только демонстрационные данные и ограниченная функциональность.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-yellow-700">
-              Для полноценной работы с кампаниями рекомендуется подключить внешние API.
-              <Button 
-                variant="link" 
-                className="h-auto p-0 ml-1 text-yellow-800 underline" 
-                onClick={() => window.location.href = '/command'}
+      {selectedCampaign ? (
+        <CampaignDetails 
+          campaignId={selectedCampaign} 
+          campaign={campaigns.find(c => c.id === selectedCampaign)} 
+          onBack={handleBackToList} 
+        />
+      ) : (
+        <>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Input
+                placeholder="Search campaigns..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               >
-                Настроить API <ExternalLink className="h-3 w-3 ml-1" />
-              </Button>
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <div className="w-full">
-          <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Filter by Platform</DropdownMenuItem>
+                <DropdownMenuItem>Filter by Status</DropdownMenuItem>
+                <DropdownMenuItem>Filter by Date</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <SortAsc className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Sort by Name</DropdownMenuItem>
+                <DropdownMenuItem>Sort by Date</DropdownMenuItem>
+                <DropdownMenuItem>Sort by Progress</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
-              <TabsTrigger value="all">Все кампании</TabsTrigger>
-              <TabsTrigger value="active">Активные</TabsTrigger>
-              <TabsTrigger value="draft">Черновики</TabsTrigger>
-              <TabsTrigger value="completed">Завершенные</TabsTrigger>
+              <TabsTrigger value="all">All Campaigns</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="paused">Paused</TabsTrigger>
+              <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsTrigger value="draft">Drafts</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="all">
-              <div className="mt-4">
-                {filteredCampaigns.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredCampaigns.map(campaign => (
-                      <CampaignCard 
-                        key={campaign.id} 
-                        campaign={campaign} 
-                        onStatusChange={handleCampaignStatusChange}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex justify-center py-12">
-                    <div className="text-center">
-                      <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-medium">Кампании не найдены</h3>
-                      <p className="text-muted-foreground mt-1">
-                        {searchQuery || filterPlatform !== "all" 
-                          ? "Попробуйте изменить параметры поиска или фильтрации"
-                          : "Создайте новую кампанию чтобы начать работу"}
-                      </p>
-                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Создать кампанию
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <TabsContent value="all" className="mt-6">
+              {filteredCampaigns.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCampaigns.map((campaign) => (
+                    <CampaignCard 
+                      key={campaign.id} 
+                      campaign={campaign} 
+                      onClick={() => handleCampaignSelect(campaign.id)} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground mb-4">No campaigns found</p>
+                  <Button onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" /> Create your first campaign
+                  </Button>
+                </div>
+              )}
             </TabsContent>
             
-            <TabsContent value="active">
-              <div className="mt-4">
-                {filteredCampaigns.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredCampaigns.map(campaign => (
-                      <CampaignCard 
-                        key={campaign.id} 
-                        campaign={campaign} 
-                        onStatusChange={handleCampaignStatusChange}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex justify-center py-12">
-                    <div className="text-center">
-                      <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-medium">Активные кампании не найдены</h3>
-                      <p className="text-muted-foreground mt-1">
-                        Создайте новую кампанию или активируйте существующий черновик
-                      </p>
-                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Создать кампанию
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <TabsContent value="active" className="mt-6">
+              {filteredCampaigns.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCampaigns.map((campaign) => (
+                    <CampaignCard 
+                      key={campaign.id} 
+                      campaign={campaign} 
+                      onClick={() => handleCampaignSelect(campaign.id)} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground">No active campaigns found</p>
+                </div>
+              )}
             </TabsContent>
             
-            <TabsContent value="draft">
-              <div className="mt-4">
-                {filteredCampaigns.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredCampaigns.map(campaign => (
-                      <CampaignCard 
-                        key={campaign.id} 
-                        campaign={campaign} 
-                        onStatusChange={handleCampaignStatusChange}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex justify-center py-12">
-                    <div className="text-center">
-                      <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-medium">Черновики не найдены</h3>
-                      <p className="text-muted-foreground mt-1">
-                        Создайте новую кампанию чтобы начать работу
-                      </p>
-                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Создать кампанию
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <TabsContent value="paused" className="mt-6">
+              {filteredCampaigns.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCampaigns.map((campaign) => (
+                    <CampaignCard 
+                      key={campaign.id} 
+                      campaign={campaign} 
+                      onClick={() => handleCampaignSelect(campaign.id)} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground">No paused campaigns found</p>
+                </div>
+              )}
             </TabsContent>
             
-            <TabsContent value="completed">
-              <div className="mt-4">
-                {filteredCampaigns.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredCampaigns.map(campaign => (
-                      <CampaignCard 
-                        key={campaign.id} 
-                        campaign={campaign} 
-                        onStatusChange={handleCampaignStatusChange}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex justify-center py-12">
-                    <div className="text-center">
-                      <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-medium">Завершенные кампании не найдены</h3>
-                      <p className="text-muted-foreground mt-1">
-                        У вас еще нет завершенных кампаний
-                      </p>
-                      <Button className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Создать кампанию
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <TabsContent value="completed" className="mt-6">
+              {filteredCampaigns.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCampaigns.map((campaign) => (
+                    <CampaignCard 
+                      key={campaign.id} 
+                      campaign={campaign} 
+                      onClick={() => handleCampaignSelect(campaign.id)} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground">No completed campaigns found</p>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="draft" className="mt-6">
+              {filteredCampaigns.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCampaigns.map((campaign) => (
+                    <CampaignCard 
+                      key={campaign.id} 
+                      campaign={campaign} 
+                      onClick={() => handleCampaignSelect(campaign.id)} 
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground">No draft campaigns found</p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
-        </div>
-
-        <div className="flex gap-2 w-full md:w-auto">
-          <div className="relative flex-1">
-            <Search className="absolute left-2 top-[50%] transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Поиск кампаний..." 
-              className="pl-8"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Платформа" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все платформы</SelectItem>
-              {activePlatforms.map(platform => (
-                <SelectItem key={platform.id} value={platform.id} className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <platform.icon className="h-4 w-4" />
-                    <span>{platform.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Диалоговое окно создания кампании */}
+        </>
+      )}
+      
       <CreateCampaignDialog 
-        open={isCreateDialogOpen} 
-        onOpenChange={setIsCreateDialogOpen}
-        onCreateCampaign={handleCreateCampaign}
+        isOpen={isCreateDialogOpen} 
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={handleCreateCampaign}
       />
     </div>
   );
-};
-
-export default CampaignsPage;
+}

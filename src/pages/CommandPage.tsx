@@ -1,107 +1,90 @@
-
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { CommandCenter } from "@/components/command/CommandCenter";
 import { CommandExamples } from "@/components/command/CommandExamples";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Globe, Command, MessageSquare } from "lucide-react";
-import { ApiSettings } from "@/components/settings/ApiSettings";
-import { useToast } from "@/components/ui/use-toast";
-import { externalAPIService } from "@/services/external-api";
-import { useNavigate, useLocation } from "react-router-dom";
+import { ArrowDown, ArrowRight, Bot, CircleHelp, Cpu, Mic, Settings } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import externalAPIService from "@/services/external-api";
 
-const CommandPage = () => {
-  const location = useLocation();
-  const showIntegrationTabByDefault = location.state?.openIntegrationTab === true;
-
-  useEffect(() => {
-    document.title = "Центр управления ИИ";
-  }, []);
+export default function CommandPage() {
+  const [apiStatus, setApiStatus] = useState({
+    openRouter: false,
+    browserUse: false,
+    offlineMode: true,
+  });
   
-  const [activeTab, setActiveTab] = useState(showIntegrationTabByDefault ? "integration" : "command");
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-  };
-
-  const handleApiSettingsSave = () => {
-    const isOfflineMode = externalAPIService.isOfflineMode();
-    
-    toast({
-      title: isOfflineMode ? "Автономный режим активирован" : "API настройки сохранены",
-      description: isOfflineMode 
-        ? "Приложение будет работать без внешних API" 
-        : "Ваши API ключи успешно сохранены и настроены",
-      variant: "default",
-    });
-    
-    // Вернуться на вкладку команд
-    setActiveTab("command");
-  };
-
-  // Проверка текущего режима при загрузке
   useEffect(() => {
-    const isOfflineMode = externalAPIService.isOfflineMode();
+    // Check API status on component mount
+    const checkApiStatus = () => {
+      setApiStatus({
+        openRouter: externalAPIService.hasOpenRouterApiKey(),
+        browserUse: externalAPIService.hasBrowserUseApiKey(),
+        offlineMode: externalAPIService.isOfflineMode(),
+      });
+    };
     
-    if (!isOfflineMode) {
-      const hasOpenRouter = externalAPIService.hasOpenRouterApiKey();
-      const hasBrowserUse = externalAPIService.hasBrowserUseApiKey();
-      
-      // Если режим онлайн, но ключи не настроены, показываем уведомление
-      if (!hasOpenRouter || !hasBrowserUse) {
-        toast({
-          title: "API ключи не настроены",
-          description: "Для использования внешних API необходимо добавить ключи или активировать автономный режим",
-          action: (
-            <button 
-              className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs"
-              onClick={() => setActiveTab("integration")}
-            >
-              Настроить
-            </button>
-          ),
-          duration: 5000
-        });
-      }
-    }
+    // Initialize API keys from storage
+    externalAPIService.initializeFromStorage();
+    
+    // Check initial status
+    checkApiStatus();
+    
+    // Set up interval to check API status periodically
+    const intervalId = setInterval(checkApiStatus, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold flex items-center gap-2">
-        <Bot className="h-7 w-7" /> Центр управления ИИ
-      </h1>
-      
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="command" className="flex items-center gap-2">
-            <Command className="h-4 w-4" /> ИИ Команды
+    <div className="container relative pb-6">
+      <Tabs defaultValue="command" className="w-full space-y-4">
+        <TabsList>
+          <TabsTrigger value="command">
+            <Bot className="mr-2 h-4 w-4" />
+            Командный центр
           </TabsTrigger>
-          <TabsTrigger value="integration" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" /> API Интеграции
+          <TabsTrigger value="examples">
+            <CircleHelp className="mr-2 h-4 w-4" />
+            Примеры команд
+          </TabsTrigger>
+          <TabsTrigger value="status">
+            <Settings className="mr-2 h-4 w-4" />
+            Статус системы
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="command" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <CommandCenter />
-            </div>
-            
-            <div className="md:col-span-1 space-y-6">
-              <CommandExamples />
-            </div>
-          </div>
+        <TabsContent value="command" className="space-y-4">
+          <CommandCenter />
         </TabsContent>
         
-        <TabsContent value="integration">
-          <ApiSettings onSave={handleApiSettingsSave} />
+        <TabsContent value="examples" className="space-y-4">
+          <CommandExamples />
+        </TabsContent>
+        
+        <TabsContent value="status" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Статус интеграций</CardTitle>
+              <CardDescription>Проверьте подключение к внешним сервисам</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <Badge variant={apiStatus.offlineMode ? "secondary" : "outline"}>
+                  Автономный режим: {apiStatus.offlineMode ? "Включен" : "Выключен"}
+                </Badge>
+                <Badge variant={apiStatus.openRouter ? "default" : "outline"}>
+                  OpenRouter API: {apiStatus.openRouter ? "Подключен" : "Не подключен"}
+                </Badge>
+                <Badge variant={apiStatus.browserUse ? "default" : "outline"}>
+                  Browser Use API: {apiStatus.browserUse ? "Подключен" : "Не подключен"}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
-};
-
-export default CommandPage;
+}

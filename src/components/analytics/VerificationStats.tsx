@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ActionVerification, externalAPIService } from "@/services/external-api";
+import type { ActionVerification } from "@/services/external-api";
+import externalAPIService from "@/services/external-api";
 
 interface VerificationStatsProps {
   platform?: string;

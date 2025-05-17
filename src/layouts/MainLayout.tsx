@@ -1,7 +1,7 @@
 
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+import { Header } from "@/components/layout/Header";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -43,7 +43,7 @@ const MainLayout = () => {
             : 'translate-x-0 w-[240px]'
         } transition-all duration-300 ease-in-out bg-sidebar`}
       >
-        <Sidebar className="h-full" />
+        <Sidebar />
       </div>
       
       {/* Main Content */}

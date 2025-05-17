@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,8 +8,8 @@ import { RefreshCw, Music, Share } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
-import { AudioGenerationParams } from "@/services/external-api/types";
-import { externalAPIService } from "@/services/external-api";
+import { AudioGenerationParams } from "@/services/external-api";
+import externalAPIService from "@/services/external-api";
 import { CampaignIntegrator } from "../integration/CampaignIntegrator";
 
 export function AudioGenerator() {

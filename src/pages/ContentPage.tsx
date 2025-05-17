@@ -1,18 +1,17 @@
-import { useState } from "react";
-import { ContentGenerator } from "@/components/ContentGenerator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Image, Music, Video, Calendar, Globe, Users, Wand, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { getActivePlatforms } from "@/constants/platforms";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InteractiveHint } from "@/components/ui/interactive-hint";
-import { externalAPIService } from "@/services/external-api";
+import { ContentGenerator } from "@/components/ContentGenerator";
+import { ImageGenerator } from "@/components/content/ImageGenerator";
+import { AudioGenerator } from "@/components/content/AudioGenerator";
+import { TextGenerator } from "@/components/content/TextGenerator";
+import { Sparkles, Image, MessageSquareText, Music, Upload, FileText, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import externalAPIService from "@/services/external-api";
 
 // Типы для генерации изображений
 type ImageGenerationSize = "512x512" | "1024x1024" | "1024x1792" | "1792x1024";
@@ -200,7 +199,7 @@ const ContentPage = () => {
       <Tabs defaultValue="text" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-7 mb-6">
           <TabsTrigger value="text" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
+            <MessageSquareText className="h-4 w-4" />
             <span>Текст</span>
           </TabsTrigger>
           <TabsTrigger value="image" className="flex items-center gap-2">
@@ -563,7 +562,7 @@ const ContentPage = () => {
                           </div>
                           
                           <div className="flex items-center gap-2 mb-2">
-                            {post.platform === "instagram" && <MessageSquare className="h-4 w-4" />}
+                            {post.platform === "instagram" && <MessageSquareText className="h-4 w-4" />}
                             {post.platform === "youtube" && <Video className="h-4 w-4" />}
                             <span className="font-medium capitalize">{post.platform}</span>
                           </div>
