@@ -79,6 +79,76 @@ export function BotMonitoring() {
 
   const totalActiveSessions = Object.values(sessionsByPlatform).reduce((sum, count) => sum + count, 0);
 
+  const renderBotActions = () => {
+    if (activeBots === 0) {
+      return (
+        <div className="border rounded-lg p-4 mt-4">
+          <h3 className="text-sm font-medium mb-3">Active Bot Tasks</h3>
+          <div className="flex items-center justify-center h-[100px] border-dashed border rounded-lg bg-muted/30">
+            <p className="text-muted-foreground">No active bot tasks</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="border rounded-lg p-4 mt-4">
+        <h3 className="text-sm font-medium mb-3">Active Bot Tasks</h3>
+        <div className="space-y-3">
+          {bots
+            .filter(bot => bot.status === "active")
+            .map(bot => {
+              // Get the last log entry to show what the bot is doing
+              const lastAction = bot.logs?.[0]?.message || "Initializing...";
+              
+              // Determine what the bot is actually doing based on type
+              let taskDescription = "";
+              switch (bot.type) {
+                case "content":
+                  taskDescription = "Content creation for social media";
+                  break;
+                case "interaction":
+                  taskDescription = "Social media engagement";
+                  break;
+                case "click":
+                  taskDescription = "Driving organic views";
+                  break;
+                case "parser":
+                  taskDescription = "Data collection and analysis";
+                  break;
+                default:
+                  taskDescription = "Task in progress";
+              }
+              
+              // Determine which accounts the bot is using
+              const accountsInfo = bot.emailAccounts?.length 
+                ? `Working with ${bot.emailAccounts.length} account(s)` 
+                : "No accounts connected";
+                
+              return (
+                <div key={bot.id} className="p-3 border rounded-lg bg-background">
+                  <div className="flex justify-between items-start">
+                    <div className="font-medium">{bot.name}</div>
+                    <Badge variant={bot.type === "content" ? "default" : 
+                                    bot.type === "interaction" ? "secondary" :
+                                    bot.type === "click" ? "outline" : 
+                                    "destructive"}>
+                      {bot.type.charAt(0).toUpperCase() + bot.type.slice(1)}
+                    </Badge>
+                  </div>
+                  <div className="text-sm mt-1">{taskDescription}</div>
+                  <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+                    <div>{accountsInfo}</div>
+                    <div>Last action: {lastAction}</div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className="col-span-full">
       <CardHeader className="pb-2">
@@ -133,6 +203,8 @@ export function BotMonitoring() {
             </div>
           </div>
         </div>
+
+        {renderBotActions()}
         
         <div className="border rounded-lg p-4">
           <h3 className="text-sm font-medium mb-3">Bot Activity (24h)</h3>

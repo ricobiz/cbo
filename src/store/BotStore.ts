@@ -52,6 +52,41 @@ export const useBotStore = create<BotState>((set, get) => ({
   startBot: (id: string) => {
     const success = botService.startBot(id);
     if (success) {
+      // When a bot starts, we first log what platform and task it's working on
+      const bot = botService.getBot(id);
+      if (bot) {
+        // Determine what platform this bot is focused on
+        const platformMatch = bot.name.toLowerCase().match(/youtube|twitter|instagram|tiktok|facebook|linkedin|spotify/);
+        const platform = platformMatch ? platformMatch[0].charAt(0).toUpperCase() + platformMatch[0].slice(1) : "Multiple platforms";
+        
+        // Add task context based on bot type
+        let actionDescription = "";
+        switch (bot.type) {
+          case "content":
+            actionDescription = `Started content creation for ${platform}`;
+            break;
+          case "interaction":
+            actionDescription = `Began engagement tasks on ${platform}`;
+            break;
+          case "click":
+            actionDescription = `Started driving traffic/views on ${platform}`;
+            break;
+          case "parser":
+            actionDescription = `Initiated data analysis for ${platform}`;
+            break;
+        }
+        
+        // Add email account context if accounts are linked
+        if (bot.emailAccounts && bot.emailAccounts.length > 0) {
+          const emailAccounts = botService.getBotEmailAccounts(id);
+          if (emailAccounts.length > 0) {
+            actionDescription += ` using ${emailAccounts.length} account${emailAccounts.length > 1 ? 's' : ''}`;
+          }
+        }
+        
+        botService.addLog(id, actionDescription);
+      }
+      
       set({ bots: botService.getAllBots() });
     }
   },
