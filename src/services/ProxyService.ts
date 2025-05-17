@@ -1,4 +1,4 @@
 
 import { proxyService } from './proxy';
 export { proxyService };
-export type { ProxyProvider, RotationConfig } from './proxy';
+export type { ProxyProvider, RotationConfig, ProxyStats } from './proxy';

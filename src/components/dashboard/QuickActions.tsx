@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
-import { externalAPIService } from "@/services/ExternalAPIService";
+import { externalAPIService } from "@/services/external-api";
 import { useNavigate } from "react-router-dom";
 
 export function QuickActions() {
