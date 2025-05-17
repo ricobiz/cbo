@@ -91,53 +91,51 @@ export function Sidebar({ className }: SidebarProps) {
   ];
 
   return (
-    <div className={cn("pb-8 min-h-screen border-r bg-background", className)}>
-      <div className="fixed inset-y-0 z-40 w-60">
-        <ScrollArea className="h-full overflow-y-auto pt-5 pb-12">
-          <div className="px-4">
-            <Link to="/" className="flex h-10 items-center justify-start px-2">
-              <span className="font-semibold text-xl flex items-center">
-                <Bot className="h-6 w-6 mr-2" />
-                AutoPromo
-              </span>
-            </Link>
-          </div>
-          <div className="space-y-4 py-4">
-            <div className="px-4 py-2">
-              <h2 className="mb-2 text-sm font-medium">Навигация</h2>
-              <div className="space-y-1">
-                {links.map((link) => (
-                  <Button
-                    key={link.path}
-                    variant={pathname === link.path ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      pathname === link.path
-                        ? "bg-muted font-medium"
-                        : "font-normal"
-                    )}
-                    asChild
-                  >
-                    <Link to={link.path}>
-                      {link.icon}
-                      <span className="ml-2">{link.name}</span>
-                    </Link>
-                  </Button>
-                ))}
-              </div>
+    <div className={cn("min-h-screen border-r bg-sidebar", className)}>
+      <ScrollArea className="h-full overflow-y-auto pt-5 pb-12">
+        <div className="px-4">
+          <Link to="/" className="flex h-10 items-center justify-start px-2">
+            <span className="font-semibold text-xl flex items-center text-sidebar-foreground">
+              <Bot className="h-6 w-6 mr-2" />
+              AutoPromo
+            </span>
+          </Link>
+        </div>
+        <div className="space-y-4 py-4">
+          <div className="px-4 py-2">
+            <h2 className="mb-2 text-sm font-medium text-sidebar-foreground">Навигация</h2>
+            <div className="space-y-1">
+              {links.map((link) => (
+                <Button
+                  key={link.path}
+                  variant={pathname === link.path ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    pathname === link.path
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      : "text-sidebar-foreground font-normal hover:bg-sidebar-accent/50"
+                  )}
+                  asChild
+                >
+                  <Link to={link.path}>
+                    {link.icon}
+                    <span className="ml-2">{link.name}</span>
+                  </Link>
+                </Button>
+              ))}
             </div>
           </div>
-          <div className="py-4">
-            <Separator />
-            <div className="px-4 flex justify-between items-center py-3">
-              <div className="text-sm text-muted-foreground">
-                © 2025 AutoPromo
-              </div>
-              <ThemeToggle />
+        </div>
+        <div className="py-4">
+          <Separator className="bg-sidebar-border" />
+          <div className="px-4 flex justify-between items-center py-3">
+            <div className="text-sm text-sidebar-foreground opacity-70">
+              © 2025 AutoPromo
             </div>
+            <ThemeToggle />
           </div>
-        </ScrollArea>
-      </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 }

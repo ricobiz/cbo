@@ -70,9 +70,9 @@ const recentContent = [
 const Dashboard = () => {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <div className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between bg-background p-4 rounded-lg shadow-sm">
+        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+        <div className="text-xs md:text-sm text-muted-foreground">
           Last updated: {new Date().toLocaleString()}
         </div>
       </div>
@@ -104,7 +104,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <ActivityChart />
       </div>
       

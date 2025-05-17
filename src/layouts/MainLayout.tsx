@@ -35,13 +35,13 @@ const MainLayout = () => {
       
       {/* Sidebar */}
       <div 
-        className={`fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-30 shadow-lg ${
           isSidebarCollapsed && isMobile
             ? '-translate-x-full' 
             : isSidebarCollapsed && !isMobile
             ? 'translate-x-0 w-[80px]'
             : 'translate-x-0 w-[240px]'
-        }`}
+        } transition-all duration-300 ease-in-out bg-sidebar`}
       >
         <Sidebar className="h-full" />
       </div>
@@ -57,7 +57,7 @@ const MainLayout = () => {
         }`}
       >
         <Header toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-auto bg-background">
           <Outlet />
         </main>
       </div>

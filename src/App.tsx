@@ -19,7 +19,7 @@ import { ThemeToggle } from "./components/theme/ThemeToggle";
 
 function App() {
   return (
-    <div className="theme-provider" data-theme="light">
+    <div className="app-container">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainLayout />}>
