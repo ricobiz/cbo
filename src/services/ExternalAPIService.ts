@@ -43,6 +43,7 @@ export interface ActionVerification {
 class ExternalAPIService {
   private openRouterApiKey: string | null = null;
   private browserUseApiKey: string | null = null;
+  private offlineMode: boolean = true;
   
   // Cache for verification data
   private verificationCache = new Map<string, ActionVerification>();
@@ -54,6 +55,16 @@ class ExternalAPIService {
   
   setBrowserUseApiKey(key: string): void {
     this.browserUseApiKey = key;
+  }
+  
+  // Set offline mode
+  setOfflineMode(enabled: boolean): void {
+    this.offlineMode = enabled;
+  }
+  
+  // Check if offline mode is enabled
+  isOfflineMode(): boolean {
+    return this.offlineMode;
   }
   
   // Check if API keys are configured

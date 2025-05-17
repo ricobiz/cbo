@@ -12,6 +12,7 @@ import BillingPage from "./pages/BillingPage";
 import NotFound from "./pages/NotFound";
 import CommandPage from "./pages/CommandPage";
 import EmailAccountsPage from "./pages/EmailAccountsPage";
+import ProxyPage from "./pages/ProxyPage";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
       {
         path: "email-accounts",
         element: <EmailAccountsPage />,
+      },
+      {
+        path: "proxies",
+        element: <ProxyPage />,
       },
     ],
   },
