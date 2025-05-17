@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Bot, Globe, Command, MessageSquare } from "lucide-react";
 import { ApiSettings } from "@/components/settings/ApiSettings";
 import { useToast } from "@/components/ui/use-toast";
+import { externalAPIService } from "@/services/ExternalAPIService";
+import { useNavigate } from "react-router-dom";
 
 const CommandPage = () => {
   useEffect(() => {
@@ -15,6 +17,7 @@ const CommandPage = () => {
   
   const [activeTab, setActiveTab] = useState("command");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -26,7 +29,33 @@ const CommandPage = () => {
       description: "Ваши API ключи успешно сохранены и настроены",
       variant: "default",
     });
+    
+    // Вернуться на вкладку команд
+    setActiveTab("command");
   };
+
+  // Проверка наличия API ключей при загрузке страницы
+  useEffect(() => {
+    const hasOpenRouter = externalAPIService.hasOpenRouterApiKey();
+    const hasBrowserUse = externalAPIService.hasBrowserUseApiKey();
+    
+    if (!hasOpenRouter || !hasBrowserUse) {
+      // Если ключи не настроены, показываем уведомление
+      toast({
+        title: "Настройка API ключей",
+        description: "Для полной функциональности рекомендуется настроить API ключи",
+        action: (
+          <button 
+            className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs"
+            onClick={() => setActiveTab("integration")}
+          >
+            Настроить
+          </button>
+        ),
+        duration: 5000
+      });
+    }
+  }, []);
 
   return (
     <div className="space-y-6">

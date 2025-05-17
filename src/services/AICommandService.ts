@@ -1,11 +1,13 @@
 import { botService, BotConfig, BotProxy, BotSchedule, BotType } from './BotService';
 import { externalAPIService } from './ExternalAPIService';
+import { useBotStore } from '@/store/BotStore';
 
 interface AICommandResult {
   success: boolean;
   message: string;
   botsCreated: number;
   taskId?: string;
+  botIds?: string[];
 }
 
 interface BotTask {
@@ -56,7 +58,7 @@ export async function processAICommand(command: string): Promise<AICommandResult
     }
 
     // Создаем ботов для выполнения задачи
-    const createdBots = setupBotsForTask(taskInfo);
+    const { createdBots, botIds } = setupBotsForTask(taskInfo);
     
     if (createdBots === 0) {
       return {
@@ -66,12 +68,17 @@ export async function processAICommand(command: string): Promise<AICommandResult
       };
     }
     
+    // Обновляем состояние ботов в хранилище
+    const botStore = useBotStore.getState();
+    botStore.fetchBots();
+    
     // Возвращаем результат
     return {
       success: true,
       message: generateSuccessMessage(taskInfo, createdBots),
       botsCreated: createdBots,
-      taskId: Date.now().toString()
+      taskId: Date.now().toString(),
+      botIds: botIds
     };
   } catch (error) {
     console.error("Error processing AI command:", error);
@@ -186,12 +193,13 @@ function analyzeCommand(command: string): BotTask | null {
   };
 }
 
-// Создание ботов для задачи
-function setupBotsForTask(task: BotTask): number {
+// Создание ботов для задачи - обновленная версия
+function setupBotsForTask(task: BotTask): { createdBots: number, botIds: string[] } {
   try {
     // Определяем оптимальное количество ботов для задачи
     const optimalBotCount = calculateOptimalBotCount(task);
     let createdBots = 0;
+    const botIds: string[] = [];
     
     for (let i = 0; i < optimalBotCount; i++) {
       const actionsPerBot = Math.ceil(task.targetCount / optimalBotCount);
@@ -213,6 +221,7 @@ function setupBotsForTask(task: BotTask): number {
       
       const botId = botService.createBot(botData);
       if (botId) {
+        botIds.push(botId);
         createdBots++;
         
         // Добавляем специфичные для задачи логи
@@ -237,10 +246,10 @@ function setupBotsForTask(task: BotTask): number {
       }
     }
     
-    return createdBots;
+    return { createdBots, botIds };
   } catch (error) {
     console.error("Error setting up bots for task:", error);
-    return 0;
+    return { createdBots: 0, botIds: [] };
   }
 }
 
@@ -292,7 +301,7 @@ async function setupBrowserUseSession(botId: string, task: BotTask): Promise<voi
         botService.addLog(botId, "Запуск сценария прослушивания...");
         break;
       case 'view':
-        botService.addLog(botId, "Запуск сценария просмотра...");
+        botService.addLog(botId, "Запуск сценария пр��смотра...");
         break;
       case 'like':
         botService.addLog(botId, "Запуск сценария лайков...");
@@ -394,7 +403,7 @@ function generateSuccessMessage(task: BotTask, botsCreated: number): string {
   
   const actionMap: Record<string, { present: string, future: string }> = {
     "listen": { 
-      present: "прослушивают", 
+      present: "прослу��ивают", 
       future: "будут прослушивать" 
     },
     "view": { 

@@ -4,203 +4,201 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ApiKey, ChevronRight, Info, Check } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { externalAPIService } from "@/services/ExternalAPIService";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ApiSettingsProps {
   onSave: () => void;
 }
 
-export const ApiSettings = ({ onSave }: ApiSettingsProps) => {
-  // Initialize with actual values from service when possible
-  const [openRouterKey, setOpenRouterKey] = useState("");
-  const [browserUseKey, setBrowserUseKey] = useState("");
-  const [openAiKey, setOpenAiKey] = useState("");
-  const [midjourneyKey, setMidjourneyKey] = useState("");
-  const [sunoKey, setSunoKey] = useState("");
-  
-  const [isOpenRouterKeyVisible, setIsOpenRouterKeyVisible] = useState(false);
-  const [isBrowserUseKeyVisible, setIsBrowserUseKeyVisible] = useState(false);
-  const [isOpenAiKeyVisible, setIsOpenAiKeyVisible] = useState(false);
-  const [autoRotateKeys, setAutoRotateKeys] = useState(false);
-  
+export function ApiSettings({ onSave }: ApiSettingsProps) {
+  const [openRouterApiKey, setOpenRouterApiKey] = useState("");
+  const [browserUseApiKey, setBrowserUseApiKey] = useState("");
+  const [activeTab, setActiveTab] = useState("keys");
   const { toast } = useToast();
-
-  // Load saved API keys on component mount
+  
+  // Load current keys from service on mount
   useEffect(() => {
-    // Check if API keys exist in the service and load them
-    const hasOpenRouter = externalAPIService.hasOpenRouterApiKey();
-    const hasBrowserUse = externalAPIService.hasBrowserUseApiKey();
-    
-    if (hasOpenRouter) {
-      setOpenRouterKey("••••••••••••••••••••••••••••••");
+    // We're not getting the actual keys (for security), just checking if they exist
+    if (externalAPIService.hasOpenRouterApiKey()) {
+      setOpenRouterApiKey("API_KEY_SAVED");
     }
     
-    if (hasBrowserUse) {
-      setBrowserUseKey("••••••••••••••••••••••••••••••");
+    if (externalAPIService.hasBrowserUseApiKey()) {
+      setBrowserUseApiKey("API_KEY_SAVED");
     }
   }, []);
-
+  
   const handleSave = () => {
-    // Set API keys in the service
-    if (openRouterKey && !openRouterKey.includes("•")) {
-      externalAPIService.setOpenRouterApiKey(openRouterKey);
+    try {
+      // Only update keys that have changed
+      if (openRouterApiKey && openRouterApiKey !== "API_KEY_SAVED") {
+        externalAPIService.setOpenRouterApiKey(openRouterApiKey);
+      }
+      
+      if (browserUseApiKey && browserUseApiKey !== "API_KEY_SAVED") {
+        externalAPIService.setBrowserUseApiKey(browserUseApiKey);
+      }
+      
+      toast({
+        title: "API ключи сохранены",
+        description: "Настройки API успешно обновлены",
+        variant: "default",
+      });
+      
+      onSave();
+    } catch (error) {
+      toast({
+        title: "Ошибка при сохранении",
+        description: "Не удалось сохранить API ключи",
+        variant: "destructive",
+      });
     }
-    
-    if (browserUseKey && !browserUseKey.includes("•")) {
-      externalAPIService.setBrowserUseApiKey(browserUseKey);
-    }
-    
-    // Additional keys can be saved here
-    
-    toast({
-      title: "API ключи сохранены",
-      description: "Ваши API ключи успешно обновлены.",
-      variant: "default",
-    });
-    
-    onSave();
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>API Интеграции</CardTitle>
-        <CardDescription>Управление API ключами для генерации контента и операций ботов</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <Tabs defaultValue="openrouter" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="general">Основные API</TabsTrigger>
-            <TabsTrigger value="openrouter">OpenRouter</TabsTrigger>
-            <TabsTrigger value="browseruse">Browser Use</TabsTrigger>
-          </TabsList>
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="keys">API Ключи</TabsTrigger>
+          <TabsTrigger value="docs">Документация</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="keys" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ApiKey className="h-5 w-5 text-primary" />
+                <CardTitle>OpenRouter API</CardTitle>
+              </div>
+              <CardDescription>
+                Интеграция с OpenRouter API для анализа команд с использованием продвинутых языковых моделей
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="openrouter-key">API Ключ</Label>
+                <Input
+                  id="openrouter-key"
+                  type="password"
+                  value={openRouterApiKey}
+                  onChange={(e) => setOpenRouterApiKey(e.target.value)}
+                  placeholder="Введите ваш OpenRouter API ключ"
+                />
+              </div>
+              
+              <div className="text-sm text-muted-foreground">
+                <a 
+                  href="https://openrouter.ai/keys" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline flex items-center gap-1"
+                >
+                  <Info className="h-3 w-3" /> Получить API ключ на OpenRouter
+                  <ChevronRight className="h-3 w-3" />
+                </a>
+              </div>
+            </CardContent>
+          </Card>
           
-          <TabsContent value="general">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="openai">OpenAI API Key</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="openai" 
-                    type={isOpenAiKeyVisible ? "text" : "password"} 
-                    value={openAiKey} 
-                    onChange={(e) => setOpenAiKey(e.target.value)}
-                    placeholder="sk-..."
-                    className="font-mono"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setIsOpenAiKeyVisible(!isOpenAiKeyVisible)}
-                  >
-                    {isOpenAiKeyVisible ? "Скрыть" : "Показать"}
-                  </Button>
-                </div>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ApiKey className="h-5 w-5 text-primary" />
+                <CardTitle>Browser Use API</CardTitle>
               </div>
+              <CardDescription>
+                Интеграция с Browser Use для автоматизации действий в браузере
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="midjourney">Midjourney API Key</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="midjourney" 
-                    type="password" 
-                    value={midjourneyKey}
-                    onChange={(e) => setMidjourneyKey(e.target.value)}
-                    placeholder="Введите API ключ Midjourney"
-                    className="font-mono" 
-                  />
-                </div>
+                <Label htmlFor="browser-use-key">API Ключ</Label>
+                <Input
+                  id="browser-use-key"
+                  type="password"
+                  value={browserUseApiKey}
+                  onChange={(e) => setBrowserUseApiKey(e.target.value)}
+                  placeholder="Введите ваш Browser Use API ключ"
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="suno">Suno API Key</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="suno" 
-                    type="password" 
-                    value={sunoKey}
-                    onChange={(e) => setSunoKey(e.target.value)}
-                    placeholder="Введите API ключ Suno"
-                    className="font-mono" 
-                  />
-                </div>
+              
+              <div className="text-sm text-muted-foreground">
+                <a 
+                  href="https://browser-use.ai/api" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline flex items-center gap-1"
+                >
+                  <Info className="h-3 w-3" /> Получить API ключ на Browser Use
+                  <ChevronRight className="h-3 w-3" />
+                </a>
               </div>
-            </div>
-          </TabsContent>
+            </CardContent>
+          </Card>
           
-          <TabsContent value="openrouter">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="openrouter">OpenRouter API Key</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="openrouter" 
-                    type={isOpenRouterKeyVisible ? "text" : "password"} 
-                    value={openRouterKey} 
-                    onChange={(e) => setOpenRouterKey(e.target.value)}
-                    placeholder="sk-or-v1-..."
-                    className="font-mono"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setIsOpenRouterKeyVisible(!isOpenRouterKeyVisible)}
-                  >
-                    {isOpenRouterKeyVisible ? "Скрыть" : "Показать"}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  OpenRouter предоставляет экономичный доступ к множеству AI моделей.
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="browseruse">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="browseruse">Browser Use API Key</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    id="browseruse" 
-                    type={isBrowserUseKeyVisible ? "text" : "password"} 
-                    value={browserUseKey} 
-                    onChange={(e) => setBrowserUseKey(e.target.value)}
-                    placeholder="brw-use-..."
-                    className="font-mono"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setIsBrowserUseKeyVisible(!isBrowserUseKeyVisible)}
-                  >
-                    {isBrowserUseKeyVisible ? "Скрыть" : "Показать"}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Browser Use API обеспечивает автоматизацию браузера, включая регистрацию аккаунтов и взаимодействие.
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="rotate-keys">Автоматическая ротация API ключей</Label>
-            <div className="text-sm text-muted-foreground">Автоматически менять ключи для предотвращения ограничений скорости</div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave}>
+              <Check className="h-4 w-4 mr-2" /> Сохранить API ключи
+            </Button>
           </div>
-          <Switch 
-            id="rotate-keys" 
-            checked={autoRotateKeys}
-            onCheckedChange={setAutoRotateKeys}
-          />
-        </div>
-      </CardContent>
-      <CardFooter className="border-t bg-muted/50 flex justify-end pt-4">
-        <Button onClick={handleSave}>Сохранить API ключи</Button>
-      </CardFooter>
-    </Card>
+        </TabsContent>
+        
+        <TabsContent value="docs" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Документация по API</CardTitle>
+              <CardDescription>
+                Информация о поддерживаемых API и их использовании
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">OpenRouter API</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  OpenRouter позволяет использовать различные языковые модели для анализа команд и генерации контента. 
+                  API используется для улучшения понимания команд пользователя.
+                </p>
+                <div className="mt-2">
+                  <a 
+                    href="https://openrouter.ai/docs" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Info className="h-3 w-3" /> Официальная документация
+                    <ChevronRight className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-lg font-medium">Browser Use API</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Browser Use позволяет автоматизировать действия в браузере, такие как 
+                  навигация по сайтам, клики, ввод текста и другие взаимодействия.
+                </p>
+                <div className="mt-2">
+                  <a 
+                    href="https://browser-use.ai/docs" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Info className="h-3 w-3" /> Официальная документация
+                    <ChevronRight className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
-};
+}

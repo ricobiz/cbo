@@ -48,7 +48,11 @@ export interface Bot {
   lastRun: string;
   logs: Array<{time: string, message: string}>;
   emailAccounts?: string[]; // IDs of associated email accounts
+  createdAt?: string;
 }
+
+// A new event to notify when bot list changes
+export const BOT_UPDATED_EVENT = 'bot-list-updated';
 
 class BotService {
   private bots: Map<string, Bot> = new Map();
@@ -220,6 +224,7 @@ class BotService {
     bot.lastRun = 'just now';
     this.addLog(id, "Bot started");
     this.bots.set(id, bot);
+    this.emitBotUpdatedEvent();
     return true;
   }
   
@@ -230,6 +235,7 @@ class BotService {
     bot.status = 'idle';
     this.addLog(id, "Bot stopped");
     this.bots.set(id, bot);
+    this.emitBotUpdatedEvent();
     return true;
   }
 
@@ -293,15 +299,17 @@ class BotService {
       description: botData.description || "A new bot",
       status: "idle" as BotStatus,
       type: botData.type || "content" as BotType,
-      config: this.getDefaultConfig(),
-      schedule: this.getDefaultSchedule(),
-      proxy: this.getDefaultProxy(),
+      config: botData.config || this.getDefaultConfig(),
+      schedule: botData.schedule || this.getDefaultSchedule(),
+      proxy: botData.proxy || this.getDefaultProxy(),
       lastRun: "Never",
-      logs: []
+      logs: [],
+      createdAt: new Date().toISOString()
     };
     
     this.bots.set(newId, newBot);
     this.addLog(newId, "Bot created");
+    this.emitBotUpdatedEvent();
     return newId;
   }
 
@@ -318,6 +326,7 @@ class BotService {
     }
     
     this.bots.set(id, bot);
+    // Minor log updates don't trigger the full event
   }
   
   public setMaxConcurrentOperations(count: number): void {
@@ -490,6 +499,14 @@ class BotService {
       provider: "luminati",
       regions: ["us", "ca", "uk", "au"]
     };
+  }
+
+  // Helper method to emit an event when the bot list changes
+  private emitBotUpdatedEvent(): void {
+    const event = new CustomEvent(BOT_UPDATED_EVENT, {
+      detail: { botCount: this.bots.size }
+    });
+    document.dispatchEvent(event);
   }
 }
 

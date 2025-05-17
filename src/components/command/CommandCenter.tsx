@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { Bot, Send, Sparkles, X, Clock, Monitor, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { BotType } from "@/services/BotService";
 import { CommandListener } from "./CommandListener";
 import { externalAPIService } from "@/services/ExternalAPIService";
 import { useNavigate } from "react-router-dom";
+import { useBotStore } from "@/store/BotStore";
 
 interface Message {
   id: string;
@@ -33,6 +33,7 @@ export function CommandCenter() {
   ]);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { fetchBots } = useBotStore();
   
   // Check API integration status
   const [hasOpenRouter, setHasOpenRouter] = useState(false);
@@ -76,11 +77,31 @@ export function CommandCenter() {
       
       // Show notification about created tasks
       if (result.success) {
+        // Explicitly refresh bots list
+        fetchBots();
+        
         toast({
           title: "Задача создана",
           description: `${result.botsCreated} ботов настроено для выполнения вашей задачи.`,
           variant: "default"
         });
+        
+        // Предложить перейти на страницу ботов
+        if (result.botIds && result.botIds.length > 0) {
+          toast({
+            title: "Боты созданы",
+            description: "Хотите перейти на страницу ботов для просмотра деталей?",
+            action: (
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/bots')}
+                size="sm"
+              >
+                Перейти
+              </Button>
+            )
+          });
+        }
       } else {
         toast({
           title: "Не удалось создать задачу",
