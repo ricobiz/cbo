@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useTranslation } from "@/store/LanguageStore";
 
 // Empty data for various time periods
 const emptyDailyData = [
@@ -32,6 +33,7 @@ const emptyMonthlyData = [
 
 export function ActivityChart() {
   const [timeRange, setTimeRange] = useState("7d");
+  const { t } = useTranslation();
   
   // Choose the appropriate dataset based on the selected time range
   const getChartData = () => {
@@ -53,18 +55,18 @@ export function ActivityChart() {
     <Card className="col-span-full">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div className="space-y-0.5">
-          <CardTitle>Campaign Activity</CardTitle>
-          <CardDescription>No activity recorded yet</CardDescription>
+          <CardTitle>{t('campaignActivity')}</CardTitle>
+          <CardDescription>{t('noActivityYet')}</CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-32">
-            <SelectValue placeholder="Time range" />
+            <SelectValue placeholder={t('timeRange')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="24h">Last 24 hours</SelectItem>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
+            <SelectItem value="24h">{t('last24Hours')}</SelectItem>
+            <SelectItem value="7d">{t('last7Days')}</SelectItem>
+            <SelectItem value="30d">{t('last30Days')}</SelectItem>
+            <SelectItem value="90d">{t('last90Days')}</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -130,15 +132,15 @@ export function ActivityChart() {
         <div className="flex items-center justify-center space-x-8 py-4">
           <div className="flex items-center">
             <div className="h-3 w-3 rounded-full bg-primary mr-2" />
-            <span className="text-sm text-muted-foreground">Views</span>
+            <span className="text-sm text-muted-foreground">{t('views')}</span>
           </div>
           <div className="flex items-center">
             <div className="h-3 w-3 rounded-full bg-secondary mr-2" />
-            <span className="text-sm text-muted-foreground">Engagements</span>
+            <span className="text-sm text-muted-foreground">{t('engagements')}</span>
           </div>
           <div className="flex items-center">
             <div className="h-3 w-3 rounded-full bg-accent mr-2" />
-            <span className="text-sm text-muted-foreground">Clicks</span>
+            <span className="text-sm text-muted-foreground">{t('clicks')}</span>
           </div>
         </div>
       </CardContent>

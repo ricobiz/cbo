@@ -15,10 +15,12 @@ import {
   Terminal,
 } from "lucide-react";
 import { useTranslation } from "@/store/LanguageStore";
+import { useLocation } from "react-router-dom";
 
 export function Sidebar() {
   const { isOpen, toggle } = useSidebarStore();
   const { t } = useTranslation();
+  const location = useLocation();
   
   const navItems = [
     { path: "/", icon: LayoutDashboard, label: "dashboard" },
@@ -66,7 +68,7 @@ export function Sidebar() {
       <div className="border-t p-2">
         <button
           onClick={toggle}
-          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent md:hidden"
+          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent"
         >
           <PanelLeftClose className="h-4 w-4" />
           <span>{t('collapse')}</span>

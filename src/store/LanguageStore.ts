@@ -1,106 +1,88 @@
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
 
-type LanguageState = {
+interface TranslationState {
   language: string;
   setLanguage: (language: string) => void;
+  t: (key: string) => string;
+}
+
+const translations: Record<string, Record<string, string>> = {
+  en: {
+    dashboard: "Dashboard",
+    content: "Content",
+    campaigns: "Campaigns",
+    bots: "Bots",
+    scenarios: "Scenarios",
+    analytics: "Analytics",
+    command: "Command",
+    settings: "Settings",
+    collapse: "Collapse",
+    details: "View details",
+    generateContent: "Generate content",
+    campaignAnalytics: "Campaign Analytics",
+    campaignAnalyticsDesc: "Overview of your marketing campaign effectiveness",
+    noInteractions: "No interactions in the last 30 days",
+    activeBots: "Active Bots",
+    activeBotsDesc: "Manage and monitor your active bots",
+    noBotsRunning: "No bots currently running",
+    manageBots: "Manage bots",
+    recentScenarios: "Recent Scenarios",
+    recentScenariosDesc: "Quick access to your latest scenarios",
+    noScenarios: "No scenarios launched this week",
+    manageScenarios: "Manage scenarios",
+    campaignActivity: "Campaign Activity",
+    noActivityYet: "No activity recorded yet",
+    timeRange: "Time range",
+    last24Hours: "Last 24 hours",
+    last7Days: "Last 7 days",
+    last30Days: "Last 30 days",
+    last90Days: "Last 90 days",
+    views: "Views",
+    engagements: "Engagements",
+    clicks: "Clicks",
+  },
+  ru: {
+    dashboard: "Панель управления",
+    content: "Контент",
+    campaigns: "Кампании",
+    bots: "Боты",
+    scenarios: "Сценарии",
+    analytics: "Аналитика",
+    command: "Команды",
+    settings: "Настройки",
+    collapse: "Свернуть",
+    details: "Подробнее",
+    generateContent: "Сгенерировать контент",
+    campaignAnalytics: "Аналитика кампаний",
+    campaignAnalyticsDesc: "Обзор эффективности ваших маркетинговых кампаний",
+    noInteractions: "Нет взаимодействий за последние 30 дней",
+    activeBots: "Активные боты",
+    activeBotsDesc: "Управление и мониторинг ваших активных ботов",
+    noBotsRunning: "Сейчас нет запущенных ботов",
+    manageBots: "Управление ботами",
+    recentScenarios: "Последние сценарии",
+    recentScenariosDesc: "Быстрый доступ к вашим последним сценариям",
+    noScenarios: "Нет запущенных сценариев на этой неделе",
+    manageScenarios: "Управление сценариями",
+    campaignActivity: "Активность кампаний",
+    noActivityYet: "Активность пока не зафиксирована",
+    timeRange: "Период времени",
+    last24Hours: "Последние 24 часа",
+    last7Days: "Последние 7 дней",
+    last30Days: "Последние 30 дней",
+    last90Days: "Последние 90 дней",
+    views: "Просмотры",
+    engagements: "Взаимодействия",
+    clicks: "Клики",
+  }
 };
 
-export const useLanguageStore = create<LanguageState>()(
-  persist(
-    (set) => ({
-      language: 'ru',
-      setLanguage: (language: string) => set({ language }),
-    }),
-    {
-      name: 'language-storage',
-    }
-  )
-);
-
-// Dictionary of translations
-export type TranslationDict = Record<string, Record<string, string>>;
-
-// Simple translations object to be expanded
-const translations: TranslationDict = {
-  'dashboard': {
-    'ru': 'Панель управления',
-    'en': 'Dashboard',
-    'de': 'Dashboard',
-    'fr': 'Tableau de bord',
-    'es': 'Panel de control',
-    'zh': '仪表板',
+export const useTranslation = create<TranslationState>((set, get) => ({
+  language: "ru", // Default language
+  setLanguage: (language: string) => set({ language }),
+  t: (key: string) => {
+    const { language } = get();
+    return translations[language]?.[key] || key;
   },
-  'campaigns': {
-    'ru': 'Кампании',
-    'en': 'Campaigns',
-    'de': 'Kampagnen',
-    'fr': 'Campagnes',
-    'es': 'Campañas',
-    'zh': '广告系列',
-  },
-  'bots': {
-    'ru': 'Управление ботами',
-    'en': 'Bot Management',
-    'de': 'Bot-Verwaltung',
-    'fr': 'Gestion des bots',
-    'es': 'Gestión de bots',
-    'zh': '机器人管理',
-  },
-  'content': {
-    'ru': 'Генератор контента',
-    'en': 'Content Generator',
-    'de': 'Inhaltsgenerator',
-    'fr': 'Générateur de contenu',
-    'es': 'Generador de contenido',
-    'zh': '内容生成器',
-  },
-  'scenarios': {
-    'ru': 'Сценарии',
-    'en': 'Scenarios',
-    'de': 'Szenarien',
-    'fr': 'Scénarios',
-    'es': 'Escenarios',
-    'zh': '场景',
-  },
-  'analytics': {
-    'ru': 'Аналитика',
-    'en': 'Analytics',
-    'de': 'Analytik',
-    'fr': 'Analytique',
-    'es': 'Analítica',
-    'zh': '分析',
-  },
-  'settings': {
-    'ru': 'Настройки',
-    'en': 'Settings',
-    'de': 'Einstellungen',
-    'fr': 'Paramètres',
-    'es': 'Configuración',
-    'zh': '设置',
-  },
-  'command': {
-    'ru': 'Центр управления ИИ',
-    'en': 'AI Command Center',
-    'de': 'KI-Kommandozentrale',
-    'fr': 'Centre de commande IA',
-    'es': 'Centro de comandos de IA',
-    'zh': 'AI命令中心',
-  },
-};
-
-// Helper function to get a translation
-export const useTranslation = () => {
-  const { language } = useLanguageStore();
-  
-  const t = (key: string): string => {
-    if (translations[key] && translations[key][language]) {
-      return translations[key][language];
-    }
-    // Fallback to English or the key itself
-    return translations[key]?.['en'] || key;
-  };
-  
-  return { t, language };
-};
+}));

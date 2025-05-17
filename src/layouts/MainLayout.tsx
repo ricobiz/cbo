@@ -2,13 +2,13 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSidebarStore } from "@/store/SidebarStore";
 
 const MainLayout = () => {
   const isMobile = useIsMobile();
-  const { isOpen, open, close } = useSidebarStore();
+  const { isOpen, open, close, toggle } = useSidebarStore();
   
   // Auto-collapse sidebar on mobile devices by default
   useEffect(() => {
