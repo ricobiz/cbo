@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { externalAPIService } from "@/services/ExternalAPIService";
+import { useNavigate } from "react-router-dom";
 
 export function QuickActions() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   
   const handleAction = async (action: string) => {
@@ -22,7 +24,7 @@ export function QuickActions() {
             title: "Creating new campaign",
             description: "Please set up the campaign details in the next screen.",
           });
-          window.location.href = "/campaigns?create=true";
+          navigate("/campaigns?create=true");
           break;
           
         case "Generate Content":
@@ -33,6 +35,7 @@ export function QuickActions() {
               description: "Please add your OpenRouter API key in settings first.",
               variant: "destructive",
             });
+            navigate("/settings");
             break;
           }
           
@@ -43,6 +46,7 @@ export function QuickActions() {
               title: "Content Generated",
               description: "New content has been created and added to your library.",
             });
+            navigate("/content");
           } else {
             toast({
               title: "Generation Failed",
@@ -60,6 +64,7 @@ export function QuickActions() {
               description: "Please add your Browser Use API key in settings first.",
               variant: "destructive",
             });
+            navigate("/settings");
             break;
           }
           
@@ -73,7 +78,7 @@ export function QuickActions() {
             });
             
             // Redirect to the bots page
-            window.location.href = "/bots";
+            navigate("/bots");
           } else {
             toast({
               title: "Deployment Failed",
@@ -85,6 +90,16 @@ export function QuickActions() {
           
         case "Create Scenario":
           // Command analysis with AI
+          if (!externalAPIService.hasOpenRouterApiKey()) {
+            toast({
+              title: "API Key Required",
+              description: "Please add your OpenRouter API key in settings first.",
+              variant: "destructive",
+            });
+            navigate("/settings");
+            break;
+          }
+          
           const analysis = await externalAPIService.analyzeCommand("Listen to playlist XYZ on Spotify 500 times");
           
           if (analysis) {
@@ -94,7 +109,7 @@ export function QuickActions() {
             });
             
             // Redirect to the scenarios page
-            window.location.href = "/scenarios";
+            navigate("/scenarios");
           } else {
             toast({
               title: "Analysis Failed",

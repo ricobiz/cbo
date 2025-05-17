@@ -8,6 +8,7 @@ import ContentPage from "./pages/ContentPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ScenariosPage from "./pages/ScenariosPage";
+import BillingPage from "./pages/BillingPage";
 import NotFound from "./pages/NotFound";
 import CommandPage from "./pages/CommandPage";
 import EmailAccountsPage from "./pages/EmailAccountsPage";
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
       {
         path: "settings",
         element: <SettingsPage />,
+      },
+      {
+        path: "billing",
+        element: <BillingPage />,
       },
       {
         path: "command",
