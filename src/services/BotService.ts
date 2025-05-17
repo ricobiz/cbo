@@ -1,42 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
+import { BotStatus, BotType, BotHealthStatus, BotConfig, BotSchedule, BotProxy } from './types/bot';
 
-export type BotStatus = 'active' | 'idle' | 'error' | 'paused';
-export type BotType = 'content' | 'interaction' | 'click' | 'parser';
 export type BotActivityType = 'browsing' | 'content_creation' | 'engagement' | 'account_interaction' | 'data_collection' | 'ip_rotation';
 
 // Add the missing interfaces
-export interface BotConfig {
-  actionDelay: [number, number];
-  mouseMovement: 'natural' | 'direct' | 'random';
-  scrollPattern: 'variable' | 'constant' | 'jump';
-  randomnessFactor: number;
-  behaviorProfile: string;
-  sessionVariability?: number; // Add optional property used in AICommandService
-}
-
-export interface BotSchedule {
-  active: boolean;
-  startTime: string;
-  endTime: string;
-  breakDuration: [number, number];
-  daysActive: string[];
-}
-
-export interface BotProxy {
-  useRotation: boolean;
-  rotationFrequency: number;
-  provider: string;
-  regions: string[];
-}
-
 export interface EmailAccount {
   id: string;
   email: string;
   password?: string;
   isInUse: boolean;
   assignedBots?: string[];
-  status?: string; // Add missing property
-  lastUsed?: string; // Add missing property
+  status?: string;
+  lastUsed?: string;
 }
 
 export interface Bot {
@@ -54,7 +29,7 @@ export interface Bot {
   config?: BotConfig;
   proxy?: BotProxy;
   logs?: Array<{time: string, message: string}>;
-  currentActivity?: BotActivity; // Add missing property
+  currentActivity?: BotActivity;
 }
 
 export interface BotActivity {
