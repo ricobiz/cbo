@@ -10,12 +10,15 @@ export function CommandListener({ onCommandSelected }: CommandListenerProps) {
     const handleCommandSelected = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail && customEvent.detail.command) {
+        console.log("CommandListener: received command", customEvent.detail.command);
         onCommandSelected(customEvent.detail.command);
       }
     };
     
+    // Add event listener
     document.addEventListener('ai-command-selected', handleCommandSelected);
     
+    // Return cleanup function
     return () => {
       document.removeEventListener('ai-command-selected', handleCommandSelected);
     };

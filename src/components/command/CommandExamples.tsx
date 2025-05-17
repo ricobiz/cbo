@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Lightbulb, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
@@ -39,10 +38,10 @@ export function CommandExamples() {
     }
   ]);
   
-  // Функция для эмуляции выбора примера (для демонстрации)
+  // Функция для выбора примера - теперь реально отправляет команду
   const selectExample = (command: string) => {
-    console.log("Selected example:", command);
-    // Тут будет код для передачи команды в CommandCenter
+    console.log("Selected command example:", command);
+    // Отправляем команду через событие
     const event = new CustomEvent('ai-command-selected', { 
       detail: { command } 
     });
