@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ import { CampaignCard } from "@/components/campaigns/CampaignCard";
 import { CreateCampaignDialog } from "@/components/campaigns/CreateCampaignDialog";
 import { externalAPIService } from "@/services/external-api";
 import { useToast } from "@/components/ui/use-toast";
+import { useSearchParams } from "react-router-dom";
+import { SetupGuideHints } from "@/components/bots/SetupGuideHints";
 
 // Define campaign interface
 interface Campaign {
@@ -27,20 +30,67 @@ interface Campaign {
   }
 }
 
+// Demo campaigns for first-time users
+const demoCampaigns: Campaign[] = [
+  {
+    id: "1",
+    title: "Промо YouTube видео",
+    platform: "youtube",
+    status: "active",
+    progress: 45,
+    startDate: new Date().toISOString(),
+    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+    type: "promotion",
+    metrics: {
+      views: 2450,
+      engagement: 148,
+      conversions: 37
+    }
+  },
+  {
+    id: "2",
+    title: "Тест рекламных креативов",
+    platform: "instagram",
+    status: "draft",
+    progress: 0,
+    startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
+    endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
+    type: "test",
+    metrics: {
+      views: 0,
+      engagement: 0,
+      conversions: 0
+    }
+  }
+];
+
 const CampaignsPage = () => {
   useEffect(() => {
     document.title = "Управление кампаниями";
   }, []);
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isOfflineMode, setIsOfflineMode] = useState(true);
   const [currentTab, setCurrentTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlatform, setFilterPlatform] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [showSetupGuide, setShowSetupGuide] = useState(true);
   const { toast } = useToast();
   
-  // Initialize with an empty array - no demo campaigns
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  // Initialize with demo campaigns
+  const [campaigns, setCampaigns] = useState<Campaign[]>(demoCampaigns);
+
+  // Check URL parameters for auto-opening the create dialog
+  useEffect(() => {
+    const createParam = searchParams.get("create");
+    if (createParam === "true") {
+      setIsCreateDialogOpen(true);
+      // Remove the parameter after handling it
+      searchParams.delete("create");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
 
   // Handle campaign status changes
   const handleCampaignStatusChange = (campaignId: string, newStatus: string) => {
@@ -82,6 +132,14 @@ const CampaignsPage = () => {
     
     // Добавляем новую кампанию в начало списка
     setCampaigns(prevCampaigns => [newCampaign, ...prevCampaigns]);
+    
+    // Hide setup guide after creating first campaign
+    setShowSetupGuide(false);
+
+    toast({
+      title: "Кампания создана",
+      description: `Кампания "${formData.title}" успешно создана и добавлена в список.`,
+    });
   };
 
   // Проверка текущего режима при загрузке
@@ -120,6 +178,8 @@ const CampaignsPage = () => {
           Создать кампанию
         </Button>
       </div>
+
+      {showSetupGuide && <SetupGuideHints />}
 
       {isOfflineMode && (
         <Card className="border-yellow-200 bg-yellow-50">

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { InteractiveHint } from "@/components/ui/interactive-hint";
 import { Card } from "@/components/ui/card";
-import { Bot, Settings, Users, Mail, Globe, Shield } from "lucide-react";
+import { Bot, Settings, Users, Mail, Globe, Shield, ClipboardList } from "lucide-react";
 
 export function SetupGuideHints() {
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({
@@ -10,7 +10,8 @@ export function SetupGuideHints() {
     configureProxy: false,
     addAccounts: false,
     scheduleBot: false,
-    secureConnection: false
+    secureConnection: false,
+    createCampaign: false
   });
 
   const markStepComplete = (step: string) => {
@@ -34,7 +35,7 @@ export function SetupGuideHints() {
           title="Создайте бота"
           description="Создайте нового бота, выбрав тип и указав, для какой платформы он будет работать."
           step={1}
-          totalSteps={5}
+          totalSteps={6}
           completed={completedSteps.createBot}
           onComplete={() => markStepComplete('createBot')}
           highlightLevel="high"
@@ -54,7 +55,7 @@ export function SetupGuideHints() {
           title="Настройте прокси-серверы"
           description="Настройте прокси для обеспечения безопасного доступа и ротации IP-адресов."
           step={2}
-          totalSteps={5}
+          totalSteps={6}
           completed={completedSteps.configureProxy}
           onComplete={() => markStepComplete('configureProxy')}
           highlightLevel={completedSteps.createBot ? "high" : "low"}
@@ -74,7 +75,7 @@ export function SetupGuideHints() {
           title="Добавьте учетные записи"
           description="Назначьте электронные почты или учетные записи социальных сетей для работы ботов."
           step={3}
-          totalSteps={5}
+          totalSteps={6}
           completed={completedSteps.addAccounts}
           onComplete={() => markStepComplete('addAccounts')}
           highlightLevel={completedSteps.configureProxy ? "high" : "low"}
@@ -94,7 +95,7 @@ export function SetupGuideHints() {
           title="Настройка расписания"
           description="Настройте время работы и режим действий для каждого бота."
           step={4}
-          totalSteps={5}
+          totalSteps={6}
           completed={completedSteps.scheduleBot}
           onComplete={() => markStepComplete('scheduleBot')}
           highlightLevel={completedSteps.addAccounts ? "high" : "low"}
@@ -114,7 +115,7 @@ export function SetupGuideHints() {
           title="Настройка безопасности"
           description="Настройте параметры безопасности для защиты ваших ботов и аккаунтов."
           step={5}
-          totalSteps={5}
+          totalSteps={6}
           completed={completedSteps.secureConnection}
           onComplete={() => markStepComplete('secureConnection')}
           highlightLevel={completedSteps.scheduleBot ? "high" : "low"}
@@ -125,6 +126,26 @@ export function SetupGuideHints() {
               <h4 className="font-medium">Безопасность</h4>
               <p className="text-sm text-muted-foreground">
                 Установите параметры безопасности для защиты от обнаружения. Настройте поведение ботов так, чтобы оно максимально напоминало поведение обычных пользователей.
+              </p>
+            </div>
+          </div>
+        </InteractiveHint>
+
+        <InteractiveHint
+          title="Создание кампаний"
+          description="Создайте кампании для структурирования и отслеживания ваших маркетинговых активностей."
+          step={6}
+          totalSteps={6}
+          completed={completedSteps.createCampaign}
+          onComplete={() => markStepComplete('createCampaign')}
+          highlightLevel={completedSteps.secureConnection ? "high" : "low"}
+        >
+          <div className="flex items-start gap-3">
+            <ClipboardList className="h-8 w-8 text-indigo-500 mt-1" />
+            <div>
+              <h4 className="font-medium">Управление кампаниями</h4>
+              <p className="text-sm text-muted-foreground">
+                Создайте маркетинговые кампании для структурирования ваших действий. Назначьте ботов на конкретные кампании для отслеживания эффективности.
               </p>
             </div>
           </div>
