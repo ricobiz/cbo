@@ -21,6 +21,7 @@ import BillingPage from "./pages/BillingPage";
 import AdminPage from "./pages/AdminPage";
 import { Toaster } from "sonner";
 import { initApiErrorNotifications } from "./services/api";
+import { BannerOffline } from "./components/BannerOffline";
 
 // Создаем экземпляр QueryClient с настройками
 const queryClient = new QueryClient({
@@ -44,6 +45,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <BannerOffline className="sticky top-0 z-50" />
       <Toaster 
         position="top-right" 
         richColors 

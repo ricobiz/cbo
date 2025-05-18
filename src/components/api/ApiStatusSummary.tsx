@@ -3,8 +3,9 @@ import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiConnectionService, useConnectionStore } from "@/services/api/ApiConnectionService";
 import { apiService } from "@/services/api/ApiService";
-import { CheckCircle, XCircle, AlertCircle, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, RefreshCw, CloudOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function ApiStatusSummary() {
   const { isConnected, isChecking, error, lastChecked, serverStatus } = useConnectionStore();
@@ -34,77 +35,88 @@ export function ApiStatusSummary() {
   };
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <div className="grid grid-cols-3 divide-x">
-          <div className={`flex flex-col items-center justify-center p-4 ${apiService.isOfflineMode() ? 
-            'bg-muted/50' : 
-            isConnected ? 'bg-green-50 dark:bg-green-950/20' : 'bg-amber-50 dark:bg-amber-950/20'}`}>
-            {apiService.isOfflineMode() ? (
-              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-            ) : isConnected ? (
-              <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
-            ) : (
-              <XCircle className="h-8 w-8 text-amber-500 mb-2" />
-            )}
-            <h3 className="font-medium">
-              {apiService.isOfflineMode() ? 
-                'Оффлайн режим' : 
-                isConnected ? 'API подключено' : 'API недоступно'}
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Проверено: {getFormattedTimeSince(lastChecked)}
-            </p>
-          </div>
-          
-          <div className="p-4 flex flex-col justify-center">
-            <h4 className="text-sm font-medium mb-1">Сервисы</h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-full ${apiService.isOfflineMode() ? 
-                  'bg-muted' : 
-                  isConnected ? 'bg-green-500' : 'bg-amber-500'}`} />
-                <span className="text-sm">API сервер</span>
+    <>
+      {!apiService.isOfflineMode() && !isConnected && (
+        <Alert variant="warning" className="mb-4" dismissible>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Сервер API недоступен. Рекомендуется перейти в режим офлайн в настройках интерфейса.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div className="grid grid-cols-3 divide-x">
+            <div className={`flex flex-col items-center justify-center p-4 ${apiService.isOfflineMode() ? 
+              'bg-amber-50 dark:bg-amber-950/20' : 
+              isConnected ? 'bg-green-50 dark:bg-green-950/20' : 'bg-red-50 dark:bg-red-950/20'}`}>
+              {apiService.isOfflineMode() ? (
+                <CloudOff className="h-8 w-8 text-amber-500 mb-2" />
+              ) : isConnected ? (
+                <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
+              ) : (
+                <XCircle className="h-8 w-8 text-red-500 mb-2" />
+              )}
+              <h3 className="font-medium">
+                {apiService.isOfflineMode() ? 
+                  'Оффлайн режим' : 
+                  isConnected ? 'API подключено' : 'API недоступно'}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Проверено: {getFormattedTimeSince(lastChecked)}
+              </p>
+            </div>
+            
+            <div className="p-4 flex flex-col justify-center">
+              <h4 className="text-sm font-medium mb-1">Сервисы</h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-full ${apiService.isOfflineMode() ? 
+                    'bg-amber-500' : 
+                    isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-sm">API сервер</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-full ${apiService.isOfflineMode() ? 
+                    'bg-muted' : 
+                    (isConnected && serverStatus.database) ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-sm">База данных</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 flex flex-col justify-center">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-sm font-medium">Действия</h4>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 w-7 p-0" 
+                  onClick={() => apiConnectionService.testConnection()}
+                  disabled={isChecking}
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin' : ''}`} />
+                  <span className="sr-only">Обновить</span>
+                </Button>
               </div>
               
-              <div className="flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-full ${apiService.isOfflineMode() ? 
-                  'bg-muted' : 
-                  (isConnected && serverStatus.database) ? 'bg-green-500' : 'bg-amber-500'}`} />
-                <span className="text-sm">База данных</span>
-              </div>
+              {error && !apiService.isOfflineMode() && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1 break-all line-clamp-2">
+                  Ошибка: {error}
+                </p>
+              )}
+              
+              {apiService.isOfflineMode() && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Работа с локальными данными. Для подключения к API отключите оффлайн режим в настройках.
+                </p>
+              )}
             </div>
           </div>
-          
-          <div className="p-4 flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium">Действия</h4>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 w-7 p-0" 
-                onClick={() => apiConnectionService.testConnection()}
-                disabled={isChecking}
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin' : ''}`} />
-                <span className="sr-only">Обновить</span>
-              </Button>
-            </div>
-            
-            {error && !apiService.isOfflineMode() && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                Ошибка: {error}
-              </p>
-            )}
-            
-            {apiService.isOfflineMode() && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Работа с локальными данными. Для подключения к API отключите оффлайн режим в настройках.
-              </p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 }
