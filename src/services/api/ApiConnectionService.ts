@@ -73,6 +73,9 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           message: response.message
         }
       });
+      
+      // Log successful connection
+      console.log("API connection successful:", response);
       return true;
     } catch (error) {
       const currentRetries = get().retryCount;
@@ -82,6 +85,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       set({ retryCount: currentRetries + 1 });
       
       const errorMessage = error instanceof Error ? error.message : 'Failed to connect to API';
+      console.error("API connection error:", error);
       
       set({ 
         isConnected: false, 
@@ -98,8 +102,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       // Only show toast after multiple failures to avoid spamming the user
       if (currentRetries >= 2 && currentRetries < maxRetries) {
         toast.error(`Connection issue: ${errorMessage}`, {
-          description: `Attempt ${currentRetries + 1} of ${maxRetries}`,
-          id: "connection-error" // Use ID to prevent duplicate toasts
+          description: `Attempt ${currentRetries + 1} of ${maxRetries}`
         });
       }
       
@@ -151,8 +154,11 @@ class ApiConnectionService {
   async testConnection(baseUrl: string = API_CONFIG.BASE_URL): Promise<boolean> {
     // Skip check if in offline mode
     if (apiService.isOfflineMode()) {
+      console.log("Skipping API test - offline mode active");
       return false;
     }
+    
+    console.log(`Testing API connection to ${baseUrl}${API_CONFIG.ENDPOINTS.HEALTH}`);
     
     try {
       const response = await fetch(`${baseUrl}${API_CONFIG.ENDPOINTS.HEALTH}`, {
@@ -166,6 +172,7 @@ class ApiConnectionService {
       if (response.ok) {
         const data = await response.json() as HealthCheckResponse;
         useConnectionStore.getState().setConnectionStatus(true);
+        console.log("API connection test successful:", data);
         
         // Update server status if available
         if (data) {
@@ -181,9 +188,11 @@ class ApiConnectionService {
         return true;
       }
       
+      console.warn(`API responded with status: ${response.status}`);
       useConnectionStore.getState().setConnectionStatus(false, `API responded with status: ${response.status}`);
       return false;
     } catch (error) {
+      console.error("API connection test failed:", error);
       useConnectionStore.getState().setConnectionStatus(
         false, 
         error instanceof Error ? error.message : 'Connection failed'

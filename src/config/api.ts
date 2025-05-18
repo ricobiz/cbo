@@ -1,7 +1,7 @@
 
 // Конфигурация API эндпоинтов
 export const API_CONFIG = {
-  // Use environment variable if available, otherwise use a more realistic default for web deployment
+  // Use environment variable if available, otherwise use a relative path for API on the same domain
   BASE_URL: import.meta.env.VITE_API_URL || '/api',
   ENDPOINTS: {
     BOTS: '/bots',
@@ -19,7 +19,7 @@ export const API_TIMEOUT = 10000;
 // Настройка для автоматического перехода в оффлайн режим при ошибках API
 export const AUTO_FALLBACK_TO_OFFLINE = true;
 
-// Использовать оффлайн режим по умолчанию (устанавливаем в true, чтобы избежать ошибок при старте)
+// Использовать оффлайн режим по умолчанию
 export const DEFAULT_OFFLINE_MODE = true;
 
 // Настройка интервала проверки соединения (в миллисекундах)

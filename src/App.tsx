@@ -41,6 +41,7 @@ function App() {
   // Инициализация настроек API уведомлений при загрузке приложения
   useEffect(() => {
     initApiErrorNotifications();
+    console.log("API notifications initialized");
   }, []);
 
   return (
@@ -49,7 +50,7 @@ function App() {
       <Toaster 
         position="top-right" 
         richColors 
-        closeButton={true} // Добавляем кнопку закрытия для всех уведомлений
+        closeButton={true}
         toastOptions={{
           duration: 5000, // Уменьшаем длительность показа
           className: "custom-toast" // Для возможного дополнительного стилизования
