@@ -1,16 +1,19 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Sparkles, RefreshCw, Wand, Share } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Sparkles, RefreshCw, Wand, Share, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import externalAPIService from "@/services/external-api";
 import { getActivePlatforms } from "@/constants/platforms";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignIntegrator } from "../integration/CampaignIntegrator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useNavigate } from "react-router-dom";
 
 type ContentType = "post" | "story" | "caption" | "thread" | "comment" | "bio";
 
@@ -57,11 +60,22 @@ export function TextGenerator() {
     timestamp: Date;
   }>>([]);
   const [isIntegratorOpen, setIsIntegratorOpen] = useState(false);
-  const { toast } = useToast();
+  const [apiStatus, setApiStatus] = useState<{
+    hasApiKey: boolean;
+    isValid: boolean | null;
+    isOfflineMode: boolean;
+  }>({
+    hasApiKey: false,
+    isValid: null,
+    isOfflineMode: true,
+  });
+  const { toast } = toast;
+  const navigate = useNavigate();
   const activePlatforms = getActivePlatforms();
 
-  // Load history from localStorage on component mount
+  // Load history from localStorage on component mount and check API status
   useEffect(() => {
+    // Load generation history
     try {
       const storedHistory = localStorage.getItem('textGenerationHistory');
       if (storedHistory) {
@@ -70,9 +84,48 @@ export function TextGenerator() {
     } catch (error) {
       console.error("Error loading history from localStorage:", error);
     }
+
+    // Check API key status
+    checkApiStatus();
   }, []);
 
+  // Function to check API key status
+  const checkApiStatus = () => {
+    setApiStatus({
+      hasApiKey: externalAPIService.hasOpenRouterApiKey(),
+      isValid: externalAPIService.getOpenRouterApiKeyValidationStatus(),
+      isOfflineMode: externalAPIService.isOfflineMode()
+    });
+  };
+
   const generateContent = async () => {
+    // Check if we have a valid API key
+    if (!apiStatus.hasApiKey || apiStatus.isValid === false) {
+      toast.error("Требуется действительный API ключ OpenRouter", {
+        description: "Добавьте ключ в настройках API",
+        action: {
+          label: "Настройки",
+          onClick: () => navigate("/settings")
+        }
+      });
+      return;
+    }
+
+    // Check if we're in offline mode
+    if (apiStatus.isOfflineMode) {
+      toast.warning("Приложение работает в оффлайн режиме", {
+        description: "Будут использованы заглушки вместо реального API",
+        action: {
+          label: "Переключить",
+          onClick: () => {
+            externalAPIService.setOfflineMode(false);
+            checkApiStatus();
+            toast.success("Оффлайн режим отключен");
+          }
+        }
+      });
+    }
+
     setIsLoading(true);
     try {
       const prompt = `Создай ${CONTENT_TYPE_OPTIONS.find(ct => ct.value === contentType)?.label.toLowerCase() || 'пост'} 
@@ -103,24 +156,25 @@ export function TextGenerator() {
           console.error("Error saving to localStorage:", error);
         }
 
-        toast({
-          title: "Контент сгенерирован",
+        toast.success("Контент сгенерирован", {
           description: "Новый контент был успешно сгенерирован.",
         });
+        
+        // Update API status after successful generation
+        checkApiStatus();
       } else {
-        toast({
-          title: "Генерация не удалась",
+        toast.error("Генерация не удалась", {
           description: "Не удалось сгенерировать контент. Пожалуйста, попробуйте снова.",
-          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Ошибка при генерации контента:", error);
-      toast({
-        title: "Ошибка",
+      toast.error("Ошибка", {
         description: "Произошла ошибка при генерации контента.",
-        variant: "destructive",
       });
+      
+      // Update API status
+      checkApiStatus();
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +219,42 @@ export function TextGenerator() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {!apiStatus.hasApiKey && (
+              <Alert variant="warning" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Требуется API ключ OpenRouter</AlertTitle>
+                <AlertDescription className="flex flex-col gap-2">
+                  <p>Для генерации контента требуется действительный API ключ OpenRouter.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/settings")}
+                    className="w-fit"
+                  >
+                    Перейти к настройкам API
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {apiStatus.hasApiKey && apiStatus.isValid === false && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Недействительный API ключ</AlertTitle>
+                <AlertDescription className="flex flex-col gap-2">
+                  <p>Ваш API ключ OpenRouter недействителен или не был проверен.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/settings")}
+                    className="w-fit"
+                  >
+                    Проверить ключ
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Tabs defaultValue="platform" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="platform">Платформа</TabsTrigger>

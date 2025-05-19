@@ -18,7 +18,7 @@ export class OpenRouterService {
    * Check if the API key is set
    */
   hasApiKey(): boolean {
-    return !!this.apiKey;
+    return !!this.apiKey && this.apiKey.trim() !== '';
   }
 
   /**
@@ -49,7 +49,9 @@ export class OpenRouterService {
       });
       
       if (!response.ok) {
-        throw new Error(`OpenRouter API error: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('OpenRouter API response error:', errorText);
+        throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
       }
       
       return await response.json();

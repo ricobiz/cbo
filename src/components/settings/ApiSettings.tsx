@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiConnectionSettings } from "@/components/settings/ApiConnectionSettings";
 import { ApiServerSettings } from "@/components/settings/ApiServerSettings";
+import { OpenRouterSettings } from "@/components/settings/OpenRouterSettings";
 import { Card } from "@/components/ui/card";
 
 export function ApiSettings() {
@@ -18,6 +19,7 @@ export function ApiSettings() {
         <TabsList>
           <TabsTrigger value="connection">Подключение</TabsTrigger>
           <TabsTrigger value="server">Сервер</TabsTrigger>
+          <TabsTrigger value="openrouter">OpenRouter</TabsTrigger>
           <TabsTrigger value="advanced">Дополнительно</TabsTrigger>
         </TabsList>
         
@@ -27,6 +29,10 @@ export function ApiSettings() {
         
         <TabsContent value="server" className="space-y-4">
           <ApiServerSettings />
+        </TabsContent>
+        
+        <TabsContent value="openrouter" className="space-y-4">
+          <OpenRouterSettings />
         </TabsContent>
         
         <TabsContent value="advanced" className="space-y-4">
