@@ -1,17 +1,22 @@
-# Этап 1: Сборка приложения
-FROM node:18-alpine AS builder
+FROM node:14
+
+# Set the working directory
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml* ./
-RUN npm install -g pnpm
-RUN pnpm install
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application files
 COPY . .
-RUN pnpm build
 
-# Этап 2: Создание продакшен образа
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+# Build the application
+RUN npm run build
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Command to run the application
+CMD [ "npm", "start" ]
