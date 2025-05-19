@@ -1,4 +1,3 @@
-
 import { OpenRouterService } from "./OpenRouterService";
 import { BrowserUseService } from "./BrowserUseService";
 import { ImageGenerationService } from "./ImageGenerationService";
@@ -160,14 +159,20 @@ export class ExternalAPIService {
         return false;
       }
 
+      console.log("Validating OpenRouter API key...");
+
       // Send a simple request to check if API key is valid
       const response = await this.openRouterService.sendToOpenRouter(
         "This is a test message to validate API key.", 
         "gpt-3.5-turbo" // Using smaller model for validation
       );
       
+      console.log("OpenRouter validation response:", response);
+      
       const isValid = !!response && !!response.choices && response.choices.length > 0;
       this.openRouterApiKeyValid = isValid;
+      
+      console.log("OpenRouter API key valid:", isValid);
       return isValid;
     } catch (error) {
       console.error("Error validating OpenRouter API key:", error);

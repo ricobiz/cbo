@@ -35,6 +35,8 @@ export class OpenRouterService {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'Social Media Manager',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

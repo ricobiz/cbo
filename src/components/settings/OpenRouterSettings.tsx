@@ -72,7 +72,10 @@ export function OpenRouterSettings() {
     setIsLoading(true);
     
     try {
-      // Validate the API key
+      // Сначала установим API ключ перед проверкой
+      externalAPIService.setOpenRouterApiKey(apiKey.trim());
+      
+      // Затем проверим ключ
       const isValid = await externalAPIService.validateOpenRouterApiKey();
       setValidationStatus(isValid);
       
