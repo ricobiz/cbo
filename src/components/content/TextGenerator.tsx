@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Sparkles, RefreshCw, Wand, Share, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "sonner"; // Importing toast from sonner directly
 import externalAPIService from "@/services/external-api";
 import { getActivePlatforms } from "@/constants/platforms";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,8 @@ export function TextGenerator() {
     isValid: null,
     isOfflineMode: true,
   });
-  const { toast } = toast;
+  // Remove this line as it's causing the error:
+  // const { toast } = toast;
   const navigate = useNavigate();
   const activePlatforms = getActivePlatforms();
 
