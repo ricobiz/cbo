@@ -2,16 +2,18 @@
 import { useState } from "react";
 import { ScenarioList } from "@/components/scenarios/ScenarioList";
 import { TemplateSelector } from "@/components/scenarios/TemplateSelector";
+import { ScenarioDetail } from "@/components/scenarios/ScenarioDetail";
+import { ScenarioForm } from "@/components/scenarios/ScenarioForm";
 import { Scenario, ScenarioTemplate } from "@/services/types/scenario";
 import { ScenarioService } from "@/services/ScenarioService";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 type ViewMode = "list" | "template-select" | "detail" | "create" | "edit";
 
 const ScenariosPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
-  const { toast } = useToast();
+  const [isUpdated, setIsUpdated] = useState<boolean>(false);
 
   const handleSelectScenario = (scenario: Scenario) => {
     setSelectedScenario(scenario);
@@ -27,32 +29,39 @@ const ScenariosPage = () => {
     setSelectedScenario(null);
     setViewMode("template-select");
   };
+  
+  const handleEditScenario = (scenario: Scenario) => {
+    setSelectedScenario(scenario);
+    setViewMode("edit");
+  };
+  
+  const handleSaveScenario = (scenario: Scenario) => {
+    setSelectedScenario(scenario);
+    setViewMode("detail");
+    setIsUpdated(!isUpdated); // Toggle to force reload in list view
+  };
 
   const handleCreateFromTemplate = (templateId: string, name: string, description: string) => {
     try {
       const newScenario = ScenarioService.createScenarioFromTemplate(templateId, name, description);
       
       if (newScenario) {
-        toast({
-          title: "Сценарий создан",
+        toast.success("Сценарий создан", {
           description: `Сценарий "${name}" успешно создан из шаблона.`
         });
         
         setSelectedScenario(newScenario);
         setViewMode("detail");
+        setIsUpdated(!isUpdated); // Toggle to force reload in list view
       } else {
-        toast({
-          title: "Ошибка",
-          description: "Не удалось создать сценарий из шаблона.",
-          variant: "destructive"
+        toast.error("Ошибка", {
+          description: "Не удалось создать сценарий из шаблона."
         });
       }
     } catch (error) {
       console.error("Error creating scenario from template:", error);
-      toast({
-        title: "Ошибка",
-        description: "Произошла ошибка при создании сценария.",
-        variant: "destructive"
+      toast.error("Ошибка", {
+        description: "Произошла ошибка при создании сценария."
       });
     }
   };
@@ -65,6 +74,7 @@ const ScenariosPage = () => {
             onSelectScenario={handleSelectScenario}
             onNewScenario={handleNewScenario}
             onCreateFromTemplate={handleTemplateSelect}
+            key={`scenario-list-${isUpdated}`} // Force reload when updated
           />
         );
       case "template-select":
@@ -74,25 +84,44 @@ const ScenariosPage = () => {
             onTemplateSelect={handleCreateFromTemplate}
           />
         );
-      // Note: Detail, Create and Edit views would be implemented in future iterations
       case "detail":
-      case "create":
-      case "edit":
-      default:
-        // For now, just go back to list if those features aren't implemented
+        if (!selectedScenario) {
+          setViewMode("list");
+          return null;
+        }
         return (
-          <div className="flex flex-col items-center justify-center py-20">
-            <h1 className="text-2xl font-bold mb-4">Функционал в разработке</h1>
-            <p className="text-muted-foreground mb-8 text-center max-w-md">
-              Детальный просмотр и редактирование сценариев будет доступно в следующем обновлении.
-            </p>
-            <button 
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-              onClick={() => setViewMode("list")}
-            >
-              Вернуться к списку
-            </button>
-          </div>
+          <ScenarioDetail
+            scenario={selectedScenario}
+            onBack={() => setViewMode("list")}
+            onEdit={handleEditScenario}
+          />
+        );
+      case "create":
+        return (
+          <ScenarioForm
+            onBack={() => setViewMode("list")}
+            onSave={handleSaveScenario}
+          />
+        );
+      case "edit":
+        if (!selectedScenario) {
+          setViewMode("list");
+          return null;
+        }
+        return (
+          <ScenarioForm
+            scenario={selectedScenario}
+            onBack={() => setViewMode("detail")}
+            onSave={handleSaveScenario}
+          />
+        );
+      default:
+        return (
+          <ScenarioList
+            onSelectScenario={handleSelectScenario}
+            onNewScenario={handleNewScenario}
+            onCreateFromTemplate={handleTemplateSelect}
+          />
         );
     }
   };
