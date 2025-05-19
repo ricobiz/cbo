@@ -21,7 +21,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, X, Save } from "lucide-react";
 import { toast } from "sonner";
-import { Scenario, ScenarioCategory, ScenarioStatus, BotPlatform } from "@/services/types/scenario";
+import { Scenario, ScenarioCategory, ScenarioStatus } from "@/services/types/scenario";
+import { BotPlatform } from "@/services/types/bot";
 import { ScenarioService } from "@/services/ScenarioService";
 
 interface ScenarioFormProps {

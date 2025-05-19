@@ -278,7 +278,7 @@ export function ScenarioDetail({ scenario, onBack, onEdit }: ScenarioDetailProps
                           <div className="font-medium flex items-center justify-between">
                             <span>{step.name}</span>
                             <Badge variant={
-                              step.status === 'completed' ? 'success' : 
+                              step.status === 'completed' ? 'default' : 
                               step.status === 'in-progress' ? 'default' : 
                               step.status === 'failed' ? 'destructive' : 
                               'outline'
