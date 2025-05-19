@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,9 +65,7 @@ export function TextGeneratorForm({
     
     const randomTopic = SUGGESTED_TOPICS[Math.floor(Math.random() * SUGGESTED_TOPICS.length)];
     setTopic(randomTopic);
-    toast({
-      description: `Тема "${randomTopic}" добавлена в поле ввода.`,
-    });
+    toast(`Тема "${randomTopic}" добавлена в поле ввода.`);
   };
 
   return (
