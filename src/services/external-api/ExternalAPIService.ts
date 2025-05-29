@@ -19,6 +19,7 @@ const LOCAL_STORAGE_KEYS = {
   OPEN_ROUTER_API_KEY: 'openrouter_api_key',
   BROWSER_USE_API_KEY: 'browser_use_api_key',
   OFFLINE_MODE: 'offline_mode',
+  OPEN_ROUTER_API_KEY_VALIDATION: 'openrouter_api_key_validation_status',
 };
 
 /**
@@ -79,11 +80,21 @@ export class ExternalAPIService {
    * Initialize services from local storage
    */
   initializeFromStorage(): void {
+    console.log("ExternalAPIService: Initializing from storage...");
+    
     if (typeof window !== 'undefined' && window.localStorage) {
       // Load API keys from localStorage
       const openRouterApiKey = localStorage.getItem(LOCAL_STORAGE_KEYS.OPEN_ROUTER_API_KEY);
       if (openRouterApiKey) {
+        console.log("ExternalAPIService: Found OpenRouter API key in storage");
         this.openRouterService.setApiKey(openRouterApiKey);
+        
+        // Load validation status
+        const validationStatus = localStorage.getItem(LOCAL_STORAGE_KEYS.OPEN_ROUTER_API_KEY_VALIDATION);
+        if (validationStatus !== null) {
+          this.openRouterApiKeyValid = validationStatus === 'true';
+          console.log("ExternalAPIService: Loaded validation status:", this.openRouterApiKeyValid);
+        }
       }
       
       const browserUseApiKey = localStorage.getItem(LOCAL_STORAGE_KEYS.BROWSER_USE_API_KEY);
@@ -95,6 +106,7 @@ export class ExternalAPIService {
       const offlineMode = localStorage.getItem(LOCAL_STORAGE_KEYS.OFFLINE_MODE);
       if (offlineMode !== null) {
         this.offlineMode = offlineMode === 'true';
+        console.log("ExternalAPIService: Loaded offline mode:", this.offlineMode);
       }
     }
   }
@@ -135,18 +147,23 @@ export class ExternalAPIService {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(LOCAL_STORAGE_KEYS.OFFLINE_MODE, String(enabled));
     }
+    console.log("ExternalAPIService: Offline mode set to:", enabled);
   }
   
   /**
    * Set OpenRouter API key
    */
   setOpenRouterApiKey(key: string): void {
+    console.log("ExternalAPIService: Setting OpenRouter API key");
     this.openRouterService.setApiKey(key);
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(LOCAL_STORAGE_KEYS.OPEN_ROUTER_API_KEY, key);
     }
-    // Reset validation status
+    // Reset validation status when key changes
     this.openRouterApiKeyValid = null;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.OPEN_ROUTER_API_KEY_VALIDATION);
+    }
   }
 
   /**
@@ -155,29 +172,44 @@ export class ExternalAPIService {
   async validateOpenRouterApiKey(): Promise<boolean> {
     try {
       if (!this.hasOpenRouterApiKey()) {
+        console.log("ExternalAPIService: No API key to validate");
         this.openRouterApiKeyValid = false;
+        this.saveValidationStatus(false);
         return false;
       }
 
-      console.log("Validating OpenRouter API key...");
+      console.log("ExternalAPIService: Starting API key validation...");
 
-      // Send a simple request to check if API key is valid
-      const response = await this.openRouterService.sendToOpenRouter(
-        "This is a test message to validate API key.", 
-        "gpt-3.5-turbo" // Using smaller model for validation
+      // Send a simple test request to validate the API key
+      const testResponse = await this.openRouterService.sendToOpenRouter(
+        "Ответь одним словом: OK", 
+        "gpt-3.5-turbo"
       );
       
-      console.log("OpenRouter validation response:", response);
+      console.log("ExternalAPIService: Validation response received:", testResponse);
       
-      const isValid = !!response && !!response.choices && response.choices.length > 0;
+      const isValid = !!(testResponse && 
+                        testResponse.choices && 
+                        testResponse.choices.length > 0 && 
+                        testResponse.choices[0].message && 
+                        testResponse.choices[0].message.content);
+      
       this.openRouterApiKeyValid = isValid;
+      this.saveValidationStatus(isValid);
       
-      console.log("OpenRouter API key valid:", isValid);
+      console.log("ExternalAPIService: API key validation result:", isValid);
       return isValid;
     } catch (error) {
-      console.error("Error validating OpenRouter API key:", error);
+      console.error("ExternalAPIService: Error validating API key:", error);
       this.openRouterApiKeyValid = false;
+      this.saveValidationStatus(false);
       return false;
+    }
+  }
+
+  private saveValidationStatus(isValid: boolean): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.OPEN_ROUTER_API_KEY_VALIDATION, String(isValid));
     }
   }
   
@@ -196,23 +228,36 @@ export class ExternalAPIService {
    */
   async sendToOpenRouter(prompt: string, model?: string): Promise<OpenRouterResponse | null> {
     if (this.offlineMode) {
-      console.log("Running in offline mode. Returning mock OpenRouter response.");
+      console.log("ExternalAPIService: Running in offline mode. Returning mock OpenRouter response.");
       return this.getMockOpenRouterResponse(prompt);
     }
     
     try {
-      if (!this.openRouterApiKeyValid && this.openRouterApiKeyValid !== null) {
-        console.error("OpenRouter API key is invalid");
+      if (this.openRouterApiKeyValid === false) {
+        console.log("ExternalAPIService: API key is known to be invalid, using mock response");
         return this.getMockOpenRouterResponse(prompt);
       }
       
+      console.log("ExternalAPIService: Sending prompt to OpenRouter:", prompt.substring(0, 50) + "...");
+      
       const response = await this.openRouterService.sendToOpenRouter(prompt, model);
-      // If we successfully got a response, the API key is valid
-      this.openRouterApiKeyValid = true;
-      return response;
+      
+      if (response && response.choices && response.choices.length > 0) {
+        // If we successfully got a response, the API key is valid
+        if (this.openRouterApiKeyValid !== true) {
+          this.openRouterApiKeyValid = true;
+          this.saveValidationStatus(true);
+          console.log("ExternalAPIService: API key validated successfully during usage");
+        }
+        return response;
+      } else {
+        console.log("ExternalAPIService: Empty response received");
+        return this.getMockOpenRouterResponse(prompt);
+      }
     } catch (error) {
-      console.error("Error in OpenRouter API call:", error);
+      console.error("ExternalAPIService: Error in OpenRouter API call:", error);
       this.openRouterApiKeyValid = false;
+      this.saveValidationStatus(false);
       return this.getMockOpenRouterResponse(prompt);
     }
   }
@@ -297,7 +342,7 @@ export class ExternalAPIService {
           index: 0,
           message: {
             role: "assistant",
-            content: `This is a mock response for: ${prompt}\n\nOffline mode is enabled. Please configure API keys in settings to use real AI services.`
+            content: `Это демо-ответ для запроса: "${prompt.substring(0, 50)}..."\n\nВключен оффлайн режим. Настройте API ключи в разделе настроек для использования реальных AI сервисов.`
           },
           finish_reason: "stop"
         }
